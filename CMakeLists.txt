@@ -14,4 +14,5 @@ project(OBCMake
 
 # Add script to consumer's module path
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/module")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} PARENT_SCOPE)
 message(STATUS "OBCMake modules available via include(OB/...)")
