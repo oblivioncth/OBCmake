@@ -5,9 +5,8 @@ cmake_minimum_required(VERSION 3.24.0)
 
 # Project
 # NOTE: DON'T USE TRAILING ZEROS IN VERSIONS
-set(OB_CMAKE_BASE_VERSION 0.1.1) # Required for CI/CD
 project(OBCMake
-    VERSION ${OB_CMAKE_BASE_VERSION}
+    VERSION 0.1.1
     LANGUAGES NONE
     DESCRIPTION "oblivioncth's CMake scripts"
 )
