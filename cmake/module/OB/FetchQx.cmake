@@ -22,7 +22,7 @@ function(fetch_qx)
         message(WARNING "Ignoring unrecognized parameter: ${unk_val}")
     endforeach()
 
-    if(${FETCH_QX_KEYWORDS_MISSING_VALUES})
+    if(FETCH_QX_KEYWORDS_MISSING_VALUES)
         foreach(missing_val ${FETCH_QX_KEYWORDS_MISSING_VALUES})
             message(ERROR "A value for '${missing_val}' must be provided")
         endforeach()

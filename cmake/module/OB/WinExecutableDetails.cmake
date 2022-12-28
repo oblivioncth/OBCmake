@@ -28,7 +28,7 @@ function(set_win_executable_details target)
         message(WARNING "Ignoring unrecognized parameter: ${unk_val}")
     endforeach()
 
-    if(${WIN_ED_KEYWORDS_MISSING_VALUES})
+    if(WIN_ED_KEYWORDS_MISSING_VALUES)
         foreach(missing_val ${WIN_ED_KEYWORDS_MISSING_VALUES})
             message(ERROR "A value for '${missing_val}' must be provided")
         endforeach()

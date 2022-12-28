@@ -82,7 +82,7 @@ function(add_cpp_vars target)
         message(WARNING "Ignoring unrecognized parameter: ${unk_val}")
     endforeach()
 
-    if(${CPP_VARS_KEYWORDS_MISSING_VALUES})
+    if(CPP_VARS_KEYWORDS_MISSING_VALUES)
         foreach(missing_val ${CPP_VARS_KEYWORDS_MISSING_VALUES})
             message(ERROR "A value for '${missing_val}' must be provided")
         endforeach()

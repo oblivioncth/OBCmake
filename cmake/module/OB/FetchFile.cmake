@@ -16,7 +16,7 @@ function(fetch_file)
         message(WARNING "Ignoring unrecognized parameter: ${unk_val}")
     endforeach()
 
-    if(${FILE_FETCH_KEYWORDS_MISSING_VALUES})
+    if(FILE_FETCH_KEYWORDS_MISSING_VALUES)
         foreach(missing_val ${FILE_FETCH_KEYWORDS_MISSING_VALUES})
             message(ERROR "A value for '${missing_val}' must be provided")
         endforeach()
