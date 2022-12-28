@@ -84,7 +84,7 @@ function(add_cpp_vars target)
 
     if(CPP_VARS_KEYWORDS_MISSING_VALUES)
         foreach(missing_val ${CPP_VARS_KEYWORDS_MISSING_VALUES})
-            message(ERROR "A value for '${missing_val}' must be provided")
+            message(WARNING "A value for '${missing_val}' must be provided")
         endforeach()
         message(FATAL_ERROR "Not all required values were present!")
     endif()
