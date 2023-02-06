@@ -39,12 +39,6 @@ function(set_win_executable_details target)
     cmake_path(ABSOLUTE_PATH WIN_ED_ICON
         BASE_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}"
         NORMALIZE
-        OUTPUT_VARIABLE __ABS_ICON_PATH
-    )
-
-    # Determine relative icon path (relative to generated rc file)
-    cmake_path(RELATIVE_PATH __ABS_ICON_PATH
-        BASE_DIRECTORY "${GENERATED_DIR}"
         OUTPUT_VARIABLE EXE_ICON
     )
 
