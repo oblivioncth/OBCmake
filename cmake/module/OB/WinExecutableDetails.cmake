@@ -28,9 +28,9 @@ function(set_win_executable_details target)
         message(WARNING "Ignoring unrecognized parameter: ${unk_val}")
     endforeach()
 
-    if(${WIN_ED_KEYWORDS_MISSING_VALUES})
+    if(WIN_ED_KEYWORDS_MISSING_VALUES)
         foreach(missing_val ${WIN_ED_KEYWORDS_MISSING_VALUES})
-            message(ERROR "A value for '${missing_val}' must be provided")
+            message(WARNING "A value for '${missing_val}' must be provided")
         endforeach()
         message(FATAL_ERROR "Not all required values were present!")
     endif()
@@ -39,12 +39,6 @@ function(set_win_executable_details target)
     cmake_path(ABSOLUTE_PATH WIN_ED_ICON
         BASE_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}"
         NORMALIZE
-        OUTPUT_VARIABLE __ABS_ICON_PATH
-    )
-
-    # Determine relative icon path (relative to generated rc file)
-    cmake_path(RELATIVE_PATH __ABS_ICON_PATH
-        BASE_DIRECTORY "${GENERATED_DIR}"
         OUTPUT_VARIABLE EXE_ICON
     )
 
