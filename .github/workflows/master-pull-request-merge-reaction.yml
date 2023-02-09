@@ -4,10 +4,7 @@ on:
     types: [closed]
     branches:
     - 'master'
-env:
-  ci_bot_username: ObyBotCI
-  ci_bot_email: 104651589+ObyBotCI@users.noreply.github.com
-  
+    
 jobs:
   tag_master_and_sync_dev:
     name: Tag master merge commit, FF back to dev
