@@ -1,10 +1,52 @@
-function(fetch_quazip git_ref)
+# Sets up QuaZip to be built/installed as an external project for use in the main project
+
+# REF - Optional tag, branch name, or commit hash to retrieve. According to CMake docs,
+#       a commit hash is preferred for speed and reliability
+# QT_VER - Optional major version number of Qt to force QuaZip to use
+function(fetch_quazip)
     include(FetchContent)
 
+    # ----- Arguments --------------------------------------------------------------------------------------------
+    
+    # Additional Function inputs
+    set(oneValueArgs
+        REF
+    )
+    set(multiValueArgs
+        QT_VER
+    )
+
+    # Parse arguments
+    cmake_parse_arguments(FETCH_QUAZIP "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    # Validate input
+    foreach(unk_val ${FETCH_QUAZIP_UNPARSED_ARGUMENTS})
+        message(WARNING "Ignoring unrecognized parameter: ${unk_val}")
+    endforeach()
+
+    if(FETCH_QUAZIP_KEYWORDS_MISSING_VALUES)
+        foreach(missing_val ${FETCH_QUAZIP_KEYWORDS_MISSING_VALUES})
+            message(WARNING "A value for '${missing_val}' must be provided")
+        endforeach()
+        message(WARNING "Not all required values were present!")
+    endif()
+    
+    # Use arguments
+    if(FETCH_QUAZIP_REF)
+        set(_QUAZIP_OPTIONAL_REF "GIT_TAG" ${FETCH_QUAZIP_REF})
+    endif()
+
+    if(FETCH_QUAZIP_QT_VER)
+        set(QUAZIP_QT_MAJOR_VERSION ${FETCH_QUAZIP_QT_VER})
+    endif()
+    
+    # ----- General -------------------------------------------------------------------------------------------
+    
     # Make sure static libs are used
     set(BUILD_SHARED_LIBS OFF)
 
     # ----- ZLIB ----------------------------------------------------------------------------------------------
+
     if(NOT TARGET ZLIB::ZLIB)
         # First, fetch zlib since QuaZip relies on it.
         FetchContent_Declare(
@@ -69,11 +111,11 @@ function(fetch_quazip git_ref)
     # fetched and therefore won't have its cmake package scripts, so QuaZip's install configuration must be
     # skipped. This is fine since it won't be used anyway given it is being fetched as well.
     set(QUAZIP_INSTALL OFF)
-
+        
     FetchContent_Declare(
         QuaZip
         GIT_REPOSITORY https://github.com/stachenov/quazip.git
-        GIT_TAG ${git_ref}
+        ${_QUAZIP_OPTIONAL_REF}
     )
     FetchContent_MakeAvailable(QuaZip)
 endfunction()
