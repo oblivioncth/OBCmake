@@ -31,15 +31,6 @@ function(fetch_quazip)
         message(WARNING "Not all required values were present!")
     endif()
     
-    # Use arguments
-    if(FETCH_QUAZIP_REF)
-        set(_QUAZIP_OPTIONAL_REF "GIT_TAG" ${FETCH_QUAZIP_REF})
-    endif()
-
-    if(FETCH_QUAZIP_QT_VER)
-        set(QUAZIP_QT_MAJOR_VERSION ${FETCH_QUAZIP_QT_VER})
-    endif()
-    
     # ----- General -------------------------------------------------------------------------------------------
     
     # Make sure static libs are used
@@ -118,6 +109,19 @@ function(fetch_quazip)
     # fetched and therefore won't have its cmake package scripts, so QuaZip's install configuration must be
     # skipped. This is fine since it won't be used anyway given it is being fetched as well.
     set(QUAZIP_INSTALL OFF)
+        
+    # Use QuaZip related args
+    if(FETCH_QUAZIP_REF)
+        set(_QUAZIP_OPTIONAL_REF "GIT_TAG" ${FETCH_QUAZIP_REF})
+    endif()
+
+    if(FETCH_QUAZIP_QT_VER)
+        set(QUAZIP_QT_MAJOR_VERSION ${FETCH_QUAZIP_QT_VER})
+    endif()
+    
+    # Don't let QuaZip overwrite the value of `QUAZIP_QT_MAJOR_VERSION` as a cache variable if it was already set
+    # here. This is default in 3.21.0, but QuaZip uses an older CMake version
+    set(CMAKE_POLICY_DEFAULT_CMP0126 NEW)
         
     FetchContent_Declare(
         QuaZip
