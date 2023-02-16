@@ -11,13 +11,11 @@ function(fetch_quazip)
     # Additional Function inputs
     set(oneValueArgs
         REF
-    )
-    set(multiValueArgs
-        QT_VER
+        QT_MAJOR_VER
     )
 
     # Parse arguments
-    cmake_parse_arguments(FETCH_QUAZIP "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    cmake_parse_arguments(FETCH_QUAZIP "" "${oneValueArgs}" "" ${ARGN})
 
     # Validate input
     foreach(unk_val ${FETCH_QUAZIP_UNPARSED_ARGUMENTS})
@@ -110,13 +108,14 @@ function(fetch_quazip)
     # skipped. This is fine since it won't be used anyway given it is being fetched as well.
     set(QUAZIP_INSTALL OFF)
         
-    # Use QuaZip related args
+    # Configure reference argument, if set
     if(FETCH_QUAZIP_REF)
         set(_QUAZIP_OPTIONAL_REF "GIT_TAG" ${FETCH_QUAZIP_REF})
     endif()
 
-    if(FETCH_QUAZIP_QT_VER)
-        set(QUAZIP_QT_MAJOR_VERSION ${FETCH_QUAZIP_QT_VER})
+    # Force specific Qt version, if set
+    if(FETCH_QUAZIP_QT_MAJOR_VER)
+        set(QUAZIP_QT_MAJOR_VERSION ${FETCH_QUAZIP_QT_MAJOR_VER})
     endif()
     
     # Don't let QuaZip overwrite the value of `QUAZIP_QT_MAJOR_VERSION` as a cache variable if it was already set
