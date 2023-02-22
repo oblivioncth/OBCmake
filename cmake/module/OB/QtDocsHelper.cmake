@@ -1,4 +1,4 @@
-function(configure_qt_doc_link qt_prefix)
+function(ob_configure_qt_doc_link qt_prefix)
     # Handle using cache so that users can easily override via UI or command-line
 
     # Could use crazy amounts of file system searching to check for every Qt root under the standard Qt install

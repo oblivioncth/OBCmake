@@ -3,7 +3,7 @@
 # REF - Optional tag, branch name, or commit hash to retrieve. According to CMake docs,
 #       a commit hash is preferred for speed and reliability
 # QT_VER - Optional major version number of Qt to force QuaZip to use
-function(fetch_quazip)
+function(ob_fetch_quazip)
     include(FetchContent)
 
     # ----- Arguments --------------------------------------------------------------------------------------------

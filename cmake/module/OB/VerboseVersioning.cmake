@@ -52,9 +52,8 @@ if(CMAKE_SCRIPT_MODE_FILE)
         # This will update verbose_ver.txt, causing cmake to reconfigure
         file(WRITE ${VERBOSE_VER_CACHE} ${VERBOSE_VER})
     endif()
-# Configure usage (make function available)
-else()
-    function(setup_verbose_versioning return)
+else() # Configure usage (make function available)
+    function(ob_setup_verbose_versioning return)
         # Handle fallback value
         if(NO_GIT)
             set(VERSION_FALLBACK "v${PROJECT_VERSION}")

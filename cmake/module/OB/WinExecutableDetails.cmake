@@ -1,4 +1,4 @@
-function(set_win_executable_details target)
+function(ob_set_win_executable_details target)
     # Const variables
     set(GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/rc_gen")
     set(GENERATED_NAME "resources.rc")

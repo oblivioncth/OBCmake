@@ -5,7 +5,7 @@
 # components - An optional semi-colon or whitespace delimited list of Qx components.
 #              If provided, only the components in the list will be configured.
 
-function(fetch_qx)
+function(ob_fetch_qx)
     # Additional Function inputs
     set(oneValueArgs
         REF

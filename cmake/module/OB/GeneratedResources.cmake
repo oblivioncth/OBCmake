@@ -96,7 +96,7 @@ function(__parse_file_entry_list return)
     set(${return} "${FULLY_PARSED}" PARENT_SCOPE)
 endfunction()
 
-function(add_generated_resources_collection target)
+function(ob_add_generated_resources_collection target)
     #---------------- Function Setup ----------------------
 
     # Const variables

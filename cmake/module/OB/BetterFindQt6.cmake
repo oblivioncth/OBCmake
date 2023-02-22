@@ -1,4 +1,4 @@
-macro(find_qt6_package)
+macro(ob_find_qt6_package)
     # Find Qt normally
     find_package(Qt6 ${ARGN})
 

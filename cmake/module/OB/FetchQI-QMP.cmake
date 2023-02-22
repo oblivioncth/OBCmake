@@ -3,7 +3,7 @@
 # git_ref - Tag, branch name, or commit hash to retrieve. According to CMake docs,
 #           a commit hash is preferred for speed and reliability
 
-function(fetch_qi_qmp git_ref)
+function(ob_fetch_qi_qmp git_ref)
     include(FetchContent)
     FetchContent_Declare(QI-QMP
         GIT_REPOSITORY "https://github.com/oblivioncth/QI-QMP"

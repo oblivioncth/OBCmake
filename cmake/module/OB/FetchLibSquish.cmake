@@ -1,4 +1,4 @@
-function(fetch_libsquish svn_rev)
+function(ob_fetch_libsquish svn_rev)
     include(FetchContent)
 
     # Make sure static libs are used

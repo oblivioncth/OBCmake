@@ -2,7 +2,7 @@
 # - Adds the install directory to the clean target
 # - Defines a variable containing "EXCLUDE_FROM_ALL" if project is not top-level, empty otherwise
 # - Defines a variable containing "ALL" if project is top-level, empty otherwise
-macro(top_level_project_setup)
+macro(ob_top_level_project_setup)
     if(${PROJECT_IS_TOP_LEVEL})
         message(STATUS "NOTE: ${PROJECT_NAME} is being configured as a top-level project")
 

@@ -59,7 +59,7 @@
 #
 ##########################################################################################
 
-function(add_cpp_vars target)
+function(ob_add_cpp_vars target)
     #---------------- Function Setup ----------------------
     # Const variables
     set(GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}")

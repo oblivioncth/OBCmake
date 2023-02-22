@@ -3,7 +3,7 @@
 # git_ref - Tag, branch name, or commit hash to retrieve. According to CMake docs,
 #           a commit hash is preferred for speed and reliability
 
-function(fetch_libfp git_ref)
+function(ob_fetch_libfp git_ref)
     include(FetchContent)
     FetchContent_Declare(libfp
         GIT_REPOSITORY "https://github.com/oblivioncth/libfp"

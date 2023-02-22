@@ -1,4 +1,4 @@
-function(fetch_file)
+function(ob_fetch_file)
     include(FetchContent)
 
     # Additional Function inputs
