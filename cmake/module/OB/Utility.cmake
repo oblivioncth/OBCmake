@@ -52,3 +52,13 @@ function(get_proper_system_name return)
         set(${return} "${distro_name}" PARENT_SCOPE)
     endif()
 endfunction()
+
+function(get_system_architecture return)
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+      set(sys_arch x64)
+    else()
+      set(sys_arch x86)
+    endif()
+
+    set(${return} "${sys_arch}" PARENT_SCOPE)
+endfunction()
