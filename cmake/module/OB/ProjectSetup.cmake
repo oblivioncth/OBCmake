@@ -40,6 +40,7 @@ endmacro()
 # - Defines PROJECT_CMAKE_MINIMUM_REQUIRED_VERSION to the version present when the project is defined. Useful since
 #   find_package/find_dependency calls can override this
 # - Does everything described by `ob_top_level_project_setup`
+# - Calls ob_setup_verbose_versioning() and defines PROJECT_VERSION_VERBOSE to the result
 #
 # TODO: Add tuneable arguments to this as needed
 
@@ -75,4 +76,8 @@ macro(ob_standard_project_setup)
 
     # Perform top-level setup
     ob_top_level_project_setup()
+    
+    # Setup verbose versioning
+    include(OB/VerboseVersioning)
+    ob_setup_verbose_versioning(PROJECT_VERSION_VERBOSE)
 endmacro()
