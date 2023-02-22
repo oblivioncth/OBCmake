@@ -41,6 +41,8 @@ endmacro()
 #   find_package/find_dependency calls can override this
 # - Does everything described by `ob_top_level_project_setup`
 # - Calls ob_setup_verbose_versioning() and defines PROJECT_VERSION_VERBOSE to the result
+# - Defines PROJECT_FILE_TEMPLATES set to "${CMAKE_CURRENT_SOURCE_DIR}/cmake/file_templates"
+# - Appends "${CMAKE_CURRENT_SOURCE_DIR}/cmake/module" to CMAKE_MODULE_PATH
 #
 # TODO: Add tuneable arguments to this as needed
 
@@ -80,4 +82,8 @@ macro(ob_standard_project_setup)
     # Setup verbose versioning
     include(OB/VerboseVersioning)
     ob_setup_verbose_versioning(PROJECT_VERSION_VERBOSE)
+
+    # Add local modules and file templates
+    list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/module")
+    set(PROJECT_FILE_TEMPLATES "${CMAKE_CURRENT_SOURCE_DIR}/cmake/file_templates")
 endmacro()
