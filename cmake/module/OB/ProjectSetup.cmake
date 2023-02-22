@@ -27,3 +27,52 @@ macro(ob_top_level_project_setup)
         set(SUB_PROJ_EXCLUDE_FROM_ALL "EXCLUDE_FROM_ALL")
     endif()
 endmacro()
+
+# Performs additional setup of a project
+#
+# - Defines PROJECT_NAME_LC and PROJECT_NAME_UC, self-explanatory, except that '-' is also switched
+#   for '_' in both of those versions of the name
+# - Performs setup according to reasonable standards, similar to qt_standard_project_setup():
+#   https://github.com/qt/qtbase/blob/26fec96a813b8d1c4955b394794c66e5e830e4c4/src/corelib/Qt6CoreMacros.cmake#L2734
+#   > Automatically includes CMake's GNUInstallDirs
+#   > Sets a reasonable default for CMAKE_RUNTIME_OUTPUT_DIRECTORY on Windows if it isn't already set
+#   > Appends reasonable values to CMAKE_INSTALL_RPATH on platforms that support it
+# - Defines PROJECT_CMAKE_MINIMUM_REQUIRED_VERSION to the version present when the project is defined. Useful since
+#   find_package/find_dependency calls can override this
+# - Does everything described by `ob_top_level_project_setup`
+#
+# TODO: Add tuneable arguments to this as needed
+
+macro(ob_standard_project_setup)    
+    # Note current cmake minimum version
+    set(PROJECT_CMAKE_MINIMUM_REQUIRED_VERSION "${CMAKE_MINIMUM_REQUIRED_VERSION}")
+    
+    # Set lowercase and uppercase names
+    string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LC)
+    string(REPLACE "-" "_" PROJECT_NAME_LC "${PROJECT_NAME_LC}")
+    string(TOUPPER ${PROJECT_NAME} PROJECT_NAME_UC)
+    string(REPLACE "-" "_" PROJECT_NAME_UC "${PROJECT_NAME_UC}")
+    
+    # Include CMake GNUInstallDirs
+    include(GNUInstallDirs)
+    
+    # Set reasonable defaults for CMAKE_RUNTIME_OUTPUT_DIRECTORY on windows and CMAKE_INSTALL_RPATH on non-Apple
+    # Unix platforms. Puts DLLs in bin directory on Windows and allows applications to more easily find libraries
+    # within the same folder structure on those other platforms
+    if(WIN32)
+        if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+            set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+        endif()
+    elseif(NOT APPLE)
+        file(RELATIVE_PATH __ob_bin2lib_path
+            ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}
+            ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}
+        )
+        list(APPEND CMAKE_INSTALL_RPATH $ORIGIN $ORIGIN/${__ob_bin2lib_path})
+        list(REMOVE_DUPLICATES CMAKE_INSTALL_RPATH)
+        unset(__ob_bin2lib_path)
+    endif()
+
+    # Perform top-level setup
+    ob_top_level_project_setup()
+endmacro()
