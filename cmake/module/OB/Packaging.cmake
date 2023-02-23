@@ -122,6 +122,11 @@ function(ob_standard_project_package_config)
     #---------------- Function Setup ----------------------
     # Const variables
     set(CFG_TEMPLATE_FILE "__standard_pkg_cfg.cmake.in")
+    string(CONCAT DEPENDENCY_CHECKS_HEADING
+        "\n"
+        "# Check for hard dependencies\n"
+        "include(CMakeFindDependencyMacro)\n"
+    )
 
     # Additional Function inputs
     set(oneValueArgs
@@ -178,19 +183,22 @@ function(ob_standard_project_package_config)
 
     #---------------- Prepare Configuration  ----------------------
 
-    # Create dependency check statements via the "PACKAGE" and "COMPONENT" sets
-    include(OB/Utility)
-    ob_parse_arguments_list(
-        "PACKAGE"
-        "__ob_parse_dependency"
-        dependency_check_statements
-        ${STD_PKG_CFG_DEPENDENCIES}
-    )
+    if(DEFINED STD_PKG_CFG_DEPENDENCIES)
+        # Create dependency check statements via the "PACKAGE" and "COMPONENT" sets
+        include(OB/Utility)
+        ob_parse_arguments_list(
+            "PACKAGE"
+            "__ob_parse_dependency"
+            dependency_check_statements
+            ${STD_PKG_CFG_DEPENDENCIES}
+        )
 
-    # Create multi-line string for dependency checks
-    foreach(dep_statement ${dependency_check_statements})
-        set(DEPENDENCY_CHECKS "${DEPENDENCY_CHECKS}${dep_statement}\n")
-    endforeach()
+        # Create multi-line string for dependency checks
+        set(DEPENDENCY_CHECKS "${DEPENDENCY_CHECKS_HEADING}")
+        foreach(dep_statement ${dependency_check_statements})
+            set(DEPENDENCY_CHECKS "${DEPENDENCY_CHECKS}${dep_statement}\n")
+        endforeach()
+    endif()
 
     # Create config and version files
     include(CMakePackageConfigHelpers)
