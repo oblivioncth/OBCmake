@@ -63,7 +63,7 @@ function(ob_add_cpp_vars target)
     #---------------- Function Setup ----------------------
     # Const variables
     set(GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}")
-    set(TEMPLATE_FILE "__cpp_vars.h.in")
+    set(TEMPLATE_FILE "${__OB_CMAKE_PRIVATE}/templates/__cpp_vars.h.in")
     
     # Additional Function inputs
     set(oneValueArgs

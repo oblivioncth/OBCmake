@@ -15,3 +15,6 @@ project(OBCMake
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/module")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} PARENT_SCOPE)
 message(STATUS "OBCMake modules available via include(OB/...)")
+
+# Set private folder root variable for use in scripts
+set(__OB_CMAKE_PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/cmake/private")

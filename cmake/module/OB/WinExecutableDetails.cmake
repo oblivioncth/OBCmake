@@ -3,7 +3,7 @@ function(ob_set_win_executable_details target)
     set(GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/rc_gen")
     set(GENERATED_NAME "resources.rc")
     set(GENERATED_PATH "${GENERATED_DIR}/${GENERATED_NAME}")
-    set(TEMPLATE_FILE "__resources.rc.in")
+    set(TEMPLATE_FILE "${__OB_CMAKE_PRIVATE}/templates/__resources.rc.in")
 
     # Additional Function inputs
     set(oneValueArgs

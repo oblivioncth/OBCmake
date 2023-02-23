@@ -103,7 +103,7 @@ function(ob_add_generated_resources_collection target)
     set(GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/res")
     set(GENERATED_NAME "resources.qrc")
     set(GENERATED_PATH "${GENERATED_DIR}/${GENERATED_NAME}")
-    set(TEMPLATE_FILE "__resources.qrc.in")
+    set(TEMPLATE_FILE "${__OB_CMAKE_PRIVATE}/templates/__resources.qrc.in")
 
     # Additional Function inputs
     set(oneValueArgs

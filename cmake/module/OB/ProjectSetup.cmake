@@ -157,7 +157,7 @@ endfunction()
 function(ob_standard_project_package_config)
     #---------------- Function Setup ----------------------
     # Const variables
-    set(CFG_TEMPLATE_FILE "__standard_pkg_cfg.cmake.in")
+    set(CFG_TEMPLATE_FILE "${__OB_CMAKE_PRIVATE}/templates/__standard_pkg_cfg.cmake.in")
     string(CONCAT DEPENDENCY_CHECKS_HEADING
         "\n"
         "# Check for hard dependencies\n"
