@@ -143,8 +143,8 @@ function(ob_parse_arguments_list start_keyword parser return)
             if(${FIRST_ENTRY_ACCOUNTED})
                 # Parse or append sub-list
                 if(parser)
-                    cmake_language(CALL ${parser) PARSED_ENTRY ${ENTRY_ARGS})
-                else
+                    cmake_language(CALL ${parser} PARSED_ENTRY ${ENTRY_ARGS})
+                else()
                     set(PARSED_ENTRY "${ENTRY_ARGS}")
                 endif()
                 list(APPEND PARSED_LIST "${PARSED_ENTRY}")
@@ -167,8 +167,8 @@ function(ob_parse_arguments_list start_keyword parser return)
 
     # Process last sub-list (above loop ends while populating final sub-list)
     if(parser)
-        cmake_language(CALL ${parser) PARSED_ENTRY ${ENTRY_ARGS})
-    else
+        cmake_language(CALL ${parser} PARSED_ENTRY ${ENTRY_ARGS})
+    else()
         set(PARSED_ENTRY "${ENTRY_ARGS}")
     endif()
     list(APPEND PARSED_LIST "${PARSED_ENTRY}")
