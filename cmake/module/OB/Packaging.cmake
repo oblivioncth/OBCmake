@@ -69,7 +69,7 @@ endfunction()
 function(__ob_parse_dependency return)
     #---------------- Function Setup ----------------------
     # Const variables
-    set(COMPONENT_ENTRY_TEMPLATE "find_dependency(@DEPENDENCY_PACKAGE@ COMPONENTS @DEPENDENCY_COMPONENTS@)")
+    set(COMPONENT_ENTRY_TEMPLATE "find_dependency(@DEPENDENCY_PACKAGE@ COMPONENTS@components_list@)")
     set(ENTRY_TEMPLATE "find_dependency(@DEPENDENCY_PACKAGE@)")
 
     # Additional Function inputs
@@ -102,7 +102,13 @@ function(__ob_parse_dependency return)
     endif()
 
     #---------------- Parse Dependency  ----------------------
+    
     if(DEFINED DEPENDENCY_COMPONENTS)
+        # Split components list to one string
+        foreach(comp ${DEPENDENCY_COMPONENTS})
+            set(components_list "${components_list} ${comp}")
+        endforeach()
+    
         string(CONFIGURE "${COMPONENT_ENTRY_TEMPLATE}" PARSED_ENTRY @ONLY)
     else()
         string(CONFIGURE "${ENTRY_TEMPLATE}" PARSED_ENTRY @ONLY)
