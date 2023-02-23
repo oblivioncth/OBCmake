@@ -251,3 +251,88 @@ function(ob_standard_project_package_config)
         COMPATIBILITY ${STD_PKG_CFG_COMPATIBILITY}
     )
 endfunction()
+
+# Invokes the `install` for standard project level files:
+# - Package and package version config
+# - README.md and LICENSE
+#
+# Expects the CammelCase style of package config files, and the README and LICENSE to be
+# Located in CMAKE_CURRENT_SOURCE_DIR.
+#
+# - CONFIG_INPUT_DIRECTORY is where to look for the package config and config version files,
+#   "${CMAKE_CURRENT_BINARY_DIR}/cmake" if not defined
+# - CONFIG_DESTINATION is where the files are where the config and config version files are
+#   installed to, the 'cmake' directory relative to CMAKE_INSTALL_PREFIX is used if not defined
+# - PACKAGE_NAME is package name the function should expect for the config and config version
+#   files, PROJECT_NAME is used if not defined
+#
+# Requires ob_standard_project_setup() or ob_top_level_project_setup() to have been called.
+#
+# This function uses the SUB_PROJ_EXCLUDE_FROM_ALL variable to disable these installs
+# when the project is used as a sub-project
+#
+# The install component for both installs is set to PROJECT_NAME_LC.
+function(ob_standard_project_install)
+    # Additional Function inputs
+    set(oneValueArgs
+        CONFIG_INPUT_DIRECTORY
+        CONFIG_DESTINATION
+        PACKAGE_NAME
+    )
+
+    # Parse arguments
+    cmake_parse_arguments(STD_PROJ_INSTALL "" "${oneValueArgs}" "${}" ${ARGN})
+
+    # Validate input
+    foreach(unk_val ${STD_PROJ_INSTALL_UNPARSED_ARGUMENTS})
+        message(WARNING "Ignoring unrecognized parameter: ${unk_val}")
+    endforeach()
+
+    if(STD_PROJ_INSTALL_KEYWORDS_MISSING_VALUES)
+        foreach(missing_val ${STD_PROJ_INSTALL_KEYWORDS_MISSING_VALUES})
+            message(WARNING "A value for '${missing_val}' must be provided")
+        endforeach()
+        message(WARNING "Not all required values were present!")
+    endif()
+
+    # Handle config input directory
+    if(STD_PROJ_INSTALL_CONFIG_INPUT_DIRECTORY)
+        set(__config_input_prefix "${STD_PROJ_INSTALL_CONFIG_INPUT_DIRECTORY}")
+    else()
+        set(__config_input_prefix "${CMAKE_CURRENT_BINARY_DIR}/cmake")
+    endif()
+
+    # Handle config install destination
+    if(STD_PROJ_INSTALL_CONFIG_DESTINATION)
+        set(__config_install_dest "${STD_PROJ_INSTALL_CONFIG_DESTINATION}")
+    else()
+        set(__config_install_dest "cmake")
+    endif()
+
+    # Handle package name
+    if(STD_PROJ_INSTALL_PACKAGE_NAME)
+        set(__package_name "${STD_PROJ_INSTALL_PACKAGE_NAME}")
+    else()
+        set(__package_name "${PROJECT_NAME}")
+    endif()
+
+    #---------------- Installs  ----------------------
+
+    # Install README and LICENSE
+    install(FILES
+        "${CMAKE_CURRENT_SOURCE_DIR}/README.md"
+        "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE"
+        COMPONENT ${PROJECT_NAME_LC}
+        DESTINATION .
+        ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
+    )
+
+    # Install Package Config
+    install(FILES
+        "${__config_input_prefix}/${__package_name}Config.cmake"
+        "${__config_input_prefix}/${__package_name}ConfigVersion.cmake"
+        COMPONENT ${PROJECT_NAME_LC}
+        DESTINATION ${__config_install_dest}
+        ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
+    )
+endfunction()
