@@ -16,7 +16,7 @@ function(ob_standard_project_package)
         SUFFIX
         DIRECTORY
     )
-
+    
     # Parse arguments
     cmake_parse_arguments(STD_PKG "" "${oneValueArgs}" "" ${ARGN})
 
@@ -50,4 +50,95 @@ function(ob_standard_project_package)
     set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
     set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
     include(CPack)
+endfunction()
+
+# Creates a standard package config and version config file for the project.
+#
+# PROJECT_VERSION is used for the package version. Uses the CammelCase style of package
+# config files.
+# 
+# - OUTPUT_DIRECTORY is "${CMAKE_CURRENT_BINARY_DIR}/cmake" if not defined
+# - PACKAGE_NAME is "${PROJECT_NAME}" if not defined
+# - COMPATIBILITY is to be defined the same as in write_basic_package_version_file()
+# - DEPENDENCIES is to be defined as a list of strings containing package names, and
+# -              optionally a COMPONENTS statement followed by required components
+#                e.g. "Qt6 COMPONENTS Core Network"
+# - INSTALL_DESTINATION is to be defined the same as in configure_package_config_file(),
+#                       if not defined, a 'cmake' sub-folder of the install prefix is used
+function(ob_standard_project_package_config)
+    # Const variables
+    set(CFG_TEMPLATE_FILE "__standard_pkg_cfg.cmake.in")
+
+    # Additional Function inputs
+    set(oneValueArgs
+        OUTPUT_DIRECTORY
+        INSTALL_DESTINATION
+        PACKAGE_NAME
+        COMPATIBILITY
+    )
+    
+    set(multiValueArgs
+        DEPENDENCIES
+    )
+
+    # Parse arguments
+    cmake_parse_arguments(STD_PKG_CFG "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    # Validate input
+    foreach(unk_val ${STD_PKG_CFG_UNPARSED_ARGUMENTS})
+        message(WARNING "Ignoring unrecognized parameter: ${unk_val}")
+    endforeach()
+
+    if(STD_PKG_CFG_KEYWORDS_MISSING_VALUES)
+        foreach(missing_val ${STD_PKG_CFG_KEYWORDS_MISSING_VALUES})
+            message(WARNING "A value for '${missing_val}' must be provided")
+        endforeach()
+        message(WARNING "Not all required values were present!")
+    endif()
+    
+    # Handle output directory
+    if(STD_PKG_CFG_OUTPUT_DIRECTORY)
+        set(__output_prefix "${STD_PKG_CFG_OUTPUT_DIRECTORY}")
+    else()
+        set(__output_prefix "${CMAKE_CURRENT_BINARY_DIR}/cmake")
+    endif()
+    
+    # Handle install destination
+    if(STD_PKG_CFG_INSTALL_DESTINATION)
+        set(__install_dest "${STD_PKG_CFG_INSTALL_DESTINATION}")
+    else()
+        set(__install_dest "cmake")
+    endif()
+    
+    # Handle package name
+    if(STD_PKG_CFG_PACKAGE_NAME)
+        set(PACKAGE_NAME "${STD_PKG_CFG_PACKAGE_NAME}")
+    else()
+        set(PACKAGE_NAME "${PROJECT_NAME}")
+    endif()
+    
+    # Handle compatibility
+    if(NOT DEFINED STD_PKG_CFG_COMPATIBILITY)
+        message(FATAL_ERROR "A compatibility level must be provided!")
+    endif()
+    
+    # Create dependency checks
+    foreach(dependency ${STD_PKG_CFG_DEPENDENCIES})
+        set(DEPENDENCY_CHECKS "${DEPENDENCY_CHECKS}find_dependency(${dependency})\n")
+    endforeach()
+    
+    # Create config and version files
+    include(CMakePackageConfigHelpers)
+
+    configure_package_config_file(
+        "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/${CFG_TEMPLATE_FILE}"
+        "${__output_prefix}/${PACKAGE_NAME}Config.cmake"
+        INSTALL_DESTINATION "${__install_dest}"
+    )
+
+    write_basic_package_version_file(
+        "${__output_prefix}/${PACKAGE_NAME}ConfigVersion.cmake"
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY ${STD_PKG_CFG_COMPATIBILITY}
+    )
 endfunction()
