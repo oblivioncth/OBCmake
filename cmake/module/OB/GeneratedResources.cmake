@@ -18,7 +18,7 @@
 # OUTPUT: "${CMAKE_CURRENT_BINARY_DIR}/res"
 # PREFIX: "/"
 
-function(__parse_file_entry return)
+function(__ob_parse_file_entry return)
     #---------------- Function Setup ----------------------
     # Const variables
     set(ALIAS_ENTRY_TEMPLATE "<file alias=\"@FILE_ENTRY_ALIAS@\">@FILE_ENTRY_PATH@</file>")
@@ -60,7 +60,7 @@ function(__parse_file_entry return)
     set(${return} "${PARSED_ENTRY}" PARENT_SCOPE)
 endfunction()
 
-function(__parse_file_entry_list return)
+function(__ob_parse_file_entry_list return)
 
     # Working vars (not required to "initialize" in cmake, but here for clarity)
     set(HAVE_FIRST_PATH FALSE)
@@ -73,7 +73,7 @@ function(__parse_file_entry_list return)
         if("${word}" STREQUAL "PATH")
             if(${HAVE_FIRST_PATH})
                 # Parse sub-list
-                __parse_file_entry(PARSED_ENTRY ${ENTRY_ARGS})
+                __ob_parse_file_entry(PARSED_ENTRY ${ENTRY_ARGS})
                 list(APPEND PARSED_LIST "${PARSED_ENTRY}")
 
                 # Reset intermediate argument list
@@ -87,7 +87,7 @@ function(__parse_file_entry_list return)
     endforeach()
 
     # Process last sub-list (above loop ends while populating final sub-list)
-    __parse_file_entry(PARSED_ENTRY ${ENTRY_ARGS})
+    __ob_parse_file_entry(PARSED_ENTRY ${ENTRY_ARGS})
     list(APPEND PARSED_LIST "${PARSED_ENTRY}")
 
     # Concatenate items
@@ -146,7 +146,7 @@ function(ob_add_generated_resources_collection target)
     set(__RES_PREFIX ${GEN_RES_PREFIX})
 
     # Set file entries for file configuration
-    __parse_file_entry_list(__RES_FILES ${GEN_RES_FILES})
+    __ob_parse_file_entry_list(__RES_FILES ${GEN_RES_FILES})
 
     # Generate resources.qrc
     configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/${TEMPLATE_FILE}"

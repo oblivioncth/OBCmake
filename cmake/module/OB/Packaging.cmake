@@ -41,7 +41,7 @@ function(ob_standard_project_package)
     
     # Get system architecture
     include(OB/Utility)
-    get_system_architecture(__target_arch)
+    ob_get_system_architecture(__target_arch)
 
     set(CPACK_PACKAGE_VENDOR "${STD_PKG_VENDOR}")
     set(CPACK_PACKAGE_DIRECTORY "${__output_pkg_dir}")
