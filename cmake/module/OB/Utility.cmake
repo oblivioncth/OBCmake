@@ -69,11 +69,8 @@ endfunction()
 # Arguments:
 # - start_keyword: The keyword that denotes the start of a new entry
 # - parser: Name of the function to invoke when parsing each entry, needs to
-#           be of the form `parser_function(<output> <args>...)`. If this argument
-#           is passed as an empty string (""), this function will only handle
-#           the splitting of each entry with no intermediate parsing.
-# - return: The output variable in which to store the list of all parsed entries,
-#           or just split entries if no parser was provided
+#           be of the form `parser_function(<output> <args>...)`.
+# - return: The output variable in which to store the list of all parsed entries
 # - args: The list of entries to split and parse
 #
 # This function is used to assist with parsing function arguments that contain
@@ -158,11 +155,8 @@ function(ob_parse_arguments_list start_keyword parser return)
             message(FATAL_ERROR "The arguments list must start with an entry as marked by ${start_keyword}")
         endif()
 
-        # Add word to entry arg list, can't use list(APPEND) here as in order to support
-        # the use of this function without a parser, the returned list must only have semi-colons
-        # that separate each entry, with none appearing within an entry. list(APPEND) uses semi-colons
-        # so that wouldn't work. By just using set() this way, the entry args are separated via whitespace.
-        set(ENTRY_ARGS "${ENTRY_ARGS} ${word}")
+        # Add word to entry arg list
+        list(APPEND ENTRY_ARGS ${word})
     endforeach()
 
     # Process last sub-list (above loop ends while populating final sub-list)
