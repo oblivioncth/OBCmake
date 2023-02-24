@@ -267,8 +267,15 @@ function(ob_standard_documentation)
         endif()
     
         # Add extra input paths
-        list(APPEND DOXYGEN_EXAMPLE_PATH "${root_res_path}/snippets")
-        list(APPEND DOXYGEN_IMAGE_PATH "${root_res_path}/images")
+        set(root_snippets "${root_res_path}/snippets")
+        if(EXISTS "${root_snippets}")
+            list(APPEND DOXYGEN_EXAMPLE_PATH "${root_snippets}")
+        endif()
+        
+        set(root_images "${root_res_path}/images")
+        if(EXISTS "${root_images}")
+            list(APPEND DOXYGEN_IMAGE_PATH "${root_images}")
+        endif()
     endforeach()
     
     #---------------------- Setup Doxygen ------------------------
