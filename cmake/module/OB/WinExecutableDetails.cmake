@@ -59,7 +59,7 @@ function(ob_set_win_executable_details target)
     set(VER_PRODUCTVERSION_STR "${WIN_ED_PRODUCT_VER}")
 
     # Generate resources.rc
-    configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/${TEMPLATE_FILE}"
+    configure_file("${TEMPLATE_FILE}"
         "${GENERATED_PATH}"
         @ONLY
         NEWLINE_STYLE UNIX

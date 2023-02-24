@@ -129,7 +129,7 @@ function(ob_add_cpp_vars target)
     endwhile()
     
     # Generate header
-    configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/${TEMPLATE_FILE}"
+    configure_file("${TEMPLATE_FILE}"
         "${GENERATED_PATH}"
         @ONLY
         NEWLINE_STYLE UNIX

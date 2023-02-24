@@ -149,7 +149,7 @@ function(ob_add_generated_resources_collection target)
     __ob_parse_file_entry_list(__RES_FILES ${GEN_RES_FILES})
 
     # Generate resources.qrc
-    configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/${TEMPLATE_FILE}"
+    configure_file("${TEMPLATE_FILE}"
         "${GENERATED_PATH}"
         @ONLY
         NEWLINE_STYLE UNIX

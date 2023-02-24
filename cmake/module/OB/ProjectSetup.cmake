@@ -240,7 +240,7 @@ function(ob_standard_project_package_config)
     include(CMakePackageConfigHelpers)
 
     configure_package_config_file(
-        "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/${CFG_TEMPLATE_FILE}"
+        "${CFG_TEMPLATE_FILE}"
         "${__output_prefix}/${PACKAGE_NAME}Config.cmake"
         INSTALL_DESTINATION "${__install_dest}"
     )
