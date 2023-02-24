@@ -48,10 +48,6 @@ if(NOT DEFINED DOXYGEN_SORT_MEMBERS_CTORS_1ST)
     SET(DOXYGEN_SORT_MEMBERS_CTORS_1ST YES)
 endif()
 
-# Set extra input paths
-list(APPEND DOXYGEN_EXAMPLE_PATH "${DOC_RESOURCE_PATH}/snippets")
-list(APPEND DOXYGEN_IMAGE_PATH "${DOC_RESOURCE_PATH}/images")
-
 # Configure custom command/macro processing
 list(APPEND DOXYGEN_ALIASES
 	[[qflag{2}="@typedef \1^^<p>The \1 type is a typedef for QFlags\<\2\>. It stores an OR combination of \2 values.</p>"]]

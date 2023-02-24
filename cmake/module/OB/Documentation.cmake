@@ -102,6 +102,11 @@ endfunction()
 #   > If qhelpgenerator and the Qt docs directory cannot be located automatically,
 #     the user can provide them directly via the QT_HELP_GEN_PATH and QT_DOCS_DIR
 #     variables respectively
+# - ADDITIONAL_ROOTS: List of additional doc roots to check for the following
+#                     folders that get treated as shown above
+#                     ./general
+#                     ./res/images
+#                     ./res/snippets
 # - QT_MODULES: List of Qt modules to link to via .tag files (i.e. qtcore, qtquick, etc).
 #   Ignored if no QT_PREFIX was provided.
 function(ob_standard_documentation)
@@ -119,6 +124,7 @@ function(ob_standard_documentation)
 
     set(multiValueArgs
         INPUT_LIST
+        ADDITIONAL_ROOTS
         QT_MODULES
     )
 
@@ -159,18 +165,18 @@ function(ob_standard_documentation)
     endif()
    
     #--------------------- Define Doc Paths -----------------------
-    set(DOC_SCRIPTS_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+    set(DOC_MAIN_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
+    set(DOC_MAIN_SCRIPTS_PATH "${DOC_MAIN_ROOT}/cmake")
 
     # Source
-    set(DOC_RESOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/res")
-    set(DOC_GENERAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/general")
+    set(DOC_MAIN_RESOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/res")
     set(DOC_GENERATED_PATH "${CMAKE_CURRENT_BINARY_DIR}/docin")
 
     # Build
     set(DOC_BUILD_PATH "${CMAKE_CURRENT_BINARY_DIR}/doc")
 
     # Cmake related
-    set(DOC_TEMPLATES_PATH "${DOC_SCRIPTS_PATH}/file_templates")
+    set(DOC_MAIN_TEMPLATES_PATH "${DOC_SCRIPTS_PATH}/file_templates")
    
     #------------------- Configure Documentation -----------------
         
@@ -186,18 +192,21 @@ function(ob_standard_documentation)
     endif()
     
     # Set logo, if available
-    if(EXISTS "${DOC_RESOURCE_PATH}/logo.svg")
-        set(DOXYGEN_PROJECT_LOGO "${DOC_RESOURCE_PATH}/logo.svg")
+    set(logo_path "${DOC_MAIN_RESOURCE_PATH}/logo.svg")
+    if(EXISTS "${logo_path}")
+        set(DOXYGEN_PROJECT_LOGO "${logo_path}")
     endif()
     
     # Set custom layout file, if available
-    if(EXISTS "${DOC_RESOURCE_PATH}/DoxygenLayout.xml")
-        set(DOXYGEN_LAYOUT_FILE "${DOC_RESOURCE_PATH}/DoxygenLayout.xml")
+    set(layout_path "${DOC_MAIN_RESOURCE_PATH}/DoxygenLayout.xml"
+    if(EXISTS "${layout_path}")
+        set(DOXYGEN_LAYOUT_FILE "${layout_path}")
     endif()
     
     # Set custom header, if available
-    if(EXISTS "${DOC_RESOURCE_PATH}/header.xml")
-        set(DOXYGEN_LAYOUT_FILE "${DOC_RESOURCE_PATH}/header.xml")
+    set(header_path "${DOC_MAIN_RESOURCE_PATH}/header.xml")
+    if(EXISTS "${header_path}")
+        set(DOXYGEN_LAYOUT_FILE "${header_path}")
     endif()
     
     #---------------------- Configure Qt Link ---------------------
@@ -231,7 +240,7 @@ function(ob_standard_documentation)
     #------------------------- Setup Input ------------------------
     
     # Configure files
-    configure_file("${DOC_TEMPLATES_PATH}/mainpage.md.in"
+    configure_file("${DOC_MAIN_TEMPLATES_PATH}/mainpage.md.in"
         "${DOC_GENERATED_PATH}/mainpage.md"
         @ONLY
     )
@@ -242,9 +251,25 @@ function(ob_standard_documentation)
         "${STD_DOCS_INPUT_LIST}"
     )
     
-    if(EXISTS "${DOC_GENERAL_PATH}")
-        list(APPEND DOC_INPUT_LIST "${DOC_GENERAL_PATH}")
-    endif()
+    # Cover roots for additional input
+    list(APPEND all_roots
+        "${DOC_MAIN_ROOT}"
+        ${STD_DOCS_ADDITIONAL_ROOTS}
+    )
+    
+    foreach(root ${all_roots})
+        set(root_res_path "${root}/res")
+        set(root_general_path "${root}/general")
+    
+        # Add regular input paths
+        if(EXISTS "${root_general_path}")
+            list(APPEND DOC_INPUT_LIST "${root_general_path}")
+        endif()
+    
+        # Add extra input paths
+        list(APPEND DOXYGEN_EXAMPLE_PATH "${root_res_path}/snippets")
+        list(APPEND DOXYGEN_IMAGE_PATH "${root_res_path}/images")
+    endforeach()
     
     #---------------------- Setup Doxygen ------------------------
     
