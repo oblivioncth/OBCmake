@@ -176,7 +176,7 @@ function(ob_standard_documentation)
     set(DOC_BUILD_PATH "${CMAKE_CURRENT_BINARY_DIR}/doc")
 
     # Cmake related
-    set(DOC_MAIN_TEMPLATES_PATH "${DOC_SCRIPTS_PATH}/file_templates")
+    set(DOC_MAIN_TEMPLATES_PATH "${DOC_MAIN_SCRIPTS_PATH}/file_templates")
    
     #------------------- Configure Documentation -----------------
         
