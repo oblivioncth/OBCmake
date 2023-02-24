@@ -2,7 +2,7 @@
 # if their paths can be located:
 # - QT_HELP_GEN_PATH: path to qhelpgenerator executable
 # - QT_DOCS_DIR: path to the root of Qt documentation
-function(ob_find_qt_doc_resources)
+function(ob_find_qt_doc_resources qt_prefix)
     # Handle using cache so that users can easily override via UI or command-line
 
     # Could use crazy amounts of file system searching to check for every Qt root under the standard Qt install
@@ -149,7 +149,7 @@ function(ob_standard_documentation)
     if(DEFINED STD_DOCS_PROJ_NAME)
         set(doc_proj_name "${STD_DOCS_PROJ_NAME}")
     else()
-        set(doc_proj_name "${PROJ_NAME}")
+        set(doc_proj_name "${PROJECT_NAME}")
     endif()
     
     if(DEFINED STD_DOCS_INSTALL_DESTINATION)
@@ -246,7 +246,7 @@ function(ob_standard_documentation)
     #---------------------- Setup Doxygen ------------------------
     
     # Find Doxygen package
-    find_package(Doxygen "${DOXY_VER}" REQUIRED
+    find_package(Doxygen "${STD_DOCS_DOXY_VER}" REQUIRED
         COMPONENTS dot
     )
     
@@ -257,12 +257,12 @@ function(ob_standard_documentation)
     )
     
     #------------------------- Install ---------------------------
-    install(DIRECTORY ${DOC_BUILD_PATH}
-        COMPONENT ${DOC_TARGET_NAME}
+    install(DIRECTORY ${DOC_BUILD_PATH}/
+        COMPONENT ${STD_DOCS_TARGET_NAME}
         DESTINATION "${doc_install_dest}"
         CONFIGURATIONS Release
         ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
     )
     
-    message(STATUS "Doxygen configured for ${PROJECT_NAME}. Build target '${DOC_TARGET_NAME}' to build the documentation.")    
+    message(STATUS "Doxygen configured for ${PROJECT_NAME}. Build target '${STD_DOCS_TARGET_NAME}' to build the documentation.")    
 endfunction()
