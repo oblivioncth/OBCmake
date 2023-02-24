@@ -247,7 +247,7 @@ function(ob_standard_documentation)
     
     # Find Doxygen package
     find_package(Doxygen "${DOXY_VER}" REQUIRED
-                 COMPONENTS dot
+        COMPONENTS dot
     )
     
     # Add Doxygen target
@@ -258,12 +258,11 @@ function(ob_standard_documentation)
     
     #------------------------- Install ---------------------------
     install(DIRECTORY ${DOC_BUILD_PATH}
-    COMPONENT ${DOC_TARGET_NAME}
-    DESTINATION "${doc_install_dest}"
-    CONFIGURATIONS Release
-    ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
+        COMPONENT ${DOC_TARGET_NAME}
+        DESTINATION "${doc_install_dest}"
+        CONFIGURATIONS Release
+        ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
+    )
     
-    message(STATUS "Doxygen configured for ${PROJECT_NAME}. Build target '${DOC_TARGET_NAME}' to build the documentation.")
-)
-    
+    message(STATUS "Doxygen configured for ${PROJECT_NAME}. Build target '${DOC_TARGET_NAME}' to build the documentation.")    
 endfunction()
