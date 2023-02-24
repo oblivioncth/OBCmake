@@ -239,9 +239,12 @@ function(ob_standard_documentation)
     # Doc Input
     set(DOC_INPUT_LIST
         "${DOC_GENERATED_PATH}/mainpage.md"
-        "${DOC_GENERAL_PATH}"
         "${STD_DOCS_INPUT_LIST}"
     )
+    
+    if(EXISTS "${DOC_GENERAL_PATH}")
+        list(APPEND DOC_INPUT_LIST "${DOC_GENERAL_PATH}")
+    endif()
     
     #---------------------- Setup Doxygen ------------------------
     
