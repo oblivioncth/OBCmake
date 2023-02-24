@@ -281,7 +281,7 @@ function(ob_standard_project_install)
     )
 
     # Parse arguments
-    cmake_parse_arguments(STD_PROJ_INSTALL "" "${oneValueArgs}" "${}" ${ARGN})
+    cmake_parse_arguments(STD_PROJ_INSTALL "" "${oneValueArgs}" "" ${ARGN})
 
     # Validate input
     foreach(unk_val ${STD_PROJ_INSTALL_UNPARSED_ARGUMENTS})
