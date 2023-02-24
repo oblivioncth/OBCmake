@@ -198,7 +198,7 @@ function(ob_standard_documentation)
     endif()
     
     # Set custom layout file, if available
-    set(layout_path "${DOC_MAIN_RESOURCE_PATH}/DoxygenLayout.xml"
+    set(layout_path "${DOC_MAIN_RESOURCE_PATH}/DoxygenLayout.xml")
     if(EXISTS "${layout_path}")
         set(DOXYGEN_LAYOUT_FILE "${layout_path}")
     endif()
