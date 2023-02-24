@@ -75,6 +75,7 @@ set(DOXYGEN_GENERATE_TREEVIEW YES)
 list(APPEND DOXYGEN_HTML_EXTRA_STYLESHEET
     "${DOC_RESOURCE_PATH}/theme/doxygen-awesome/doxygen-awesome.css"
     "${DOC_RESOURCE_PATH}/theme/doxygen-awesome/doxygen-awesome-sidebar-only.css"
+)
 
 # Customization
 list(APPEND DOXYGEN_HTML_EXTRA_STYLESHEET
