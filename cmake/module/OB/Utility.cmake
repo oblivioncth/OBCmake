@@ -170,3 +170,31 @@ function(ob_parse_arguments_list start_keyword parser return)
     # Return resulting list
     set(${return} "${PARSED_LIST}" PARENT_SCOPE)
 endfunction()
+
+# Form ob_cache_project_version(<project_name>)
+#
+# Uses CMAKE_PROJECT_<PROJECT-NAME>_INCLUDE to inject code into a project without
+# directly modifying it such that it will create an internal CACHE variable with
+# its version, therefore accessible at any scope.
+#
+# For example the project "Code" will create a cached variable "Code_VERSION".
+#
+# If the project does not declare a version, a warning will be emitted instead.
+#
+# This function must be called before the project is added via add_subdirectory()
+# or similar.
+#
+# If <project_name> is omitted, CMAKE_PROJECT_INCLUDE_BEFORE will
+# be used instead, which will affect every project added at the same or lower scope
+# after the function returns
+function(ob_cache_project_version)
+    set(INJECTION_FILE "${__OB_CMAKE_PRIVATE}/__project_cache_version_injection.cmake")
+
+    if(ARGC GREATER 1)
+        message(FATAL_ERROR "Too many arguments!")
+    elseif(ARGC EQUAL 1)
+        set(CMAKE_PROJECT_${ARGV0}_INCLUDE "${INJECTION_FILE}" PARENT_SCOPE)
+    else()
+        set(CMAKE_PROJECT_INCLUDE "${INJECTION_FILE}" PARENT_SCOPE)
+    endif()
+endfunction()

@@ -1,0 +1,5 @@
+if(DEFINED ${PROJECT_NAME}_VERSION)
+    set(${PROJECT_NAME}_VERSION "${${PROJECT_NAME}_VERSION}" CACHE INTERNAL "")
+else()
+    message(WARNING "Attempted to set '${PROJECT_NAME}_VERSION' to the version of '${PROJECT_NAME}', but it did not declare a version")
+endif()
