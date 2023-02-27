@@ -105,12 +105,13 @@ endmacro()
 function(__ob_parse_dependency return)
     #---------------- Function Setup ----------------------
     # Const variables
-    set(COMPONENT_ENTRY_TEMPLATE "find_dependency(@DEPENDENCY_PACKAGE@ COMPONENTS@components_list@)")
-    set(ENTRY_TEMPLATE "find_dependency(@DEPENDENCY_PACKAGE@)")
+    set(COMPONENT_ENTRY_TEMPLATE "find_dependency(@PACKAGE_STATEMENT@ COMPONENTS@components_list@)")
+    set(ENTRY_TEMPLATE "find_dependency(@PACKAGE_STATEMENT@)")
 
     # Additional Function inputs
     set(oneValueArgs
         PACKAGE
+        VERSION
     )
 
     set(multiValueArgs
@@ -138,6 +139,12 @@ function(__ob_parse_dependency return)
     endif()
 
     #---------------- Parse Dependency  ----------------------
+    
+    if(DEFINED DEPENDENCY_VERSION)
+        set(PACKAGE_STATEMENT "${DEPENDENCY_PACKAGE} ${DEPENDENCY_VERSION}")
+    else()
+        set(PACKAGE_STATEMENT "${DEPENDENCY_PACKAGE}")
+    endif()
     
     if(DEFINED DEPENDENCY_COMPONENTS)
         # Split components list to one string
