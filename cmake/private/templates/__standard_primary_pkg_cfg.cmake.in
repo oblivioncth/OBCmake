@@ -1,7 +1,6 @@
 @PACKAGE_INIT@
 @DEPENDENCY_CHECKS@
-# Import targets
-include("${CMAKE_CURRENT_LIST_DIR}/@PACKAGE_NAME@Targets.cmake")
+@CONFIG_INCLUDES@
 
 # Ensure all requested components were found
 check_required_components(@PACKAGE_NAME@)

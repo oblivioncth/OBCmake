@@ -88,129 +88,177 @@ macro(ob_standard_project_setup)
     set(PROJECT_FILE_TEMPLATES "${CMAKE_CURRENT_SOURCE_DIR}/cmake/file_templates")
 endmacro()
 
+function(__ob_generate_std_primary_package_config_file)
+    #---------------- Function Setup ----------------------
+    # Const variables
+    set(CFG_TEMPLATE_FILE "${__OB_CMAKE_PRIVATE}/templates/__standard_primary_pkg_cfg.cmake.in")
+    string(CONCAT DEPENDENCY_CHECKS_HEADING
+        "# Check for hard dependencies\n"
+        "include(CMakeFindDependencyMacro)\n"
+    )
+    string(CONCAT CONFIG_INCLUDES_HEADING
+        "# Import targets\n"
+    )
+
+    set(INCLUDE_TEMPLATE [=[include("${CMAKE_CURRENT_LIST_DIR}/@SINGLE_INCLUDE@")]=])
+
+     # Function inputs
+    set(oneValueArgs
+        OUTPUT
+        INSTALL_PATH
+        PACKAGE_NAME
+    )
+
+    set(multiValueArgs
+        INCLUDES
+        DEPENDS
+    )
+    
+    set(requiredArgs
+        OUTPUT
+        INCLUDES
+        INSTALL_PATH
+        PACKAGE_NAME
+    )
+
+    # Parse arguments
+    include(OB/Utility)
+    ob_parse_arguments(STD_PCF "" "${oneValueArgs}" "${multiValueArgs}" "${requiredArgs}" ${ARGN})
+    
+    # Handle dependencies
+    if(DEFINED STD_PCF_DEPENDS)
+        include("${__OB_CMAKE_PRIVATE}/common.cmake")
+        # Create dependency check statements via the "PACKAGE", "COMPONENT" and "VERSION" sets
+        ob_parse_arguments_list(
+            "PACKAGE"
+            "__ob_parse_dependency"
+            dependency_check_statements
+            ${STD_PCF_DEPENDS}
+        )
+
+        # Create multi-line string for dependency checks
+        set(DEPENDENCY_CHECKS "${DEPENDENCY_CHECKS_HEADING}")
+        foreach(dep_statement ${dependency_check_statements})
+            set(DEPENDENCY_CHECKS "${DEPENDENCY_CHECKS}${dep_statement}\n")
+        endforeach()
+        set(DEPENDENCY_CHECKS "${DEPENDENCY_CHECKS}\n")
+    endif()
+
+    # Handle Include Statements
+    set(CONFIG_INCLUDES "${CONFIG_INCLUDES_HEADING}")
+    foreach(inc ${STD_PCF_DEPENDS})
+        string(CONFIGURE "${INCLUDE_TEMPLATE}" one_include @ONLY)
+        set(CONFIG_INCLUDES "${CONFIG_INCLUDES}${one_include}\n")
+    endforeach()
+    set(CONFIG_INCLUDES "${CONFIG_INCLUDES}\n")
+    
+    # Create config file
+    set(PACKAGE_NAME "${STD_PCF_PACKAGE_NAME}")# For configure
+    
+    include(CMakePackageConfigHelpers)
+    configure_package_config_file(
+        "${CFG_TEMPLATE_FILE}"
+        "${STD_PCF_OUTPUT}"
+        INSTALL_DESTINATION "${STD_PCF_INSTALL_PATH}"
+    )
+endfunction()
+
+function(__ob_split_target_config_nsa_str str ns_out alias_out)
+    # Const
+    set(SEP "::")
+    
+    # Validate
+    string(FIND "${str}" "${SEP}" sep_pos)
+
+    if(sep_pos EQUAL -1)
+        message(FATAL_ERROR "'${str}' is not a valid TARGET_CONFIGS string!" )
+    endif()
+    
+    # Split
+    string(REPLACE "${SEP}" ";" kv_list "${str}")
+    list(GET kv_list 0 namespace)
+    list(GET kv_list 1 alias)
+    
+    # Return
+    set(${ns_out} "${namespace}" PARENT_SCOPE)
+    set(${alias_out} "${alias}" PARENT_SCOPE) 
+endfunction()
+
 # Creates a standard package config and version config file for the project.
 #
 # PROJECT_VERSION is used for the package version. Uses the CammelCase style of package
 # config files.
 # 
-# - OUTPUT_DIRECTORY is "${CMAKE_CURRENT_BINARY_DIR}/cmake" if not defined
 # - PACKAGE_NAME is "${PROJECT_NAME}" if not defined
 # - COMPATIBILITY is to be defined the same as in write_basic_package_version_file()
-# - DEPENDENCIES is to be defined as a list of PACKAGE and optional COMPONENT combos
-#                e.g. "PACKAGE Qt6 COMPONENTS Core Network"
-# - INSTALL_DESTINATION is to be defined the same as in configure_package_config_file(),
-#                       if not defined, a 'cmake' sub-folder of the install prefix is used
-
-# Helper
-function(__ob_parse_dependency return)
-    #---------------- Function Setup ----------------------
-    # Const variables
-    set(COMPONENT_ENTRY_TEMPLATE "find_dependency(@PACKAGE_STATEMENT@ COMPONENTS@components_list@)")
-    set(ENTRY_TEMPLATE "find_dependency(@PACKAGE_STATEMENT@)")
-
-    # Additional Function inputs
-    set(oneValueArgs
-        PACKAGE
-        VERSION
-    )
-
-    set(multiValueArgs
-        COMPONENTS
-    )
-
-    # Parse arguments
-    cmake_parse_arguments(DEPENDENCY "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-
-    # Validate input
-    foreach(unk_val ${DEPENDENCY_UNPARSED_ARGUMENTS})
-        message(WARNING "Ignoring unrecognized parameter: ${unk_val}")
-    endforeach()
-
-    if(DEPENDENCY_KEYWORDS_MISSING_VALUES)
-        foreach(missing_val ${DEPENDENCY_KEYWORDS_MISSING_VALUES})
-            message(WARNING "A value for '${missing_val}' must be provided")
-        endforeach()
-        message(FATAL_ERROR "Not all required values were present!")
-    endif()
-
-    # Handle undefineds
-    if(NOT DEFINED DEPENDENCY_PACKAGE)
-        message(FATAL_ERROR "A package for each dependency entry must be included!")
-    endif()
-
-    #---------------- Parse Dependency  ----------------------
-    
-    if(DEFINED DEPENDENCY_VERSION)
-        set(PACKAGE_STATEMENT "${DEPENDENCY_PACKAGE} ${DEPENDENCY_VERSION}")
-    else()
-        set(PACKAGE_STATEMENT "${DEPENDENCY_PACKAGE}")
-    endif()
-    
-    if(DEFINED DEPENDENCY_COMPONENTS)
-        # Split components list to one string
-        foreach(comp ${DEPENDENCY_COMPONENTS})
-            set(components_list "${components_list} ${comp}")
-        endforeach()
-    
-        string(CONFIGURE "${COMPONENT_ENTRY_TEMPLATE}" PARSED_ENTRY @ONLY)
-    else()
-        string(CONFIGURE "${ENTRY_TEMPLATE}" PARSED_ENTRY @ONLY)
-    endif()
-
-    set(${return} "${PARSED_ENTRY}" PARENT_SCOPE)
-endfunction()
-
-# Main function
+# - CONFIG:
+#   This argument is mandatory and can take two forms.
+#   
+#   First:
+#       CONFIG
+#           TARGET_CONFIGS
+#           DEPENDS
+#   
+#   This form configures a package configuration file set to include
+#   the provided target related package config files and find the optional dependencies
+#   if provided.
+#
+#   TARGET_CONFIGS is to be a list of targets in the form Namespace::Alias, where each
+#   entry will result in the final config file including each target config as:
+#   "${CMAKE_CURRENT_LIST_DIR}/Namespace/NamespaceAliasConfig.cmake".
+#   The config is installed into ${CMAKE_INSTALL_PREFIX}/cmake, making the inclusion paths
+#   effectively:
+#   "${CMAKE_INSTALL_PREFIX}/cmake/Alias/NamespaceAliasConfig.cmake".
+#
+#   The dependencies are passed as:
+#       DEPENDS
+#           PACKAGE "name"
+#           COMPONENTS list of components
+#           VERSION 1.0
+#
+#   Where COMPONENTS and VERSION are optional
+#   
+#   Second:
+#       CONFIG
+#           CUSTOM "path"
+#
+#   This form uses configure_package_config_file() from CMakePackageConfigHelpers to
+#   configure the custom configuration file input template from the provided path.
+#   The template file is presumed to be prepared correctly to work properly with
+#   said command.
+#
+#   Both files are installed to ${CMAKE_INSTALL_PREFIX}/cmake under the component
+#   PROJECT_NAME_LC.
+#
+# TODO: At some point maybe have 'ob_add_standard_library()' and any similar functions
+# create internal cache variables with any target configs they create so that they
+# can be included by the config file created by here automatically, with manual input
+# only needed for any targets that the project didn't make use of the ob_ functions to
+# to add.
 function(ob_standard_project_package_config)
     #---------------- Function Setup ----------------------
-    # Const variables
-    set(CFG_TEMPLATE_FILE "${__OB_CMAKE_PRIVATE}/templates/__standard_pkg_cfg.cmake.in")
-    string(CONCAT DEPENDENCY_CHECKS_HEADING
-        "\n"
-        "# Check for hard dependencies\n"
-        "include(CMakeFindDependencyMacro)\n"
-    )
+    # Const variables 
+    set(OUTPUT_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/cmake")
+    set(INSTALL_DEST "cmake")
 
-    # Additional Function inputs
+    # Function inputs
     set(oneValueArgs
-        OUTPUT_DIRECTORY
-        INSTALL_DESTINATION
         PACKAGE_NAME
         COMPATIBILITY
     )
 
     set(multiValueArgs
-        DEPENDENCIES
+        CONFIG
+    )
+    
+    set(requiredArgs
+        CONFIG
+        COMPATIBILITY
     )
 
     # Parse arguments
-    cmake_parse_arguments(STD_PKG_CFG "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-
-    # Validate input
-    foreach(unk_val ${STD_PKG_CFG_UNPARSED_ARGUMENTS})
-        message(WARNING "Ignoring unrecognized parameter: ${unk_val}")
-    endforeach()
-
-    if(STD_PKG_CFG_KEYWORDS_MISSING_VALUES)
-        foreach(missing_val ${STD_PKG_CFG_KEYWORDS_MISSING_VALUES})
-            message(WARNING "A value for '${missing_val}' must be provided")
-        endforeach()
-        message(WARNING "Not all required values were present!")
-    endif()
-
-    # Handle output directory
-    if(STD_PKG_CFG_OUTPUT_DIRECTORY)
-        set(__output_prefix "${STD_PKG_CFG_OUTPUT_DIRECTORY}")
-    else()
-        set(__output_prefix "${CMAKE_CURRENT_BINARY_DIR}/cmake")
-    endif()
-
-    # Handle install destination
-    if(STD_PKG_CFG_INSTALL_DESTINATION)
-        set(__install_dest "${STD_PKG_CFG_INSTALL_DESTINATION}")
-    else()
-        set(__install_dest "cmake")
-    endif()
+    include(OB/Utility)
+    ob_parse_arguments(STD_PKG_CFG "" "${oneValueArgs}" "${multiValueArgs}" "${requiredArgs}" ${ARGN})
 
     # Handle package name
     if(STD_PKG_CFG_PACKAGE_NAME)
@@ -219,59 +267,84 @@ function(ob_standard_project_package_config)
         set(PACKAGE_NAME "${PROJECT_NAME}")
     endif()
 
-    # Handle compatibility
-    if(NOT DEFINED STD_PKG_CFG_COMPATIBILITY)
-        message(FATAL_ERROR "A compatibility level must be provided!")
-    endif()
-
     #---------------- Prepare Configuration  ----------------------
 
-    if(DEFINED STD_PKG_CFG_DEPENDENCIES)
-        # Create dependency check statements via the "PACKAGE" and "COMPONENT" sets
-        include(OB/Utility)
-        ob_parse_arguments_list(
-            "PACKAGE"
-            "__ob_parse_dependency"
-            dependency_check_statements
-            ${STD_PKG_CFG_DEPENDENCIES}
-        )
-
-        # Create multi-line string for dependency checks
-        set(DEPENDENCY_CHECKS "${DEPENDENCY_CHECKS_HEADING}")
-        foreach(dep_statement ${dependency_check_statements})
-            set(DEPENDENCY_CHECKS "${DEPENDENCY_CHECKS}${dep_statement}\n")
-        endforeach()
-    endif()
-
-    # Create config and version files
+    # Create config
     include(CMakePackageConfigHelpers)
-
-    configure_package_config_file(
-        "${CFG_TEMPLATE_FILE}"
-        "${__output_prefix}/${PACKAGE_NAME}Config.cmake"
-        INSTALL_DESTINATION "${__install_dest}"
+    
+    # Parse config parameters directly in this function to avoid awkward variable passing
+    set(cfg_gen_name "${PACKAGE_NAME}Config.cmake")
+    set(cfg_gen_path "${CMAKE_CURRENT_BINARY_DIR}/cmake/${cfg_gen_name}")
+    set(ver_gen_name "${PACKAGE_NAME}ConfigVersion.cmake")
+    set(ver_gen_path "${CMAKE_CURRENT_BINARY_DIR}/cmake/${ver_gen_name}")
+    
+    set(ova
+        CUSTOM
     )
-
+    
+    set(mva
+        TARGET_CONFIGS
+        DEPENDS
+    )
+    
+    # Parse arguments
+    ob_parse_arguments(CONFIG "" "${ova}" "${mva}" "" ${STD_PKG_CFG_CONFIG})
+    
+    # Must only be one form
+    if(DEFINED CONFIG_CUSTOM AND (DEFINED CONFIG_TARGET_CONFIGS OR DEFINED CONFIG_DEPENDS))
+        message(FATAL_ERROR "CUSTOM and TARGET_CONFIGS/DEPENDS cannot be specified simultaneously!")
+    endif()
+    
+    # Standard Form
+    if(NOT DEFINED CONFIG_CUSTOM)
+        # Must have passed TARGET_CONFIGS
+        if(NOT DEFINED CONFIG_TARGET_CONFIGS)
+            message(FATAL_ERROR "TARGET_CONFIGS is required when not using CUSTOM")
+        endif()
+        
+        # Create include statements for config
+        foreach(tgt_cf ${CONFIG_TARGET_CONFIGS})
+            __ob_split_target_config_nsa_str("${tgt_cf}" ns alias)
+            list(APPEND cfg_includes "${alias}/${ns}${alias}Config.cmake")
+        endforeach()
+    
+        # Generate config
+        include("${__OB_CMAKE_PRIVATE}/common.cmake")
+        __ob_generate_std_target_package_config_file(
+            OUTPUT "${cfg_gen_path}"
+            INCLUDES ${cfg_includes}
+            INSTALL_PATH "${INSTALL_DEST}"
+            ${CONFIG_DEPENDS}
+        )
+    else() # Custom Form
+        configure_package_config_file(
+            "${CONFIG_CUSTOM}"
+            "${cfg_gen_path}"
+            INSTALL_DESTINATION "${INSTALL_DEST}"
+        )
+    endif()
+    
+    # Create version file
     write_basic_package_version_file(
-        "${__output_prefix}/${PACKAGE_NAME}ConfigVersion.cmake"
+        "${ver_gen_path}"
         VERSION ${PROJECT_VERSION}
         COMPATIBILITY ${STD_PKG_CFG_COMPATIBILITY}
+    )
+    
+    # Install both files
+    install(FILES
+        "${ver_gen_path}"
+        "${cfg_gen_path}"
+        COMPONENT ${PROJECT_NAME_LC}
+        DESTINATION "${INSTALL_DEST}"
+        ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
     )
 endfunction()
 
 # Invokes the `install` for standard project level files:
-# - Package and package version config
 # - README.md and LICENSE
 #
-# Expects the CammelCase style of package config files, and the README and LICENSE to be
-# Located in CMAKE_CURRENT_SOURCE_DIR.
-#
-# - CONFIG_INPUT_DIRECTORY is where to look for the package config and config version files,
-#   "${CMAKE_CURRENT_BINARY_DIR}/cmake" if not defined
-# - CONFIG_DESTINATION is where the files are where the config and config version files are
-#   installed to, the 'cmake' directory relative to CMAKE_INSTALL_PREFIX is used if not defined
-# - PACKAGE_NAME is package name the function should expect for the config and config version
-#   files, PROJECT_NAME is used if not defined
+# Expects the README and LICENSE to be located in CMAKE_CURRENT_SOURCE_DIR.
 #
 # Requires ob_standard_project_setup() or ob_top_level_project_setup() to have been called.
 #
@@ -279,50 +352,7 @@ endfunction()
 # when the project is used as a sub-project
 #
 # The install component for both installs is set to PROJECT_NAME_LC.
-function(ob_standard_project_install)
-    # Additional Function inputs
-    set(oneValueArgs
-        CONFIG_INPUT_DIRECTORY
-        CONFIG_DESTINATION
-        PACKAGE_NAME
-    )
-
-    # Parse arguments
-    cmake_parse_arguments(STD_PROJ_INSTALL "" "${oneValueArgs}" "" ${ARGN})
-
-    # Validate input
-    foreach(unk_val ${STD_PROJ_INSTALL_UNPARSED_ARGUMENTS})
-        message(WARNING "Ignoring unrecognized parameter: ${unk_val}")
-    endforeach()
-
-    if(STD_PROJ_INSTALL_KEYWORDS_MISSING_VALUES)
-        foreach(missing_val ${STD_PROJ_INSTALL_KEYWORDS_MISSING_VALUES})
-            message(WARNING "A value for '${missing_val}' must be provided")
-        endforeach()
-        message(WARNING "Not all required values were present!")
-    endif()
-
-    # Handle config input directory
-    if(STD_PROJ_INSTALL_CONFIG_INPUT_DIRECTORY)
-        set(__config_input_prefix "${STD_PROJ_INSTALL_CONFIG_INPUT_DIRECTORY}")
-    else()
-        set(__config_input_prefix "${CMAKE_CURRENT_BINARY_DIR}/cmake")
-    endif()
-
-    # Handle config install destination
-    if(STD_PROJ_INSTALL_CONFIG_DESTINATION)
-        set(__config_install_dest "${STD_PROJ_INSTALL_CONFIG_DESTINATION}")
-    else()
-        set(__config_install_dest "cmake")
-    endif()
-
-    # Handle package name
-    if(STD_PROJ_INSTALL_PACKAGE_NAME)
-        set(__package_name "${STD_PROJ_INSTALL_PACKAGE_NAME}")
-    else()
-        set(__package_name "${PROJECT_NAME}")
-    endif()
-
+function(ob_standard_project_misc_install)
     #---------------- Installs  ----------------------
 
     # Install README and LICENSE
@@ -331,15 +361,6 @@ function(ob_standard_project_install)
         "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE"
         COMPONENT ${PROJECT_NAME_LC}
         DESTINATION .
-        ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
-    )
-
-    # Install Package Config
-    install(FILES
-        "${__config_input_prefix}/${__package_name}Config.cmake"
-        "${__config_input_prefix}/${__package_name}ConfigVersion.cmake"
-        COMPONENT ${PROJECT_NAME_LC}
-        DESTINATION ${__config_install_dest}
         ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
     )
 endfunction()
