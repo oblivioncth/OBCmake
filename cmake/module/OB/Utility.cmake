@@ -198,3 +198,29 @@ function(ob_cache_project_version)
         set(CMAKE_PROJECT_INCLUDE "${INJECTION_FILE}" PARENT_SCOPE)
     endif()
 endfunction()
+
+# Same as the non-PARSE_ARGV signature of cmake_parse_arguments() but with an
+# extra "required-keywords" argument. Handles argument validation and ensures
+# that all required keywords were provided
+macro(ob_parse_arguments prefix opt ovk mvk rk)
+    # Parse
+    cmake_parse_arguments("${prefix}" "${opt}" "${ovk}" "${mvk}" ${ARGN})
+    
+    # Validate
+    foreach(unk_val ${${prefix}_UNPARSED_ARGUMENTS})
+        message(WARNING "Ignoring unrecognized parameter: ${unk_val}")
+    endforeach()
+
+    if(${prefix}_KEYWORDS_MISSING_VALUES)
+        foreach(missing_val ${${prefix}_KEYWORDS_MISSING_VALUES})
+            message(WARNING "A value for '${missing_val}' must be provided")
+        endforeach()
+        message(WARNING "Not all required values were present!")
+    endif()
+    
+    foreach(arg ${rk})
+        if(NOT DEFINED ${prefix}_${arg})
+            message(FATAL_ERROR "'${arg}' must be defined!")
+        endif()
+    endforeach()
+endmacro()
