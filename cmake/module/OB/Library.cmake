@@ -116,6 +116,7 @@ endfunction()
 #   
 #   First:
 #       CONFIG
+#           STANDARD
 #           DEPENDS
 #   
 #   This form configures and installs a package configuration file set to include
@@ -381,6 +382,10 @@ function(ob_add_standard_library target)
         set(cfg_gen_name "${_NAMESPACE}${_ALIAS}Config.cmake")
         set(cfg_gen_path "${CMAKE_CURRENT_BINARY_DIR}/cmake/${cfg_gen_name}")
         
+        set(op
+            STANDARD
+        )
+        
         set(ova
             CUSTOM
         )
@@ -390,15 +395,17 @@ function(ob_add_standard_library target)
         )
         
         # Parse arguments
-        ob_parse_arguments(CONFIG "" "${ova}" "${mva}" "" ${_CONFIG})
+        ob_parse_arguments(CONFIG "${op}" "${ova}" "${mva}" "" ${_CONFIG})
         
-        # Must only be one form
-        if(DEFIND CONFIG_CUSTOM AND DEFINED CONFIG_DEPENDS)
-            message(FATAL_ERROR "CUSTOM and DEPENDS cannot be specified simultaneously!")
+        # Must have one, and only one form
+        if(DEFIND CONFIG_CUSTOM AND (DEFINED CONFIG_STANDARD OR DEFINED CONFIG_DEPENDS))
+            message(FATAL_ERROR "CUSTOM and STANDARD mode are mutually exclusive!")
+        elseif(NOT DEFINED CONFIG_CUSTOM AND NOT DEFINED CONFIG_STANDARD)
+            message(FATAL_ERROR "Either CUSTOM or STANDARD must be used!")
         endif()
         
         # Standard Form
-        if(NOT DEFINED CONFIG_CUSTOM)            
+        if(DEFINED CONFIG_STANDARD)            
             # Generate config
             include("${__OB_CMAKE_PRIVATE}/common.cmake")
             __ob_generate_std_target_package_config_file(
