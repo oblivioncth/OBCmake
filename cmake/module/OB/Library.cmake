@@ -66,8 +66,6 @@ endfunction()
 #
 # Argument Notes:
 # ---------------
-# TARGET_NAME:
-#   Target name
 # NAMESPACE:
 #   Namespace to use for file generation, export configuration, and installation pathing.
 # ALIAS:
@@ -135,13 +133,12 @@ endfunction()
 #
 #   The config file is installed as:
 #   ${CMAKE_INSTALL_PREFIX)/cmake/${NAMESPACE}/${NAMESPACE}${ALIAS}Config.cmake
-function(ob_add_standard_library)
+function(ob_add_standard_library target)
 
     #------------ Argument Handling ---------------
 
     # Function inputs
     set(oneValueArgs
-        TARGET_NAME
         NAMESPACE
         ALIAS
         TYPE
@@ -160,7 +157,6 @@ function(ob_add_standard_library)
     
     # Required Arguments (All Types)
     set(requiredArgs
-        TARGET_NAME
         NAMESPACE
         ALIAS
         HEADERS_API
@@ -171,7 +167,7 @@ function(ob_add_standard_library)
     ob_parse_arguments(STD_LIBRARY "" "${oneValueArgs}" "${multiValueArgs}" "${requiredArgs}" ${ARGN})
 
     # Standardized set and defaulted values
-    set(_TARGET_NAME "${STD_LIBRARY_TARGET_NAME}")
+    set(_TARGET_NAME "${target}")
     set(_NAMESPACE "${STD_LIBRARY_NAMESPACE}")
     set(_ALIAS "${STD_LIBRARY_ALIAS}")
     
