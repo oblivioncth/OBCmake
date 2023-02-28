@@ -188,7 +188,7 @@ function(ob_add_standard_library target)
     set(_IMPLEMENTATION "${STD_LIBRARY_IMPLEMENTATION}")
     set(_DOC_ONLY "${STD_LIBRARY_DOC_ONLY}")
     set(_LINKS "${STD_LIBRARY_LINKS}")
-    set(_CONFIG "${STD_LIBRARY_CONFIG}"
+    set(_CONFIG "${STD_LIBRARY_CONFIG}")
     
     # Compute Intermediate Values
     if(_LINKS MATCHES "Qt[0-9]*::")
@@ -262,6 +262,7 @@ function(ob_add_standard_library target)
             "${CMAKE_CURRENT_SOURCE_DIR}/include"
             ${_HEADERS_API}
         )
+    endif()
         
     # Add generated API headers
     if(_HEADERS_API_GEN)
@@ -310,7 +311,8 @@ function(ob_add_standard_library target)
         # resolve the macros to empty strings when configuring a static library. The function also ensures the
         # correct definition is set on the target to use the EXPORT variant of the macro value instead of the
         # IMPORT variant.
-        set(eh_gen_path "${CMAKE_CURRENT_BINARY_DIR}/include/${_EXPORT_HEADER}")
+        set(eh_gen_rel_path "${_EXPORT_HEADER}")
+        set(eh_gen_path "${CMAKE_CURRENT_BINARY_DIR}/include/${eh_gen_rel_path}")
         generate_export_header(${_TARGET_NAME}
             EXPORT_FILE_NAME "${eh_gen_path}"
         )
@@ -320,7 +322,7 @@ function(ob_add_standard_library target)
             "Export Headers"
             "${CMAKE_CURRENT_BINARY_DIR}/include"
             FILES
-                "${eh_gen_path}"
+                "${eh_gen_rel_path}"
         )
     endif()
     
@@ -398,7 +400,7 @@ function(ob_add_standard_library target)
         ob_parse_arguments(CONFIG "${op}" "${ova}" "${mva}" "" ${_CONFIG})
         
         # Must have one, and only one form
-        if(DEFIND CONFIG_CUSTOM AND (DEFINED CONFIG_STANDARD OR DEFINED CONFIG_DEPENDS))
+        if(DEFINED CONFIG_CUSTOM AND (DEFINED CONFIG_STANDARD OR DEFINED CONFIG_DEPENDS))
             message(FATAL_ERROR "CUSTOM and STANDARD mode are mutually exclusive!")
         elseif(NOT DEFINED CONFIG_CUSTOM AND NOT DEFINED CONFIG_STANDARD)
             message(FATAL_ERROR "Either CUSTOM or STANDARD must be used!")
