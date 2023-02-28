@@ -1,6 +1,4 @@
 @PACKAGE_INIT@
-@DEPENDENCY_CHECKS@
-@CONFIG_INCLUDES@
-
+@DEPENDENCY_CHECKS@@CONFIG_INCLUDES@
 # Ensure all requested components were found
 check_required_components(@PACKAGE_NAME@)

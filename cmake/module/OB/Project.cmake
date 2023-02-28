@@ -101,7 +101,7 @@ function(__ob_generate_std_primary_package_config_file)
         "include(CMakeFindDependencyMacro)\n"
     )
     string(CONCAT CONFIG_INCLUDES_HEADING
-        "# Import targets\n"
+        "# Import target configs\n"
     )
 
     set(INCLUDE_TEMPLATE [=[include("${CMAKE_CURRENT_LIST_DIR}/@SINGLE_INCLUDE@")]=])
@@ -150,11 +150,11 @@ function(__ob_generate_std_primary_package_config_file)
 
     # Handle Include Statements
     set(CONFIG_INCLUDES "${CONFIG_INCLUDES_HEADING}")
-    foreach(inc ${STD_PCF_DEPENDS})
+    foreach(inc ${STD_PCF_INCLUDES})
+        set(SINGLE_INCLUDE ${inc})
         string(CONFIGURE "${INCLUDE_TEMPLATE}" one_include @ONLY)
         set(CONFIG_INCLUDES "${CONFIG_INCLUDES}${one_include}\n")
     endforeach()
-    set(CONFIG_INCLUDES "${CONFIG_INCLUDES}\n")
     
     # Create config file
     set(PACKAGE_NAME "${STD_PCF_PACKAGE_NAME}")# For configure
@@ -314,17 +314,29 @@ function(ob_standard_project_package_config)
         
         # Create include statements for config
         foreach(tgt_cf ${CONFIG_TARGET_CONFIGS})
+            # Ensure target is valid
+            if(NOT TARGET "${tgt_cf}")
+                message(FATAL_ERROR "${tgt_cf} is not a valid target!")
+            endif()
+        
             __ob_split_target_config_nsa_str("${tgt_cf}" ns alias)
             list(APPEND cfg_includes "${alias}/${ns}${alias}Config.cmake")
         endforeach()
     
+        # Handle optional dependencies
+        if(DEFINED CONFIG_DEPENDS)
+            set(optional_deps DEPENDS ${CONFIG_DEPENDS})
+        else()
+            set(optional_deps "")
+        endif()
+    
         # Generate config
-        include("${__OB_CMAKE_PRIVATE}/common.cmake")
-        __ob_generate_std_target_package_config_file(
+        __ob_generate_std_primary_package_config_file(
+            PACKAGE_NAME "${PACKAGE_NAME}"
             OUTPUT "${cfg_gen_path}"
             INCLUDES ${cfg_includes}
             INSTALL_PATH "${INSTALL_DEST}"
-            ${CONFIG_DEPENDS}
+            ${optional_deps}
         )
     else() # Custom Form
         configure_package_config_file(

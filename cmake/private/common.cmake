@@ -100,10 +100,10 @@ function(__ob_generate_std_target_package_config_file)
     # Handle Include Statements
     set(CONFIG_INCLUDES "${CONFIG_INCLUDES_HEADING}")
     foreach(inc ${STD_TCF_INCLUDES})
+        set(SINGLE_INCLUDE ${inc})
         string(CONFIGURE "${INCLUDE_TEMPLATE}" one_include @ONLY)
         set(CONFIG_INCLUDES "${CONFIG_INCLUDES}${one_include}\n")
     endforeach()
-    set(CONFIG_INCLUDES "${CONFIG_INCLUDES}\n")
     
     # Create config file
     configure_file(

@@ -407,13 +407,20 @@ function(ob_add_standard_library target)
         endif()
         
         # Standard Form
-        if(DEFINED CONFIG_STANDARD)            
+        if(DEFINED CONFIG_STANDARD)   
+            # Handle optional dependencies
+            if(DEFINED CONFIG_DEPENDS)
+                set(optional_deps DEPENDS ${CONFIG_DEPENDS})
+            else()
+                set(optional_deps "")
+            endif()
+        
             # Generate config
             include("${__OB_CMAKE_PRIVATE}/common.cmake")
             __ob_generate_std_target_package_config_file(
                 OUTPUT "${cfg_gen_path}"
                 INCLUDES "${cfg_gen_include}"
-                ${CONFIG_DEPENDS}
+                ${optional_deps}
             )
         else() # Custom Form
             configure_file(
