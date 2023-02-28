@@ -43,6 +43,7 @@ endmacro()
 # - Calls ob_setup_verbose_versioning() and defines PROJECT_VERSION_VERBOSE to the result
 # - Defines PROJECT_FILE_TEMPLATES set to "${CMAKE_CURRENT_SOURCE_DIR}/cmake/file_templates"
 # - Appends "${CMAKE_CURRENT_SOURCE_DIR}/cmake/module" to CMAKE_MODULE_PATH
+# - Defines PROJECT_NAMESPACE set to PROJECT_NAME
 #
 # TODO: Add tuneable arguments to this as needed
 
@@ -86,6 +87,9 @@ macro(ob_standard_project_setup)
     # Add local modules and file templates
     list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/module")
     set(PROJECT_FILE_TEMPLATES "${CMAKE_CURRENT_SOURCE_DIR}/cmake/file_templates")
+    
+    # Define namespace var using project name
+    set(PROJECT_NAMESPACE "${PROJECT_NAME}")
 endmacro()
 
 function(__ob_generate_std_primary_package_config_file)
