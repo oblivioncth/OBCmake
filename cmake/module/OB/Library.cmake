@@ -64,6 +64,9 @@ endfunction()
 # via the provided arguments. Also produces an install
 # component that matches the target name.
 #
+# This command will also defined BUILD_SHARED_LIBS as an option/cache variable defaulted
+# to NO if it isn't already defined.
+#
 # Argument Notes:
 # ---------------
 # NAMESPACE:
@@ -201,6 +204,9 @@ function(ob_add_standard_library target)
     string(TOLOWER ${_ALIAS} _ALIAS_LC)
     
     #---------------- Library Setup -------------------
+    
+    # Create shared/static cache toggle if not already present
+    option(BUILD_SHARED_LIBS "Prefer shared linkage when building libraries" OFF)
     
     # Create lib
     if(_USE_QT)
