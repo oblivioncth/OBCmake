@@ -32,6 +32,7 @@ function(__ob_parse_dependency return)
     
     if(DEFINED DEPENDENCY_COMPONENTS)
         # Split components list to one string
+        set(components_list "")
         foreach(comp ${DEPENDENCY_COMPONENTS})
             set(components_list "${components_list} ${comp}")
         endforeach()
@@ -95,6 +96,8 @@ function(__ob_generate_std_target_package_config_file)
             set(DEPENDENCY_CHECKS "${DEPENDENCY_CHECKS}${dep_statement}\n")
         endforeach()
         set(DEPENDENCY_CHECKS "${DEPENDENCY_CHECKS}\n")
+    else()
+        set(DEPENDENCY_CHECKS "") # Avoid un-init warning when configuring file
     endif()
 
     # Handle Include Statements
