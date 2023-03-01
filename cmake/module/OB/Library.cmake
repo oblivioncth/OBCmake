@@ -285,30 +285,36 @@ function(ob_add_standard_library target)
             message(FATAL_ERROR "EXPORT_HEADER is required for non-INTERFACE libraries!")
         endif()        
     
-        # Setup export decorator macros as require by Windows, but use the benefit on all supported platforms.
-        # An alternative to this is to set CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS to TRUE, which handles all exports
-        # and imports automatically, but doesn't provide the same speed benefits and still requires manual
-        # marking of global data members (i.e. it only covers classes and functions). So if we have to mark those
-        # anyway, mind as well do everything.
+        if("${_TYPE}" STREQUAL "SHARED")   
+            # Setup export decorator macros as require by Windows, but use the benefit on all supported platforms.
+            # An alternative to this is to set CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS to TRUE, which handles all exports
+            # and imports automatically, but doesn't provide the same speed benefits and still requires manual
+            # marking of global data members (i.e. it only covers classes and functions). So if we have to mark those
+            # anyway, mind as well do everything.
 
-        # This isn't explained at all in the CMake docs for GenerateExportHeader, but the purpose of the
-        # following property settings is to make non-Windows compilers match the behavior of windows in
-        # regards to symbol visibility by default. Normally, on Windows when compiling shared libraries
-        # all symbols are private by default, while on compilers like GCC, the symbols are all public by
-        # default.
-        #
-        # Symbols that are explicitly marked as public benefit from better code generation and faster
-        # initialization time. Since the manual marking must be done on Windows anyway, it makes sense
-        # to private everything by default on other platforms as well in order to gain these benefits from
-        # the manual export marks. These properties mark symbols and inline symbols as hidden on for the
-        # non-windows compilers that support said options.
-        set_target_properties(${_TARGET_NAME}
-            PROPERTIES
-                CXX_VISIBILITY_PRESET "hidden"
-                VISIBILITY_INLINES_HIDDEN 1
-        )
-
+            # This isn't explained at all in the CMake docs for GenerateExportHeader, but the purpose of the
+            # following property settings is to make non-Windows compilers match the behavior of windows in
+            # regards to symbol visibility by default. Normally, on Windows when compiling shared libraries
+            # all symbols are private by default, while on compilers like GCC, the symbols are all public by
+            # default.
+            #
+            # Symbols that are explicitly marked as public benefit from better code generation and faster
+            # initialization time. Since the manual marking must be done on Windows anyway, it makes sense
+            # to private everything by default on other platforms as well in order to gain these benefits from
+            # the manual export marks. These properties mark symbols and inline symbols as hidden on for the
+            # non-windows compilers that support said options.
+            #
+            # Wrapped in an 'if' because this shouldn't be done for a static lib
+            set_target_properties(${_TARGET_NAME}
+                PROPERTIES
+                    CXX_VISIBILITY_PRESET "hidden"
+                    VISIBILITY_INLINES_HIDDEN 1
+            )
+        endif()
+        
         # Generate Export Header
+        # This is required regardless of whether or not the lib is actually shared in order for the sources that
+        # use the macros this provides to compile
         include(GenerateExportHeader)
 
         # The STATIC_DEFINE portion of this function only needs to be used if the project is setup to build the
