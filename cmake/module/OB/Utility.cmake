@@ -76,7 +76,7 @@ endfunction()
 # This function is used to assist with parsing function arguments that contain
 # a list of entries with their own arguments.
 #
-# For example, a suppose a function that might be called like so:
+# For example, imagine a function that might be called like so:
 #
 # add_files(
 #   TARGET "myTarget"
@@ -88,7 +88,7 @@ endfunction()
 #
 # Presumably the function add_files is parsed using cmake_parse_arguments()
 # where "FILES" is a multi-value keyword and if we assume the prefix "FILE_ADD"
-# was used, the contents of "FILES" are stored in "FILE_ADD_FILES" after the initialize
+# was used, the contents of "FILES" are stored in "FILE_ADD_FILES" after the initial
 # parse. At this point those contents need to be split into tokens for each set
 # pair of "PATH" and optional "ALIAS" so that they can be parsed individually by
 # another function. The contents of "FILE_ADD_FILES" aren't intrinsically split like this
@@ -215,7 +215,7 @@ macro(ob_parse_arguments prefix opt ovk mvk rk)
         foreach(missing_val ${${prefix}_KEYWORDS_MISSING_VALUES})
             message(WARNING "A value for '${missing_val}' must be provided")
         endforeach()
-        message(WARNING "Not all required values were present!")
+        message(FATAL_ERROR "Not all required values were present!")
     endif()
     
     foreach(arg ${rk})
