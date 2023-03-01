@@ -406,14 +406,14 @@ function(ob_add_standard_library target)
         ob_parse_arguments(CONFIG "${op}" "${ova}" "${mva}" "" ${_CONFIG})
         
         # Must have one, and only one form
-        if(DEFINED CONFIG_CUSTOM AND (DEFINED CONFIG_STANDARD OR DEFINED CONFIG_DEPENDS))
+        if(DEFINED CONFIG_CUSTOM AND (CONFIG_STANDARD OR DEFINED CONFIG_DEPENDS))
             message(FATAL_ERROR "CUSTOM and STANDARD mode are mutually exclusive!")
-        elseif(NOT DEFINED CONFIG_CUSTOM AND NOT DEFINED CONFIG_STANDARD)
+        elseif(NOT DEFINED CONFIG_CUSTOM AND NOT CONFIG_STANDARD)
             message(FATAL_ERROR "Either CUSTOM or STANDARD must be used!")
         endif()
         
         # Standard Form
-        if(DEFINED CONFIG_STANDARD)   
+        if(CONFIG_STANDARD)   
             # Handle optional dependencies
             if(DEFINED CONFIG_DEPENDS)
                 set(optional_deps DEPENDS ${CONFIG_DEPENDS})
