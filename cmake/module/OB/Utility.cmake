@@ -211,16 +211,20 @@ macro(ob_parse_arguments prefix opt ovk mvk rk)
         message(WARNING "Ignoring unrecognized parameter: ${unk_val}")
     endforeach()
 
-    if(${prefix}_KEYWORDS_MISSING_VALUES)
-        foreach(missing_val ${${prefix}_KEYWORDS_MISSING_VALUES})
-            message(WARNING "A value for '${missing_val}' must be provided")
-        endforeach()
-        message(FATAL_ERROR "Not all required values were present!")
-    endif()
+    # Unused because some functions support passing a keyword with no value
+    # to be see as the keyword not being used so that functions that need to
+    # passthrough keyword arguments don't have to check for their presence
+    # every time. Instead the required variable list is used.
+    #if(${prefix}_KEYWORDS_MISSING_VALUES)
+    #    foreach(missing_val ${${prefix}_KEYWORDS_MISSING_VALUES})
+    #        message(WARNING "A value for '${missing_val}' must be provided")
+    #    endforeach()
+    #    message(FATAL_ERROR "Not all required values were present!")
+    #endif()
     
     foreach(arg ${rk})
-        if(NOT DEFINED ${prefix}_${arg})
-            message(FATAL_ERROR "'${arg}' must be defined!")
+        if(NOT ${prefix}_${arg})
+            message(FATAL_ERROR "'${arg}' must be defined and have a value!")
         endif()
     endforeach()
 endmacro()

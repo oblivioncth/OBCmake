@@ -21,7 +21,7 @@ function(__ob_process_header_paths processed_paths middle_path)
     ob_parse_arguments(HEADER_INPUT "" "${oneValueArgs}" "${multiValueArgs}" "${requiredArgs}" ${ARGN})
 
     # Create full headers list
-    if(DEFINED HEADER_INPUT_COMMON)
+    if(HEADER_INPUT_COMMON)
         set(middle_segment "/${HEADER_INPUT_COMMON}")
     else()
         set(middle_segment "")
@@ -175,7 +175,7 @@ function(ob_add_standard_library target)
     set(_NAMESPACE "${STD_LIBRARY_NAMESPACE}")
     set(_ALIAS "${STD_LIBRARY_ALIAS}")
     
-    if(DEFINED STD_LIBRARY_TYPE)
+    if(STD_LIBRARY_TYPE)
         set(_TYPE "${STD_LIBRARY_TYPE}")
     elseif(BUILD_SHARED_LIBS)
         set(_TYPE "SHARED")
@@ -419,20 +419,13 @@ function(ob_add_standard_library target)
         endif()
         
         # Standard Form
-        if(CONFIG_STANDARD)   
-            # Handle optional dependencies
-            if(DEFINED CONFIG_DEPENDS)
-                set(optional_deps DEPENDS ${CONFIG_DEPENDS})
-            else()
-                set(optional_deps "")
-            endif()
-        
+        if(CONFIG_STANDARD)
             # Generate config
             include("${__OB_CMAKE_PRIVATE}/common.cmake")
             __ob_generate_std_target_package_config_file(
                 OUTPUT "${cfg_gen_path}"
                 INCLUDES "${cfg_gen_include}"
-                ${optional_deps}
+                DEPENDS ${CONFIG_DEPENDS}
             )
         else() # Custom Form
             configure_file(

@@ -130,7 +130,7 @@ function(__ob_generate_std_primary_package_config_file)
     ob_parse_arguments(STD_PCF "" "${oneValueArgs}" "${multiValueArgs}" "${requiredArgs}" ${ARGN})
     
     # Handle dependencies
-    if(DEFINED STD_PCF_DEPENDS)
+    if(STD_PCF_DEPENDS)
         include("${__OB_CMAKE_PRIVATE}/common.cmake")
         # Create dependency check statements via the "PACKAGE", "COMPONENT" and "VERSION" sets
         ob_parse_arguments_list(
@@ -308,7 +308,7 @@ function(ob_standard_project_package_config)
     # Standard Form
     if(CONFIG_STANDARD)
         # Must have passed TARGET_CONFIGS
-        if(NOT DEFINED CONFIG_TARGET_CONFIGS)
+        if(NOT CONFIG_TARGET_CONFIGS)
             message(FATAL_ERROR "TARGET_CONFIGS is required when not using CUSTOM")
         endif()
         
@@ -322,21 +322,14 @@ function(ob_standard_project_package_config)
             __ob_split_target_config_nsa_str("${tgt_cf}" ns alias)
             list(APPEND cfg_includes "${alias}/${ns}${alias}Config.cmake")
         endforeach()
-    
-        # Handle optional dependencies
-        if(DEFINED CONFIG_DEPENDS)
-            set(optional_deps DEPENDS ${CONFIG_DEPENDS})
-        else()
-            set(optional_deps "")
-        endif()
-    
+       
         # Generate config
         __ob_generate_std_primary_package_config_file(
             PACKAGE_NAME "${PACKAGE_NAME}"
             OUTPUT "${cfg_gen_path}"
             INCLUDES ${cfg_includes}
             INSTALL_PATH "${INSTALL_DEST}"
-            ${optional_deps}
+            DEPENDS ${CONFIG_DEPENDS}
         )
     else() # Custom Form
         configure_package_config_file(
