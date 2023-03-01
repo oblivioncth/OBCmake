@@ -249,7 +249,7 @@ function(ob_add_standard_library target)
 
         # Add include files as private target source so that they aren't built nor marked as a dependency,
         # but are shown with the target in the IDE
-        target_sources(${COMPONENT_TARGET_NAME} PRIVATE ${full_doc_only_paths})
+        target_sources(${_TARGET_NAME} PRIVATE ${full_doc_only_paths})
     endif()
     
     # Add private headers
