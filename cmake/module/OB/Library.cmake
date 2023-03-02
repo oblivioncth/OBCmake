@@ -5,11 +5,11 @@ function(__ob_process_header_paths processed_paths middle_path)
         BASE
         COMMON
     )
-    
+
     set(multiValueArgs
         FILES
     )
-    
+
     # Required Arguments (All Types)
     set(requiredArgs
         BASE
@@ -26,25 +26,25 @@ function(__ob_process_header_paths processed_paths middle_path)
     else()
         set(middle_segment "")
     endif()
-    
+
     foreach(input_file ${HEADER_INPUT_FILES})
         list(APPEND full_paths "${HEADER_INPUT_BASE}${middle_segment}/${input_file}")
     endforeach()
-    
+
     # Return
     set(${processed_paths} "${full_paths}" PARENT_SCOPE)
-    set(${middle_path} "${middle_segment}" PARENT_SCOPE) 
+    set(${middle_path} "${middle_segment}" PARENT_SCOPE)
 endfunction()
 
 function(__ob_register_header_set set_name group_name base_dir)
     set(header_args "${ARGN}")
-    
+
     # Get full paths
     __ob_process_header_paths(full_header_paths common_path
         BASE "${base_dir}"
         ${header_args} # Forward full arg set after prepending BASE
     )
-    
+
     # Add via FILE_SET
     target_sources(${_TARGET_NAME} PUBLIC
         FILE_SET "${set_name}"
@@ -52,7 +52,7 @@ function(__ob_register_header_set set_name group_name base_dir)
         BASE_DIRS ${base_dir}
         FILES ${full_header_paths}
     )
-    
+
     # Setup source group for better IDE integration
     source_group(TREE "${base_dir}${common_path}"
         PREFIX "${group_name}"
@@ -101,7 +101,7 @@ endfunction()
 #           FILES
 #               "header1.h"
 #               "header2.h"
-#        
+#
 #   Uses File Sets. Files are assumed to be under "${CMAKE_CURRENT_SOURCE_DIR}/include",
 #   which is used to populate BASE_DIRS. COMMON can optionally be used to avoid having
 #   to type out a shared common root within the include folder for each file
@@ -116,17 +116,17 @@ endfunction()
 #   Same contents/arguments as with target_link_libraries().
 # CONFIG:
 #   This optional argument can take two forms.
-#   
+#
 #   First:
 #       CONFIG
 #           STANDARD
 #           DEPENDS
-#   
+#
 #   This form configures and installs a package configuration file set to include
 #   the library target and find the optional dependencies if provided. The dependencies
 #   are passed via the same form as in the CONFIG argument from the
 #   ob_standard_project_package_config() command.
-#   
+#
 #   Second:
 #       CONFIG
 #           CUSTOM "path"
@@ -148,7 +148,7 @@ function(ob_add_standard_library target)
         TYPE
         EXPORT_HEADER
     )
-    
+
     set(multiValueArgs
         HEADERS_PRIVATE
         HEADERS_API
@@ -158,7 +158,7 @@ function(ob_add_standard_library target)
         LINKS
         CONFIG
     )
-    
+
     # Required Arguments (All Types)
     set(requiredArgs
         NAMESPACE
@@ -174,7 +174,7 @@ function(ob_add_standard_library target)
     set(_TARGET_NAME "${target}")
     set(_NAMESPACE "${STD_LIBRARY_NAMESPACE}")
     set(_ALIAS "${STD_LIBRARY_ALIAS}")
-    
+
     if(STD_LIBRARY_TYPE)
         set(_TYPE "${STD_LIBRARY_TYPE}")
     elseif(BUILD_SHARED_LIBS)
@@ -182,9 +182,9 @@ function(ob_add_standard_library target)
     else()
         set(_TYPE "STATIC")
     endif()
-    
+
     set(_EXPORT_HEADER "${STD_LIBRARY_EXPORT_HEADER}")
-    
+
     set(_HEADERS_PRIVATE "${STD_LIBRARY_HEADERS_PRIVATE}")
     set(_HEADERS_API "${STD_LIBRARY_HEADERS_API}")
     set(_HEADERS_API_GEN "${STD_LIBRARY_HEADERS_API_GEN}")
@@ -192,31 +192,31 @@ function(ob_add_standard_library target)
     set(_DOC_ONLY "${STD_LIBRARY_DOC_ONLY}")
     set(_LINKS "${STD_LIBRARY_LINKS}")
     set(_CONFIG "${STD_LIBRARY_CONFIG}")
-    
+
     # Compute Intermediate Values
     if(_LINKS MATCHES "Qt[0-9]*::")
         set(_USE_QT TRUE)
     else()
         set(_USE_QT FALSE)
     endif()
-    
+
     string(TOLOWER ${_NAMESPACE} _NAMESPACE_LC)
     string(TOLOWER ${_ALIAS} _ALIAS_LC)
-    
+
     #---------------- Library Setup -------------------
-    
+
     # Create shared/static cache toggle if not already present
     option(BUILD_SHARED_LIBS "Prefer shared linkage when building libraries" OFF)
-    
+
     # Create lib
     if(_USE_QT)
         qt_add_library(${_TARGET_NAME} ${_TYPE})
     else()
         add_library(${_TARGET_NAME} ${_TYPE})
     endif()
-    
+
     add_library("${_NAMESPACE}::${_ALIAS}" ALIAS ${_TARGET_NAME})
-    
+
     # Add implementation
     if(_IMPLEMENTATION)
         foreach(impl ${_IMPLEMENTATION})
@@ -230,10 +230,10 @@ function(ob_add_standard_library target)
 
             list(APPEND full_impl_paths "${CMAKE_CURRENT_SOURCE_DIR}/src/${impl}")
         endforeach()
-        
+
         target_sources(${_TARGET_NAME} PRIVATE ${full_impl_paths})
     endif()
-    
+
     # Doc
     if(_DOC_ONLY)
         # Build pathed include file list
@@ -251,16 +251,16 @@ function(ob_add_standard_library target)
         # but are shown with the target in the IDE
         target_sources(${_TARGET_NAME} PRIVATE ${full_doc_only_paths})
     endif()
-    
+
     # Add private headers
     if(_HEADERS_PRIVATE)
         foreach(p_header ${_HEADERS_PRIVATE})
             list(APPEND full_pheader_paths "${CMAKE_CURRENT_SOURCE_DIR}/src/${p_header}")
         endforeach()
-        
+
         target_sources(${_TARGET_NAME} PRIVATE ${full_pheader_paths})
     endif()
-    
+
     # Add standard API headers
     if(_HEADERS_API)
         __ob_register_header_set("headers_api"
@@ -269,7 +269,7 @@ function(ob_add_standard_library target)
             ${_HEADERS_API}
         )
     endif()
-        
+
     # Add generated API headers
     if(_HEADERS_API_GEN)
         __ob_register_header_set("headers_api_gen"
@@ -278,14 +278,14 @@ function(ob_add_standard_library target)
             ${_HEADERS_API_GEN}
         )
     endif()
-    
+
     # Shared Lib Support/Generate export header
     if(NOT "${_TYPE}" STREQUAL "INTERFACE")
         if(NOT _EXPORT_HEADER)
             message(FATAL_ERROR "EXPORT_HEADER is required for non-INTERFACE libraries!")
-        endif()        
-    
-        if("${_TYPE}" STREQUAL "SHARED")   
+        endif()
+
+        if("${_TYPE}" STREQUAL "SHARED")
             # Setup export decorator macros as require by Windows, but use the benefit on all supported platforms.
             # An alternative to this is to set CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS to TRUE, which handles all exports
             # and imports automatically, but doesn't provide the same speed benefits and still requires manual
@@ -311,7 +311,7 @@ function(ob_add_standard_library target)
                     VISIBILITY_INLINES_HIDDEN 1
             )
         endif()
-        
+
         # Generate Export Header
         # This is required regardless of whether or not the lib is actually shared in order for the sources that
         # use the macros this provides to compile
@@ -328,7 +328,7 @@ function(ob_add_standard_library target)
         generate_export_header(${_TARGET_NAME}
             EXPORT_FILE_NAME "${eh_gen_path}"
         )
-        
+
         # Add via file set
         __ob_register_header_set("headers_export"
             "Export Headers"
@@ -337,19 +337,19 @@ function(ob_add_standard_library target)
                 "${eh_gen_rel_path}"
         )
     endif()
-    
+
     # Link to libraries
     if(_LINKS)
         target_link_libraries(${_TARGET_NAME} ${_LINKS})
     endif()
-    
+
     # Configure target properties
     set_target_properties(${_TARGET_NAME} PROPERTIES
         VERSION ${PROJECT_VERSION}
         DEBUG_POSTFIX "d"
         EXPORT_NAME "${_ALIAS}"
     )
-    
+
     if(CMAKE_SYSTEM_NAME STREQUAL Windows)
         set_target_properties(${_TARGET_NAME} PROPERTIES
             OUTPUT_NAME "${_NAMESPACE}${_ALIAS}"
@@ -362,7 +362,7 @@ function(ob_add_standard_library target)
             OUTPUT_NAME "${_NAMESPACE_LC}-${_ALIAS_LC}"
         )
     endif()
-    
+
     # Install target and export
     install(TARGETS ${_TARGET_NAME}
         COMPONENT ${_TARGET_NAME}
@@ -380,7 +380,7 @@ function(ob_add_standard_library target)
             OPTIONAL
             DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_ALIAS_LC}"
     )
-    
+
     install(EXPORT ${_NAMESPACE}${_ALIAS}Targets
         COMPONENT ${_TARGET_NAME}
         FILE "${_NAMESPACE}${_ALIAS}Targets.cmake"
@@ -388,36 +388,36 @@ function(ob_add_standard_library target)
         DESTINATION "cmake/${_ALIAS}"
         ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
     )
-    
+
     # Package Config
     if(_CONFIG)
         # Parse config parameters directly in this function to avoid awkward variable passing
         set(cfg_gen_include "${_NAMESPACE}${_ALIAS}Targets.cmake")
         set(cfg_gen_name "${_NAMESPACE}${_ALIAS}Config.cmake")
         set(cfg_gen_path "${CMAKE_CURRENT_BINARY_DIR}/cmake/${cfg_gen_name}")
-        
+
         set(op
             STANDARD
         )
-        
+
         set(ova
             CUSTOM
         )
-        
+
         set(mva
             DEPENDS
         )
-        
+
         # Parse arguments
         ob_parse_arguments(CONFIG "${op}" "${ova}" "${mva}" "" ${_CONFIG})
-        
+
         # Must have one, and only one form
         if(DEFINED CONFIG_CUSTOM AND (CONFIG_STANDARD OR DEFINED CONFIG_DEPENDS))
             message(FATAL_ERROR "CUSTOM and STANDARD mode are mutually exclusive!")
         elseif(NOT DEFINED CONFIG_CUSTOM AND NOT CONFIG_STANDARD)
             message(FATAL_ERROR "Either CUSTOM or STANDARD must be used!")
         endif()
-        
+
         # Standard Form
         if(CONFIG_STANDARD)
             # Generate config
@@ -434,7 +434,7 @@ function(ob_add_standard_library target)
                 @ONLY
             )
         endif()
-        
+
         # Install config
         install(FILES
             "${cfg_gen_path}"

@@ -36,6 +36,6 @@ function(ob_fetch_file)
     # Determine file download path
     cmake_path(GET FILE_FETCH_URL FILENAME FILE_NAME)
     set(FETCHED_FILE_PATH "${${FILE_FETCH_NAME}_SOURCE_DIR}/${FILE_NAME}")
-	
+
     set(${FILE_FETCH_PATH_VAR} "${FETCHED_FILE_PATH}" PARENT_SCOPE)
 endfunction()

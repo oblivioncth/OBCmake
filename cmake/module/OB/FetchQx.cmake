@@ -36,11 +36,11 @@ function(ob_fetch_qx)
     if(FETCH_QX_COMPONENTS)
         set(QX_COMPONENTS ${FETCH_QX_COMPONENTS})
     endif()
-    
+
     # Cause Qx to declare a cache variable with its version so that it can be read by the caller
     include(OB/Utility)
     ob_cache_project_version(Qx)
-    
+
     # Fetch
     include(FetchContent)
     FetchContent_Declare(Qx

@@ -59,7 +59,7 @@ endfunction()
 # dedicated to the documentation target) containing the
 # CMakeLists.txt that invokes this function, with 'doc'
 # being the root of said folder:
-# 
+#
 # doc/cmake/file_templates
 # doc/res/images (for DOXYGEN_IMAGE_PATH)
 # doc/res/snippets (for DOXYGEN_EXAMPLE_PATH)
@@ -147,23 +147,23 @@ function(ob_standard_documentation)
     if(NOT DEFINED STD_DOCS_TARGET_NAME)
         message(FATAL_ERROR "A docs target name must be specified!")
     endif()
-    
+
     if(NOT DEFINED STD_DOCS_DOXY_VER)
         message(FATAL_ERROR "A Doxygen versison must be specified!")
     endif()
-   
+
     if(DEFINED STD_DOCS_PROJ_NAME)
         set(doc_proj_name "${STD_DOCS_PROJ_NAME}")
     else()
         set(doc_proj_name "${PROJECT_NAME}")
     endif()
-    
+
     if(DEFINED STD_DOCS_INSTALL_DESTINATION)
         set(doc_install_dest "${STD_DOCS_INSTALL_DESTINATION}")
     else()
         set(doc_install_dest "doc")
     endif()
-   
+
     #--------------------- Define Doc Paths -----------------------
     set(DOC_MAIN_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
     set(DOC_MAIN_SCRIPTS_PATH "${DOC_MAIN_ROOT}/cmake")
@@ -177,56 +177,56 @@ function(ob_standard_documentation)
 
     # Cmake related
     set(DOC_MAIN_TEMPLATES_PATH "${DOC_MAIN_SCRIPTS_PATH}/file_templates")
-   
+
     #------------------- Configure Documentation -----------------
-        
+
     # Load static defaults
     include(${__OB_CMAKE_PRIVATE}/__default_doc_settings.cmake)
-    
+
     # Set project name
     set(DOXYGEN_PROJ_NAME "${doc_proj_name}")
-    
+
     # Set project version using verbose version, if available
     if(DEFINED PROJECT_VERSION_VERBOSE)
         set(DOXYGEN_PROJECT_NUMBER "${PROJECT_VERSION_VERBOSE}")
     endif()
-    
+
     # Set logo, if available
     set(logo_path "${DOC_MAIN_RESOURCE_PATH}/logo.svg")
     if(EXISTS "${logo_path}")
         set(DOXYGEN_PROJECT_LOGO "${logo_path}")
     endif()
-    
+
     # Set custom layout file, if available
     set(layout_path "${DOC_MAIN_RESOURCE_PATH}/DoxygenLayout.xml")
     if(EXISTS "${layout_path}")
         set(DOXYGEN_LAYOUT_FILE "${layout_path}")
     endif()
-    
+
     # Set custom header, if available
     set(header_path "${DOC_MAIN_RESOURCE_PATH}/header.xml")
     if(EXISTS "${header_path}")
         set(DOXYGEN_LAYOUT_FILE "${header_path}")
     endif()
-    
+
     #---------------------- Configure Qt Link ---------------------
     if(DEFINED STD_DOCS_QT_PREFIX)
         # Try to get Qt doc information
         ob_find_qt_doc_resources("${STD_DOCS_QT_PREFIX}")
-        
+
         # Link to docs
         if(QT_DOCS_DIR)
             # Ensure root exists
             if(NOT IS_DIRECTORY ${QT_DOCS_DIR})
                 message(FATAL_ERROR "Qt docs path: '${QT_DOCS_DIR}' does not exist!")
             endif()
-            
+
             # Process tags
             foreach(doc_module ${STD_DOCS_QT_MODULES})
                 list(APPEND DOXYGEN_TAGFILES
                         ${QT_DOCS_DIR}/${doc_module}/${doc_module}.tags=https://doc.qt.io/qt-6/
                 )
-            endforeach() 
+            endforeach()
         endif()
 
         # Setup Qt Creator help file creation
@@ -236,61 +236,61 @@ function(ob_standard_documentation)
             set(DOXYGEN_QHG_LOCATION ${QT_HELP_GEN_PATH})
         endif()
     endif()
-    
+
     #------------------------- Setup Input ------------------------
-    
+
     # Configure files
     configure_file("${DOC_MAIN_TEMPLATES_PATH}/mainpage.md.in"
         "${DOC_GENERATED_PATH}/mainpage.md"
         @ONLY
     )
-    
+
     # Doc Input
     set(DOC_INPUT_LIST
         "${DOC_GENERATED_PATH}/mainpage.md"
         "${STD_DOCS_INPUT_LIST}"
     )
-    
+
     # Cover roots for additional input
     list(APPEND all_roots
         "${DOC_MAIN_ROOT}"
         ${STD_DOCS_ADDITIONAL_ROOTS}
     )
-    
+
     foreach(root ${all_roots})
         set(root_res_path "${root}/res")
         set(root_general_path "${root}/general")
-    
+
         # Add regular input paths
         if(EXISTS "${root_general_path}")
             list(APPEND DOC_INPUT_LIST "${root_general_path}")
         endif()
-    
+
         # Add extra input paths
         set(root_snippets "${root_res_path}/snippets")
         if(EXISTS "${root_snippets}")
             list(APPEND DOXYGEN_EXAMPLE_PATH "${root_snippets}")
         endif()
-        
+
         set(root_images "${root_res_path}/images")
         if(EXISTS "${root_images}")
             list(APPEND DOXYGEN_IMAGE_PATH "${root_images}")
         endif()
     endforeach()
-    
+
     #---------------------- Setup Doxygen ------------------------
-    
+
     # Find Doxygen package
     find_package(Doxygen "${STD_DOCS_DOXY_VER}" REQUIRED
         COMPONENTS dot
     )
-    
+
     # Add Doxygen target
     doxygen_add_docs(${STD_DOCS_TARGET_NAME}
         ${DOC_INPUT_LIST}
         ${TOP_PROJ_INCLUDE_IN_ALL}
     )
-    
+
     #------------------------- Install ---------------------------
     install(DIRECTORY ${DOC_BUILD_PATH}/
         COMPONENT ${STD_DOCS_TARGET_NAME}
@@ -298,6 +298,6 @@ function(ob_standard_documentation)
         CONFIGURATIONS Release
         ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
     )
-    
-    message(STATUS "Doxygen configured for ${PROJECT_NAME}. Build target '${STD_DOCS_TARGET_NAME}' to build the documentation.")    
+
+    message(STATUS "Doxygen configured for ${PROJECT_NAME}. Build target '${STD_DOCS_TARGET_NAME}' to build the documentation.")
 endfunction()

@@ -65,7 +65,7 @@ endfunction()
 
 # Form:
 # ob_parse_arguments_list(<start_keyword> <parser> <return> <args>...)
-# 
+#
 # Arguments:
 # - start_keyword: The keyword that denotes the start of a new entry
 # - parser: Name of the function to invoke when parsing each entry, needs to
@@ -111,7 +111,7 @@ endfunction()
 # like so:
 #
 # ob_parse_arguments_list(
-#   "PATH" 
+#   "PATH"
 #   "file_parser_fn"
 #   parsed_files
 #   ${FILE_ADD_FILES}
@@ -128,12 +128,12 @@ function(ob_parse_arguments_list start_keyword parser return)
     set(ENTRY_ARGS "")
     set(PARSED_LIST "")
     set(PARSED_ENTRY "")
-    
+
     # Ensure that the args list was passed
     if(NOT ARGC GREATER FORMAL_PARAMETER_COUNT)
         message(FATAL_ERROR "No arguments to parse were provided!")
     endif()
-    
+
     # Build parsed entry list
     foreach(word ${ARGN})
         if("${word}" STREQUAL "${start_keyword}")
@@ -205,7 +205,7 @@ endfunction()
 macro(ob_parse_arguments prefix opt ovk mvk rk)
     # Parse
     cmake_parse_arguments("${prefix}" "${opt}" "${ovk}" "${mvk}" ${ARGN})
-    
+
     # Validate
     foreach(unk_val ${${prefix}_UNPARSED_ARGUMENTS})
         message(WARNING "Ignoring unrecognized parameter: ${unk_val}")
@@ -221,7 +221,7 @@ macro(ob_parse_arguments prefix opt ovk mvk rk)
     #    endforeach()
     #    message(FATAL_ERROR "Not all required values were present!")
     #endif()
-    
+
     foreach(arg ${rk})
         if(NOT ${prefix}_${arg})
             message(FATAL_ERROR "'${arg}' must be defined and have a value!")

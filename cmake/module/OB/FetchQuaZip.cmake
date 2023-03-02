@@ -7,7 +7,7 @@ function(ob_fetch_quazip)
     include(FetchContent)
 
     # ----- Arguments --------------------------------------------------------------------------------------------
-    
+
     # Additional Function inputs
     set(oneValueArgs
         REF
@@ -28,14 +28,14 @@ function(ob_fetch_quazip)
         endforeach()
         message(WARNING "Not all required values were present!")
     endif()
-    
+
     # ----- General -------------------------------------------------------------------------------------------
-    
+
     # Make sure static libs are used
     set(BUILD_SHARED_LIBS OFF)
 
     # ----- ZLIB ----------------------------------------------------------------------------------------------
-    
+
     # Check if ZLIB is already imported
     if(NOT TARGET ZLIB::ZLIB)
         # See if ZLIB is available on the system
@@ -100,14 +100,14 @@ function(ob_fetch_quazip)
             add_library(ZLIB::ZLIB ALIAS zlibstatic)
         endif()
     endif()
-    
+
     # ----- QuaZip --------------------------------------------------------------------------------------------
 
     # QuaZip's install targets try to forward zlib's install targets, which aren't available since zlib is being
     # fetched and therefore won't have its cmake package scripts, so QuaZip's install configuration must be
     # skipped. This is fine since it won't be used anyway given it is being fetched as well.
     set(QUAZIP_INSTALL OFF)
-        
+
     # Configure reference argument, if set
     if(FETCH_QUAZIP_REF)
         set(_QUAZIP_OPTIONAL_REF "GIT_TAG" ${FETCH_QUAZIP_REF})
@@ -117,11 +117,11 @@ function(ob_fetch_quazip)
     if(FETCH_QUAZIP_QT_MAJOR_VER)
         set(QUAZIP_QT_MAJOR_VERSION ${FETCH_QUAZIP_QT_MAJOR_VER})
     endif()
-    
+
     # Don't let QuaZip overwrite the value of `QUAZIP_QT_MAJOR_VERSION` as a cache variable if it was already set
     # here. This is default in 3.21.0, but QuaZip uses an older CMake version
     set(CMAKE_POLICY_DEFAULT_CMP0126 NEW)
-        
+
     FetchContent_Declare(
         QuaZip
         GIT_REPOSITORY https://github.com/stachenov/quazip.git

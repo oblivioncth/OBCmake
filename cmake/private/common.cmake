@@ -13,7 +13,7 @@ function(__ob_parse_dependency return)
     set(multiValueArgs
         COMPONENTS
     )
-    
+
     set(requiredArgs
         PACKAGE
     )
@@ -23,20 +23,20 @@ function(__ob_parse_dependency return)
     ob_parse_arguments(DEPENDENCY "" "${oneValueArgs}" "${multiValueArgs}" "${requiredArgs}" ${ARGN})
 
     #---------------- Parse Dependency  ----------------------
-    
+
     if(DEFINED DEPENDENCY_VERSION)
         set(PACKAGE_STATEMENT "${DEPENDENCY_PACKAGE} ${DEPENDENCY_VERSION}")
     else()
         set(PACKAGE_STATEMENT "${DEPENDENCY_PACKAGE}")
     endif()
-    
+
     if(DEFINED DEPENDENCY_COMPONENTS)
         # Split components list to one string
         set(components_list "")
         foreach(comp ${DEPENDENCY_COMPONENTS})
             set(components_list "${components_list} ${comp}")
         endforeach()
-    
+
         string(CONFIGURE "${COMPONENT_ENTRY_TEMPLATE}" PARSED_ENTRY @ONLY)
     else()
         string(CONFIGURE "${ENTRY_TEMPLATE}" PARSED_ENTRY @ONLY)
@@ -65,21 +65,21 @@ function(__ob_generate_std_target_package_config_file)
     set(oneValueArgs
         OUTPUT
     )
-    
+
     set(multiValueArgs
         INCLUDES
         DEPENDS
     )
-    
+
     set(requiredArgs
         OUTPUT
         INCLUDES
     )
-    
+
     # Parse arguments
     include(OB/Utility)
     ob_parse_arguments(STD_TCF "" "${oneValueArgs}" "${multiValueArgs}" "${requiredArgs}" ${ARGN})
-    
+
     # Handle dependencies
     if(DEFINED STD_TCF_DEPENDS)
         # Create dependency check statements via the "PACKAGE", "COMPONENT" and "VERSION" sets
@@ -107,7 +107,7 @@ function(__ob_generate_std_target_package_config_file)
         string(CONFIGURE "${INCLUDE_TEMPLATE}" one_include @ONLY)
         set(CONFIG_INCLUDES "${CONFIG_INCLUDES}${one_include}\n")
     endforeach()
-    
+
     # Create config file
     configure_file(
         "${CFG_TEMPLATE_FILE}"

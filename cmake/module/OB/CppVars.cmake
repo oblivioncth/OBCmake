@@ -43,7 +43,7 @@
 # Will result in the header file "cmake_forwards.h" with the following contents:
 #
 # cmake_forwards.h``````````````````
-# 
+#
 # #ifndef CMAKE_FORWARDS_H
 # #define CMAKE_FORWARDS_H
 
@@ -64,7 +64,7 @@ function(ob_add_cpp_vars target)
     # Const variables
     set(GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}")
     set(TEMPLATE_FILE "${__OB_CMAKE_PRIVATE}/templates/__cpp_vars.h.in")
-    
+
     # Additional Function inputs
     set(oneValueArgs
         NAME
@@ -112,13 +112,13 @@ function(ob_add_cpp_vars target)
     set(GENERATED_NAME "${__NAME_LC}.h")
     set(GENERATED_PATH "${GENERATED_DIR}/${GENERATED_NAME}")
     set(GENERATED_GUARD "${__NAME_UC}_H")
-    
+
 
     # Generate defines
     while(CPP_VARS_VARS)
         # Get key/value
         list(POP_FRONT CPP_VARS_VARS __KEY __VALUE)
-        
+
         # Validate key
         if("${__KEY}" MATCHES "[ ]")
             message(FATAL_ERROR "${CMAKE_CURRENT_FUNCTION} a key cannot contain spaces!")
@@ -127,7 +127,7 @@ function(ob_add_cpp_vars target)
         # Update define list
         set(GENERATED_MACROS "${GENERATED_MACROS}#define ${CPP_VARS_PREFIX}${__KEY} ${__VALUE}\n")
     endwhile()
-    
+
     # Generate header
     configure_file("${TEMPLATE_FILE}"
         "${GENERATED_PATH}"
