@@ -373,7 +373,7 @@ function(ob_standard_project_misc_install)
     install(FILES
         "${CMAKE_CURRENT_SOURCE_DIR}/README.md"
         "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE"
-        COMPONENT ${PROJECT_NAME_LC}
+        COMPONENT ${PROJECT_NAMESPACE_LC}
         DESTINATION .
         ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
     )
