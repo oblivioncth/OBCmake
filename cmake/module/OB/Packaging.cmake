@@ -18,21 +18,14 @@ function(ob_standard_project_package)
         SUFFIX
         DIRECTORY
     )
+    
+    set(requiredArgs
+        VENDOR
+    )
 
     # Parse arguments
-    cmake_parse_arguments(STD_PKG "" "${oneValueArgs}" "" ${ARGN})
-
-    # Validate input
-    foreach(unk_val ${STD_PKG_UNPARSED_ARGUMENTS})
-        message(WARNING "Ignoring unrecognized parameter: ${unk_val}")
-    endforeach()
-
-    if(STD_PKG_KEYWORDS_MISSING_VALUES)
-        foreach(missing_val ${STD_PKG_KEYWORDS_MISSING_VALUES})
-            message(WARNING "A value for '${missing_val}' must be provided")
-        endforeach()
-        message(WARNING "Not all required values were present!")
-    endif()
+    include(OB/Utility)
+    ob_parse_arguments(STD_PKG "" "${oneValueArgs}" "" "${requiredArgs}" ${ARGN})
 
     # Handle output directory
     if(STD_PKG_DIRECTORY)
@@ -42,7 +35,6 @@ function(ob_standard_project_package)
     endif()
 
     # Get system architecture
-    include(OB/Utility)
     ob_get_system_architecture(__target_arch)
     
     # Determine linkage string
