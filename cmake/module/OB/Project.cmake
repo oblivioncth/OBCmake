@@ -30,8 +30,7 @@ endmacro()
 
 # Performs additional setup of a project
 #
-# - Defines PROJECT_NAME_LC and PROJECT_NAME_UC, self-explanatory, except that '-' is also switched
-#   for '_' in both of those versions of the name
+# - Defines PROJECT_NAME_LC and PROJECT_NAME_UC, self-explanatory
 # - Performs setup according to reasonable standards, similar to qt_standard_project_setup():
 #   https://github.com/qt/qtbase/blob/26fec96a813b8d1c4955b394794c66e5e830e4c4/src/corelib/Qt6CoreMacros.cmake#L2734
 #   > Automatically includes CMake's GNUInstallDirs
@@ -53,9 +52,7 @@ macro(ob_standard_project_setup)
 
     # Set lowercase and uppercase names
     string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LC)
-    string(REPLACE "-" "_" PROJECT_NAME_LC "${PROJECT_NAME_LC}")
     string(TOUPPER ${PROJECT_NAME} PROJECT_NAME_UC)
-    string(REPLACE "-" "_" PROJECT_NAME_UC "${PROJECT_NAME_UC}")
 
     # Include CMake GNUInstallDirs
     include(GNUInstallDirs)
