@@ -90,6 +90,8 @@ macro(ob_standard_project_setup)
 
     # Define namespace var using project name
     set(PROJECT_NAMESPACE "${PROJECT_NAME}")
+    string(TOLOWER ${PROJECT_NAMESPACE} PROJECT_NAMESPACE_LC)
+    string(TOUPPER ${PROJECT_NAMESPACE} PROJECT_NAMESPACE_UC)
 endmacro()
 
 function(__ob_generate_std_primary_package_config_file)
