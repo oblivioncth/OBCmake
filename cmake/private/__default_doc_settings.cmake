@@ -79,6 +79,9 @@ list(APPEND DOXYGEN_HTML_EXTRA_STYLESHEET
     "${DOC_MAIN_RESOURCE_PATH}/theme/doxygen-awesome/doxygen-awesome-customize.css"
 )
 
+# Extensions - General
+set(DOXYGEN_HTML_HEADER "${DOC_MAIN_RESOURCE_PATH}/header.html")
+
 # Extensions - Dark Mode Toggle
 list(APPEND DOXYGEN_HTML_EXTRA_FILES "${DOC_MAIN_RESOURCE_PATH}/theme/doxygen-awesome/doxygen-awesome-darkmode-toggle.js")
 list(APPEND DOXYGEN_HTML_EXTRA_STYLESHEET "${DOC_MAIN_RESOURCE_PATH}/theme/doxygen-awesome/doxygen-awesome-sidebar-only-darkmode-toggle.css")
