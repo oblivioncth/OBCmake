@@ -184,7 +184,7 @@ function(ob_standard_documentation)
     include(${__OB_CMAKE_PRIVATE}/__default_doc_settings.cmake)
 
     # Set project name
-    set(DOXYGEN_PROJ_NAME "${doc_proj_name}")
+    set(DOXYGEN_PROJECT_NAME "${doc_proj_name}")
 
     # Set project version using verbose version, if available
     if(DEFINED PROJECT_VERSION_VERBOSE)
