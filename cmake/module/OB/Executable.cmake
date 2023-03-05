@@ -189,24 +189,14 @@ function(ob_add_standard_executable target)
         )
     endif()
 
-    # Install target (release) and configure export
+    # Install target and configure export
     install(TARGETS ${_TARGET_NAME}
         COMPONENT ${_TARGET_NAME}
-        CONFIGURATIONS Release
         EXPORT ${_NAMESPACE}${_ALIAS}Targets
         ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
 
-    # Optionally install target in debug configuration
-    install(TARGETS ${_TARGET_NAME}
-        COMPONENT ${_TARGET_NAME}
-        CONFIGURATIONS Debug
-        ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        OPTIONAL
-    )
-        
     # Install target export
     install(EXPORT ${_NAMESPACE}${_ALIAS}Targets
         COMPONENT ${_TARGET_NAME}
