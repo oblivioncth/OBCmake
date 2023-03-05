@@ -175,6 +175,7 @@ function(ob_add_standard_executable target)
     # Configure target properties
     set_target_properties(${_TARGET_NAME} PROPERTIES
         EXPORT_NAME "${_ALIAS}"
+        DEBUG_POSTFIX "d"
     )
 
     if(CMAKE_SYSTEM_NAME STREQUAL Windows)
