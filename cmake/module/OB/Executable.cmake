@@ -189,14 +189,25 @@ function(ob_add_standard_executable target)
         )
     endif()
 
-    # Install target and export
+    # Install target (release) and configure export
     install(TARGETS ${_TARGET_NAME}
         COMPONENT ${_TARGET_NAME}
+        CONFIGURATIONS Release
         EXPORT ${_NAMESPACE}${_ALIAS}Targets
         ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
-        RUNTIME DESTINATION bin
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
 
+    # Optionally install target in debug configuration
+    install(TARGETS ${_TARGET_NAME}
+        COMPONENT ${_TARGET_NAME}
+        CONFIGURATIONS Debug
+        ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        OPTIONAL
+    )
+        
+    # Install target export
     install(EXPORT ${_NAMESPACE}${_ALIAS}Targets
         COMPONENT ${_TARGET_NAME}
         FILE "${_NAMESPACE}${_ALIAS}Targets.cmake"
@@ -219,12 +230,12 @@ function(ob_add_standard_executable target)
         #
         # We filter out Windows system libraries, and qt libraries since they're handled independently
         if(CMAKE_SYSTEM_NAME STREQUAL Windows)
-            set(_runtime_path "bin")
+            set(_runtime_path "${CMAKE_INSTALL_BINDIR}")
         elseif(CMAKE_SYSTEM_NAME STREQUAL Linux)
-            set(_runtime_path "lib")
+            set(_runtime_path "${CMAKE_INSTALL_LIBDIR}")
         else()
-            set(_runtime_path "lib")
-            message(WARNING "Unsupported platform, assuming 'lib' as runtime sub-path")
+            set(_runtime_path "${CMAKE_INSTALL_LIBDIR}")
+            message(WARNING "Unsupported platform, assuming '${CMAKE_INSTALL_LIBDIR}' as runtime sub-path")
         endif()
 
         install(CODE "set(OB_EXECUTABLE \"$<TARGET_FILE:${_TARGET_NAME}>\")"
