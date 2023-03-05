@@ -391,56 +391,12 @@ function(ob_add_standard_library target)
 
     # Package Config
     if(_CONFIG)
-        # Parse config parameters directly in this function to avoid awkward variable passing
-        set(cfg_gen_include "${_NAMESPACE}${_ALIAS}Targets.cmake")
-        set(cfg_gen_name "${_NAMESPACE}${_ALIAS}Config.cmake")
-        set(cfg_gen_path "${CMAKE_CURRENT_BINARY_DIR}/cmake/${cfg_gen_name}")
-
-        set(op
-            STANDARD
-        )
-
-        set(ova
-            CUSTOM
-        )
-
-        set(mva
-            DEPENDS
-        )
-
-        # Parse arguments
-        ob_parse_arguments(CONFIG "${op}" "${ova}" "${mva}" "" ${_CONFIG})
-
-        # Must have one, and only one form
-        if(DEFINED CONFIG_CUSTOM AND (CONFIG_STANDARD OR DEFINED CONFIG_DEPENDS))
-            message(FATAL_ERROR "CUSTOM and STANDARD mode are mutually exclusive!")
-        elseif(NOT DEFINED CONFIG_CUSTOM AND NOT CONFIG_STANDARD)
-            message(FATAL_ERROR "Either CUSTOM or STANDARD must be used!")
-        endif()
-
-        # Standard Form
-        if(CONFIG_STANDARD)
-            # Generate config
-            include("${__OB_CMAKE_PRIVATE}/common.cmake")
-            __ob_generate_std_target_package_config_file(
-                OUTPUT "${cfg_gen_path}"
-                INCLUDES "${cfg_gen_include}"
-                DEPENDS ${CONFIG_DEPENDS}
-            )
-        else() # Custom Form
-            configure_file(
-                "${CONFIG_CUSTOM}"
-                "${cfg_gen_path}"
-                @ONLY
-            )
-        endif()
-
-        # Install config
-        install(FILES
-            "${cfg_gen_path}"
-            COMPONENT ${_TARGET_NAME}
-            DESTINATION "cmake/${_ALIAS}"
-            ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
+        include("${__OB_CMAKE_PRIVATE}/common.cmake")
+        
+        __ob_parse_std_target_config_option(${_TARGET_NAME}
+            ${_NAMESPACE}
+            ${_ALIAS}
+            ${_CONFIG}
         )
     endif()
 endfunction()

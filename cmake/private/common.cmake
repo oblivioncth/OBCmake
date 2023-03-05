@@ -115,3 +115,62 @@ function(__ob_generate_std_target_package_config_file)
         @ONLY
     )
 endfunction()
+
+# Called as
+# __ob_parse_std_target_config_option(myTarget
+#   targetNamespace
+#   targetAlias
+#   ${CONFIG_OPTION_ARGS}
+#)
+function(__ob_parse_std_target_config_option target ns alias)
+    set(cfg_gen_include "${ns}${alias}Targets.cmake")
+    set(cfg_gen_name "${ns}${alias}Config.cmake")
+    set(cfg_gen_path "${CMAKE_CURRENT_BINARY_DIR}/cmake/${cfg_gen_name}")
+    
+    # Additional Function Arguments
+    set(options
+        STANDARD
+    )
+
+    set(oneValueArgs
+        CUSTOM
+    )
+
+    set(multiValueArgs
+        DEPENDS
+    )
+
+    # Parse arguments
+    ob_parse_arguments(CONFIG "${options}" "${oneValueArgs}" "${multiValueArgs}" "" ${ARGN})
+
+    # Must have one, and only one form
+    if(DEFINED CONFIG_CUSTOM AND (CONFIG_STANDARD OR DEFINED CONFIG_DEPENDS))
+        message(FATAL_ERROR "CUSTOM and STANDARD mode are mutually exclusive!")
+    elseif(NOT DEFINED CONFIG_CUSTOM AND NOT CONFIG_STANDARD)
+        message(FATAL_ERROR "Either CUSTOM or STANDARD must be used!")
+    endif()
+
+    # Standard Form
+    if(CONFIG_STANDARD)
+        # Generate config
+        __ob_generate_std_target_package_config_file(
+            OUTPUT "${cfg_gen_path}"
+            INCLUDES "${cfg_gen_include}"
+            DEPENDS ${CONFIG_DEPENDS}
+        )
+    else() # Custom Form
+        configure_file(
+            "${CONFIG_CUSTOM}"
+            "${cfg_gen_path}"
+            @ONLY
+        )
+    endif()
+
+    # Install config
+    install(FILES
+        "${cfg_gen_path}"
+        COMPONENT ${target}
+        DESTINATION "cmake/${alias}"
+        ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
+    )
+endfunction()
