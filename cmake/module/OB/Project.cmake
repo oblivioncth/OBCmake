@@ -58,8 +58,8 @@ macro(ob_standard_project_setup)
     include(GNUInstallDirs)
 
     # Set reasonable defaults for CMAKE_RUNTIME_OUTPUT_DIRECTORY on windows and CMAKE_INSTALL_RPATH on non-Apple
-    # Unix platforms. Puts DLLs in bin directory on Windows and allows applications to more easily find libraries
-    # within the same folder structure on those other platforms
+    # Unix platforms. Puts DLLs in bin directory on Windows and adds compiler flags on Unix such that built executables
+    # will search "../lib" for shared libraries, allowing them to run as they are structured within an install package.
     if(WIN32)
         if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
             set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
