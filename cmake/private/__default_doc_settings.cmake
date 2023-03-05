@@ -56,6 +56,7 @@ list(APPEND DOXYGEN_ALIASES
 
 list(APPEND DOXYGEN_PREDEFINED
 	"Q_DECLARE_FLAGS(flagsType,enumType)=typedef QFlags<enumType> flagsType\;"
+    "__declspec(x)="
 )
 
 # Prevent unwanted quoting
