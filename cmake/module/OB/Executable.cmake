@@ -266,28 +266,53 @@ function(ob_add_standard_executable target)
             COMPONENT ${_TARGET_NAME}
         )
 
-        # Qt dependencies. Currently this assumes that if the following command is available, Qt is likely
-        # in use for the project; however, it may not be for this specific executable so it may be desirable
-        # later to add an option to forcefully skip this step. Though, in that case the worst that will
-        # likely happen is that a benign qt.conf will be installed.
+        # Qt dependencies, only if target links to Qt and the helper script is available
         if(COMMAND "qt_generate_deploy_app_script")
-            # Check if Qt linkage type is the likely case
-            get_target_property(_qt_target_type Qt6::Core TYPE)
-            if(BUILD_SHARED_LIBS AND _qt_target_type STREQUAL "STATIC_LIBRARY")
-                message(WARNING "BUILD_SHARED_LIBS is ON but a static build of Qt is being used for runtime deployment.")
+            # Check for Qt link
+            set(qt_deploy _USE_QT)
+            if(NOT qt_deploy)
+                set(QT_REGEX [=[.*qt.*]=])
+            
+                # Check direct links, the above set should effectively handle this, but check anyway to be safe
+                get_target_property(direct_links ${_TARGET_NAME} "LINK_LIBRARIES")
+                foreach(link ${direct_links})
+                    if(link MATCHES QT_REGEX)
+                        set(qt_deploy TRUE)
+                        break()
+                    endif()
+                endforeach()
+                
+                # Check transitive links
+                if(NOT qt_deploy)
+                    get_target_property(transitive_links ${_TARGET_NAME} "INTERFACE_LINK_LIBRARIES")
+                    foreach(link ${transitive_links})
+                        if(link MATCHES QT_REGEX)
+                            set(qt_deploy TRUE)
+                            break()
+                        endif()
+                    endforeach()
+                endif()  
             endif()
+        
+            if(qt_deploy)
+                # Check if Qt linkage type is the likely case
+                get_target_property(_qt_target_type Qt6::Core TYPE)
+                if(BUILD_SHARED_LIBS AND _qt_target_type STREQUAL "STATIC_LIBRARY")
+                    message(WARNING "BUILD_SHARED_LIBS is ON but a static build of Qt is being used for runtime deployment.")
+                endif()
 
-            # This function check for appropriate platforms by itself
-            qt_generate_deploy_app_script(
-                TARGET "${_TARGET_NAME}"
-                FILENAME_VARIABLE qt_runtime_deploy_script
-                NO_UNSUPPORTED_PLATFORM_ERROR
-            )
+                # This function check for appropriate platforms by itself
+                qt_generate_deploy_app_script(
+                    TARGET "${_TARGET_NAME}"
+                    FILENAME_VARIABLE qt_runtime_deploy_script
+                    NO_UNSUPPORTED_PLATFORM_ERROR
+                )
 
-            install(SCRIPT ${qt_runtime_deploy_script}
-                COMPONENT ${_TARGET_NAME}
-            )
-        endif() # Fall back to using CMake only
+                install(SCRIPT ${qt_runtime_deploy_script}
+                    COMPONENT ${_TARGET_NAME}
+                )
+            endif()
+        endif()
     endif()
 
     # Package Config
