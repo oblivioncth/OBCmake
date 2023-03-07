@@ -217,9 +217,11 @@ function(ob_add_standard_executable target)
         # etc. to be installed. Each project would need an option to filter what it installs, which then
         # doesn't really work for third-party projects (without crazy amounts of bodging).
         #
-        # This methodd simply has CMake directly pull only what the executable needs.
+        # This method simply has CMake directly pull only what the executable needs.
         #
-        # We filter out Windows system libraries, and qt libraries since they're handled independently
+        # We filter out system libraries, and qt libraries (on windows) since they're handled independently
+        #
+        # TODO Add passthrough arguments for appending to the filters of file(GET_RUNTIME_DEPENDENCIES)
         if(CMAKE_SYSTEM_NAME STREQUAL Windows)
             set(_runtime_path "${CMAKE_INSTALL_BINDIR}")
         elseif(CMAKE_SYSTEM_NAME STREQUAL Linux)
@@ -235,17 +237,18 @@ function(ob_add_standard_executable target)
         install(CODE "set(OB_RUNTIME_PATH \"${_runtime_path}\")"
             COMPONENT ${_TARGET_NAME}
         )
-        install(CODE [[
+        install(CODE [==[
             file(GET_RUNTIME_DEPENDENCIES
                 EXECUTABLES "${OB_EXECUTABLE}"
                 RESOLVED_DEPENDENCIES_VAR _runtime_deps_resolved
                 UNRESOLVED_DEPENDENCIES_VAR _runtime_deps_unresolved
                 PRE_EXCLUDE_REGEXES
-                    "api-ms-"
-                    "ext-ms-"
-                    "qt"
+                    [=[api-ms-]=] # VC Redistibutable DLLs
+                    [=[ext-ms-]=] # Windows extension DLLs
+                    [=[[Qq]t[0-9]+[^\\/]*\.dll]=] # Qt Libs, don't block on Linux since users likely only have older Qt available
                 POST_EXCLUDE_REGEXES
-                    ".*system32/.*\\.dll"
+                    [=[.*system32\/.*\.dll]=] # Windows system DLLs
+                    [=[^\/(lib|usr\/lib|usr\/local\/lib)]=] # Unix system libraries
             )
             if(_runtime_deps_unresolved)
                 foreach(_udep ${_runtime_deps_unresolved})
@@ -262,11 +265,11 @@ function(ob_add_standard_executable target)
                   FOLLOW_SYMLINK_CHAIN
             )
             endforeach()
-            ]]
+            ]==]
             COMPONENT ${_TARGET_NAME}
         )
 
-        # Qt dependencies, only if target links to Qt and the helper script is available
+        # Qt dependencies (on Windows), only if target links to Qt and the helper script is available
         if(COMMAND "qt_generate_deploy_app_script")
             # Check for Qt link
             set(qt_deploy _USE_QT)
