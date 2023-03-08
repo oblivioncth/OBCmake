@@ -23,6 +23,9 @@
 #   Files are assumed to be under "${CMAKE_CURRENT_SOURCE_DIR}/src"
 # SOURCE_GEN:
 #   Files are assumed to be under "${CMAKE_CURRENT_BINARY_DIR}/src"
+# RESOURCE:
+#   Files are assumed to be under "${CMAKE_CURRENT_SOURCE_DIR}/res". Added via
+#   target_sources(<tgt> PRIVATE <resources>), mainly for .qrc or .rc files
 # LINKS:
 #   Same contents/arguments as with target_link_libraries().
 # CONFIG:
@@ -67,7 +70,8 @@ function(ob_add_standard_executable target)
 
     set(multiValueArgs
         SOURCE
-        SOOURCE_GEN
+        SOURCE_GEN
+        RESOURCE
         LINKS
         CONFIG
     )
@@ -96,6 +100,7 @@ function(ob_add_standard_executable target)
 
     set(_SOURCE "${STD_EXECUTABLE_SOURCE}")
     set(_SOURCE_GEN "${STD_EXECUTABLE_SOURCE_GEN}")
+    set(_RESOURCE "${STD_EXECUTABLE_RESOURCE}")
     set(_LINKS "${STD_EXECUTABLE_LINKS}")
     set(_CONFIG "${STD_EXECUTABLE_CONFIG}")
 
@@ -157,6 +162,23 @@ function(ob_add_standard_executable target)
         endforeach()
 
         target_sources(${_TARGET_NAME} PRIVATE ${full_impl_gen_paths})
+    endif()
+    
+    # Add resources
+    if(_RESOURCE)
+        foreach(res ${_RESOURCE})
+            # Ignore non-relevant system specific implementation
+            string(REGEX MATCH [[_win\.$]] IS_WIN_RES "${res}")
+            string(REGEX MATCH [[_linux\.$]] IS_LINUX_RES "${res}")
+            if((IS_WIN_RES AND NOT CMAKE_SYSTEM_NAME STREQUAL "Windows") OR
+               (IS_LINUX_RES AND NOT CMAKE_SYSTEM_NAME STREQUAL "Linux"))
+                continue()
+            endif()
+
+            list(APPEND full_res_paths "${CMAKE_CURRENT_SOURCE_DIR}/res/${res}")
+        endforeach()
+        
+        target_sources(${_TARGET_NAME} PRIVATE ${full_res_paths})
     endif()
 
     # Include current soure and generated source directories for easy includes from the top
