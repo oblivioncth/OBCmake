@@ -1,3 +1,6 @@
+include("${__OB_CMAKE_PRIVATE}/common.cmake")
+ob_module_minimum_required(3.20.0)
+
 # Essentially just defines and populates the following variables
 # if their paths can be located:
 # - QT_HELP_GEN_PATH: path to qhelpgenerator executable

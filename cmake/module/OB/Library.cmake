@@ -1,3 +1,6 @@
+include("${__OB_CMAKE_PRIVATE}/common.cmake")
+ob_module_minimum_required(3.23.0)
+
 # Helpers
 function(__ob_process_header_paths processed_paths middle_path)
     # Function inputs

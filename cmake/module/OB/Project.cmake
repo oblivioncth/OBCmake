@@ -1,3 +1,6 @@
+include("${__OB_CMAKE_PRIVATE}/common.cmake")
+ob_module_minimum_required(3.20.0)
+
 # - Set's non-intrusive default install prefix for top level projects
 # - Adds the install directory to the clean target
 # - Defines a variable containing "EXCLUDE_FROM_ALL" if project is not top-level, empty otherwise

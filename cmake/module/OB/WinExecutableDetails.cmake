@@ -1,3 +1,6 @@
+include("${__OB_CMAKE_PRIVATE}/common.cmake")
+ob_module_minimum_required(3.20.0)
+
 function(ob_set_win_executable_details target)
     # Const variables
     set(GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/rc_gen")

@@ -1,3 +1,6 @@
+include("${__OB_CMAKE_PRIVATE}/common.cmake")
+ob_module_minimum_required(3.20.0)
+
 # function(add_generated_resources_collection target)
 # Creates a qrc resource file in the given directory with the
 # given resources and adds the file to the given target
@@ -29,26 +32,14 @@ function(__ob_parse_file_entry return)
         PATH
         ALIAS
     )
+    
+    set(requiredArgs
+        PATH
+    )
 
     # Parse arguments
-    cmake_parse_arguments(FILE_ENTRY "" "${oneValueArgs}" "" ${ARGN})
-
-    # Validate input
-    foreach(unk_val ${FILE_ENTRY_UNPARSED_ARGUMENTS})
-        message(WARNING "Ignoring unrecognized parameter: ${unk_val}")
-    endforeach()
-
-    if(FILE_ENTRY_KEYWORDS_MISSING_VALUES)
-        foreach(missing_val ${FILE_ENTRY_KEYWORDS_MISSING_VALUES})
-            message(WARNING "A value for '${missing_val}' must be provided")
-        endforeach()
-        message(FATAL_ERROR "Not all required values were present!")
-    endif()
-
-    # Handle defaults/undefineds
-    if(NOT DEFINED FILE_ENTRY_PATH)
-        message(FATAL_ERROR "A path for each file entry must be included!")
-    endif()
+    include(OB/Utility)
+    ob_parse_arguments(FILE_ENTRY "" "${oneValueArgs}" "" "${requiredArgs}" ${ARGN})
 
     #---------------- Parse Entry ----------------------
     if(DEFINED FILE_ENTRY_ALIAS)
@@ -113,21 +104,13 @@ function(ob_add_generated_resources_collection target)
     set(multiValueArgs
         FILES
     )
+    set(requiredArgs
+        FILES
+    )
 
     # Parse arguments
-    cmake_parse_arguments(GEN_RES "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-
-    # Validate input
-    foreach(unk_val ${GEN_RES_UNPARSED_ARGUMENTS})
-        message(WARNING "Ignoring unrecognized parameter: ${unk_val}")
-    endforeach()
-
-    if(GEN_RES_KEYWORDS_MISSING_VALUES)
-        foreach(missing_val ${GEN_RES_KEYWORDS_MISSING_VALUES})
-            message(WARNING "A value for '${missing_val}' must be provided")
-        endforeach()
-        message(FATAL_ERROR "Not all required values were present!")
-    endif()
+    include(OB/Utility)
+    ob_parse_arguments(GEN_RES "" "${oneValueArgs}" "${multiValueArgs}" "${requiredArgs}" ${ARGN})
 
     # Handle defaults/undefineds
     if(NOT DEFINED GEN_RES_OUTPUT)
@@ -135,9 +118,6 @@ function(ob_add_generated_resources_collection target)
     endif()
     if(NOT DEFINED GEN_RES_PREFIX)
         set(GEN_RES_PREFIX "/")
-    endif()
-    if(NOT DEFINED GEN_RES_FILES)
-        message(FATAL_ERROR "A file list must be included!")
     endif()
 
     #---------------- Collection File Generation ----------------------

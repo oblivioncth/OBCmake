@@ -1,3 +1,6 @@
+include("${__OB_CMAKE_PRIVATE}/common.cmake")
+ob_module_minimum_required(3.20.0)
+
 function(ob_fetch_file)
     include(FetchContent)
 
@@ -7,21 +10,16 @@ function(ob_fetch_file)
         URL
         PATH_VAR
     )
+    
+    set(requiredArgs
+        NAME
+        URL
+        PATH_VAR
+    )
 
     # Parse arguments
-    cmake_parse_arguments(FILE_FETCH "" "${oneValueArgs}" "" ${ARGN})
-
-    # Validate input
-    foreach(unk_val ${FILE_FETCH_UNPARSED_ARGUMENTS})
-        message(WARNING "Ignoring unrecognized parameter: ${unk_val}")
-    endforeach()
-
-    if(FILE_FETCH_KEYWORDS_MISSING_VALUES)
-        foreach(missing_val ${FILE_FETCH_KEYWORDS_MISSING_VALUES})
-            message(WARNING "A value for '${missing_val}' must be provided")
-        endforeach()
-        message(FATAL_ERROR "Not all required values were present!")
-    endif()
+    include(OB/Utility)
+    ob_parse_arguments(FILE_FETCH "" "${oneValueArgs}" "" "${requiredArgs}" ${ARGN})
 
     # Setup file download via FetchContent
     FetchContent_Declare(${FILE_FETCH_NAME}

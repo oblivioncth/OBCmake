@@ -1,3 +1,6 @@
+include("${__OB_CMAKE_PRIVATE}/common.cmake")
+ob_module_minimum_required(3.20.0)
+
 macro(ob_find_qt6_package)
     # Find Qt normally
     find_package(Qt6 ${ARGN})

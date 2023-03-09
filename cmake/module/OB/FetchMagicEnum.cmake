@@ -1,3 +1,6 @@
+include("${__OB_CMAKE_PRIVATE}/common.cmake")
+ob_module_minimum_required(3.20.0)
+
 # Sets up Neargye's magic_enum to be grabbed from git
 
 # git_ref - Tag, branch name, or commit hash to retrieve. According to CMake docs,

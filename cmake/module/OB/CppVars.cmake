@@ -1,3 +1,6 @@
+include("${__OB_CMAKE_PRIVATE}/common.cmake")
+ob_module_minimum_required(3.20.0)
+
 #########################################################################################
 #
 # CppVars.cmake
@@ -73,29 +76,15 @@ function(ob_add_cpp_vars target)
     set(multiValueArgs
         VARS
     )
+    
+    set(requiredArgs
+        NAME
+        VARS
+    )
 
     # Parse arguments
-    cmake_parse_arguments(CPP_VARS "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-
-    # Validate input
-    foreach(unk_val ${CPP_VARS_UNPARSED_ARGUMENTS})
-        message(WARNING "Ignoring unrecognized parameter: ${unk_val}")
-    endforeach()
-
-    if(CPP_VARS_KEYWORDS_MISSING_VALUES)
-        foreach(missing_val ${CPP_VARS_KEYWORDS_MISSING_VALUES})
-            message(WARNING "A value for '${missing_val}' must be provided")
-        endforeach()
-        message(FATAL_ERROR "Not all required values were present!")
-    endif()
-
-    # Handle defaults/undefineds
-    if(NOT DEFINED CPP_VARS_NAME)
-        message(FATAL_ERROR "A name for the variable group must be provided!")
-    endif()
-    if(NOT DEFINED CPP_VARS_VARS)
-        message(FATAL_ERROR "Variables were not provided!")
-    endif()
+    include(OB/Utility)
+    ob_parse_arguments(CPP_VARS "" "${oneValueArgs}" "${multiValueArgs}" "${requiredArgs}" ${ARGN})
 
     # Validate VARS input
     list(LENGTH CPP_VARS_VARS __VARSC)

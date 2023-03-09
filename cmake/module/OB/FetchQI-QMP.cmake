@@ -1,3 +1,6 @@
+include("${__OB_CMAKE_PRIVATE}/common.cmake")
+ob_module_minimum_required(3.20.0)
+
 # Sets up QI-QMP to be built/installed as an external project for use in the main project
 
 # git_ref - Tag, branch name, or commit hash to retrieve. According to CMake docs,

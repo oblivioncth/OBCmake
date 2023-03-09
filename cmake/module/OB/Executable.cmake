@@ -1,3 +1,6 @@
+include("${__OB_CMAKE_PRIVATE}/common.cmake")
+ob_module_minimum_required(3.20.0)
+
 # Creates an executable target in the "OB Standard Fashion"
 # via the provided arguments. Also produces an install
 # component that matches the target name.

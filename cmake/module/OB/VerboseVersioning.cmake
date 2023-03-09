@@ -1,4 +1,6 @@
 ### verbose_versioning.cmake ###
+include("${__OB_CMAKE_PRIVATE}/common.cmake")
+ob_module_minimum_required(3.20.0)
 
 # Include this script as part of a CMakeList.txt used for configuration
 # and call the function "setup_verbose_versioning" to get the project's git-based

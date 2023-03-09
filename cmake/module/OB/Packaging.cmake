@@ -1,3 +1,6 @@
+include("${__OB_CMAKE_PRIVATE}/common.cmake")
+ob_module_minimum_required(3.20.0)
+
 # Configures and calls CPack in a straightforward manner, designed to be called from
 # top-level CMakeLists.txt
 #

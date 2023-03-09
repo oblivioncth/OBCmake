@@ -1,3 +1,13 @@
+macro(ob_module_minimum_required min_ver)
+    if(CMAKE_VERSION VERSION_LESS "${min_ver}") # Have to expand input variable since this is a macro
+        file(RELATIVE_PATH __ob_module_sub_path
+            "${__OB_CMAKE_ROOT}/module"
+            "${CMAKE_CURRENT_LIST_FILE}"
+        )
+        message(FATAL_ERROR "CMake version ${min_ver} is required to use ${__ob_module_sub_path}")
+    endif()
+endmacro()
+
 function(__ob_parse_dependency return)
     #---------------- Function Setup ----------------------
     # Const variables

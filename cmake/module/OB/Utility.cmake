@@ -1,3 +1,6 @@
+include("${__OB_CMAKE_PRIVATE}/common.cmake")
+ob_module_minimum_required(3.20.0)
+
 function(ob_string_to_proper_case str return)
   string(SUBSTRING ${str} 0 1 FIRST_LETTER)
   string(SUBSTRING ${str} 1 -1 OTHER_LETTERS)
