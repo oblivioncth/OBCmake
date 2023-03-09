@@ -109,13 +109,12 @@ endfunction()
 #                     ./res/snippets
 # - QT_MODULES: List of Qt modules to link to via .tag files (i.e. qtcore, qtquick, etc).
 #   Ignored if no QT_PREFIX was provided.
-function(ob_standard_documentation)
+function(ob_standard_documentation target)
     #---------------- Function Setup ----------------------
     # Const variables
 
     # Additional Function inputs
     set(oneValueArgs
-        TARGET_NAME
         DOXY_VER
         PROJ_NAME
         INSTALL_DESTINATION
@@ -127,31 +126,16 @@ function(ob_standard_documentation)
         ADDITIONAL_ROOTS
         QT_MODULES
     )
+    
+    set(requiredArgs
+        DOXY_VER
+    )
 
     # Parse arguments
-    cmake_parse_arguments(STD_DOCS "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-
-    # Validate input
-    foreach(unk_val ${STD_DOCS_UNPARSED_ARGUMENTS})
-        message(WARNING "Ignoring unrecognized parameter: ${unk_val}")
-    endforeach()
-
-    if(STD_DOCS_KEYWORDS_MISSING_VALUES)
-        foreach(missing_val ${STD_DOCS_KEYWORDS_MISSING_VALUES})
-            message(WARNING "A value for '${missing_val}' must be provided")
-        endforeach()
-        message(FATAL_ERROR "Not all required values were present!")
-    endif()
+    include(OB/Utility)
+    ob_parse_arguments(STD_DOCS "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     # Handle undefineds
-    if(NOT DEFINED STD_DOCS_TARGET_NAME)
-        message(FATAL_ERROR "A docs target name must be specified!")
-    endif()
-
-    if(NOT DEFINED STD_DOCS_DOXY_VER)
-        message(FATAL_ERROR "A Doxygen versison must be specified!")
-    endif()
-
     if(DEFINED STD_DOCS_PROJ_NAME)
         set(doc_proj_name "${STD_DOCS_PROJ_NAME}")
     else()
@@ -286,18 +270,18 @@ function(ob_standard_documentation)
     )
 
     # Add Doxygen target
-    doxygen_add_docs(${STD_DOCS_TARGET_NAME}
+    doxygen_add_docs(${target}
         ${DOC_INPUT_LIST}
         ${TOP_PROJ_INCLUDE_IN_ALL}
     )
 
     #------------------------- Install ---------------------------
     install(DIRECTORY ${DOC_BUILD_PATH}/
-        COMPONENT ${STD_DOCS_TARGET_NAME}
+        COMPONENT ${target}
         DESTINATION "${doc_install_dest}"
         CONFIGURATIONS Release
         ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
     )
 
-    message(STATUS "Doxygen configured for ${PROJECT_NAME}. Build target '${STD_DOCS_TARGET_NAME}' to build the documentation.")
+    message(STATUS "Doxygen configured for ${PROJECT_NAME}. Build target '${target}' to build the documentation.")
 endfunction()
