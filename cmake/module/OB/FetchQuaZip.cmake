@@ -15,30 +15,13 @@ function(ob_fetch_quazip)
     )
 
     # Parse arguments
-    cmake_parse_arguments(FETCH_QUAZIP "" "${oneValueArgs}" "" ${ARGN})
-
-    # Validate input
-    foreach(unk_val ${FETCH_QUAZIP_UNPARSED_ARGUMENTS})
-        message(WARNING "Ignoring unrecognized parameter: ${unk_val}")
-    endforeach()
-
-    if(FETCH_QUAZIP_KEYWORDS_MISSING_VALUES)
-        foreach(missing_val ${FETCH_QUAZIP_KEYWORDS_MISSING_VALUES})
-            message(WARNING "A value for '${missing_val}' must be provided")
-        endforeach()
-        message(WARNING "Not all required values were present!")
-    endif()
-
-    # ----- General -------------------------------------------------------------------------------------------
-
-    # Make sure static libs are used
-    set(BUILD_SHARED_LIBS OFF)
+    include(OB/Utility)
+    ob_parse_arguments(FETCH_QUAZIP "" "${oneValueArgs}" "" "" ${ARGN})
 
     # ----- ZLIB ----------------------------------------------------------------------------------------------
 
     # Check if ZLIB is already imported
     if(NOT TARGET ZLIB::ZLIB)
-    
         # Using the system ZLIB via find_package(ZLIB) on Windows is faulty because the CMake FindZLIB module doesn't always
         # respect the value ZLIB_USE_STATIC_LIBS, so targets may inadvertently end up with a dependency to the wrong
         # flavor of ZLIB if doing so. Hopefully in the future the module will be improved to make ZLIB_USE_STATIC_LIBS
@@ -54,7 +37,6 @@ function(ob_fetch_quazip)
                 set(ZLIB_USE_STATIC_LIBS ON)
             endif()
             
-            set(ZLIB_USE_STATIC_LIBS ON)
             find_package(ZLIB QUIET)
         endif()
         
