@@ -1,9 +1,6 @@
 function(ob_fetch_libsquish svn_rev)
     include(FetchContent)
 
-    # Make sure static libs are used
-    set(BUILD_SHARED_LIBS OFF)
-
     FetchContent_Declare(LIBSQUISH
         SVN_REPOSITORY  svn://svn.code.sf.net/p/libsquish/code/trunk
         SVN_REVISION    -r${svn_rev}
@@ -11,11 +8,11 @@ function(ob_fetch_libsquish svn_rev)
 
     # Sadly, libsquish's CMake's compatability with FetchContent is (understandably given its age) garbage, as it
     # was written before modern CMake practices emerged, and isn't being updated anymore; therefore, some work
-    # must be done to fetch it in a way that makes it more easily consumeable. Because of this,
+    # must be done to fetch it in a way that makes it more easily consumable. Because of this,
     # FetchContent_MakeAvailable cannot be used and instead FetchContent_Populate must be used in addition to
     # some manual configuration.
 
-    # Prevent libsquish from overwriting "BUILD_SHARED_LIBS" with its "option" version (old practice)
+    # Prevent libsquish from overwriting "BUILD_SHARED_LIBS" with its "option" version
     set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
     # Populate libsquish build
