@@ -255,9 +255,11 @@ function(ob_add_standard_executable target)
 
         install(CODE "set(OB_EXECUTABLE \"$<TARGET_FILE:${_TARGET_NAME}>\")"
             COMPONENT ${_TARGET_NAME}
+            ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
         )
         install(CODE "set(OB_RUNTIME_PATH \"${_runtime_path}\")"
             COMPONENT ${_TARGET_NAME}
+            ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
         )
         install(CODE [==[
             file(GET_RUNTIME_DEPENDENCIES
@@ -289,6 +291,7 @@ function(ob_add_standard_executable target)
             endforeach()
             ]==]
             COMPONENT ${_TARGET_NAME}
+            ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
         )
 
         # Qt dependencies (on Windows), only if target links to Qt and the helper script is available
@@ -341,6 +344,7 @@ function(ob_add_standard_executable target)
 
                 install(SCRIPT ${qt_runtime_deploy_script}
                     COMPONENT ${_TARGET_NAME}
+                    ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
                 )
             endif()
         endif()
