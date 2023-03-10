@@ -158,6 +158,8 @@ endfunction()
 #   Files are assumed to be under "${CMAKE_CURRENT_SOURCE_DIR}/src"
 # LINKS:
 #   Same contents/arguments as with target_link_libraries().
+# DEFINITIONS
+#   Same contents/arguments as with target_compile_definitions().
 # CONFIG:
 #   This optional argument can take two forms.
 #
@@ -201,6 +203,7 @@ function(ob_add_standard_library target)
         IMPLEMENTATION
         DOC_ONLY
         LINKS
+        DEFINITIONS
         CONFIG
     )
 
@@ -236,6 +239,7 @@ function(ob_add_standard_library target)
     set(_IMPLEMENTATION "${STD_LIBRARY_IMPLEMENTATION}")
     set(_DOC_ONLY "${STD_LIBRARY_DOC_ONLY}")
     set(_LINKS "${STD_LIBRARY_LINKS}")
+    set(_DEFINITIONS "${STD_LIBRARY_DEFINITIONS}")
     set(_CONFIG "${STD_LIBRARY_CONFIG}")
 
     # Compute Intermediate Values
@@ -395,6 +399,11 @@ function(ob_add_standard_library target)
     # Link to libraries
     if(_LINKS)
         target_link_libraries(${_TARGET_NAME} ${_LINKS})
+    endif()
+    
+    # Add definitions
+    if(_DEFINITIONS)
+        target_compile_definitions(${_TARGET_NAME} ${_DEFINITIONS})
     endif()
 
     # Configure target properties
