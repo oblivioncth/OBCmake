@@ -1,14 +1,25 @@
-macro(ob_module_minimum_required min_ver)
+## NOTE the cmake_minimum_required call for the whole project needs to be gated by the content of this
+## file as well as all modules
+
+macro(__ob_command name min_ver)
+    # This could use CMAKE_CURRENT_FUNCTION instead of requiring the name to be passed, but then it wouldn't
+    # work for macros and force the minimum required CMake version to 3.17
     if(CMAKE_VERSION VERSION_LESS "${min_ver}") # Have to expand input variable since this is a macro
-        file(RELATIVE_PATH __ob_module_sub_path
-            "${__OB_CMAKE_ROOT}/module"
-            "${CMAKE_CURRENT_LIST_FILE}"
-        )
-        message(FATAL_ERROR "CMake version ${min_ver} is required to use ${__ob_module_sub_path}")
+        message(FATAL_ERROR "CMake version ${min_ver} is required to use ${name}")
+    endif()
+endmacro()
+
+macro(__ob_internal_command name min_ver)
+    # This could use CMAKE_CURRENT_FUNCTION instead of requiring the name to be passed, but then it wouldn't
+    # work for macros and force the minimum required CMake version to 3.17
+    if(CMAKE_VERSION VERSION_LESS "${min_ver}") # Have to expand input variable since this is a macro
+        message(FATAL_ERROR "The internal OB command ${name} is not properly guarded by a CMake version check of at least ${min_ver}")
     endif()
 endmacro()
 
 function(__ob_parse_dependency return)
+    __ob_internal_command(__ob_parse_dependency "3.0.0")
+
     #---------------- Function Setup ----------------------
     # Const variables
     set(COMPONENT_ENTRY_TEMPLATE "find_dependency(@PACKAGE_STATEMENT@ COMPONENTS@components_list@)")
@@ -60,6 +71,8 @@ endfunction()
 # The INCLUDE paths are relative to ${CMAKE_CURRENT_LIST_DIR}, i.e. where the configured file gets
 # installed.
 function(__ob_generate_std_target_package_config_file)
+    __ob_internal_command(__ob_generate_std_target_package_config_file "3.18.0")
+
     # Const variables
     set(CFG_TEMPLATE_FILE "${__OB_CMAKE_PRIVATE}/templates/__standard_target_pkg_cfg.cmake.in")
     string(CONCAT DEPENDENCY_CHECKS_HEADING
@@ -133,6 +146,8 @@ endfunction()
 #   ${CONFIG_OPTION_ARGS}
 #)
 function(__ob_parse_std_target_config_option target ns alias)
+    __ob_internal_command(__ob_parse_std_target_config_option "3.6.0")
+
     set(cfg_gen_include "${ns}${alias}Targets.cmake")
     set(cfg_gen_name "${ns}${alias}Config.cmake")
     set(cfg_gen_path "${CMAKE_CURRENT_BINARY_DIR}/cmake/${cfg_gen_name}")
