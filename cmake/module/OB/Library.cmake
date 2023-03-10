@@ -66,6 +66,36 @@ function(__ob_register_header_set set_name group_name base_dir)
     )
 endfunction()
 
+function(__ob_parse_export_header basename path)
+    __ob_internal_command(__ob_process_header_paths "3.0.0")
+    
+    # Function inputs
+    set(oneValueArgs
+        BASE_NAME
+        PATH
+    )
+
+    # Required Arguments (All Types)
+    set(requiredArgs
+        PATH
+    )
+
+    # Parse arguments
+    include(OB/Utility)
+    ob_parse_arguments(EXPORT_HEADER "" "${oneValueArgs}" "" "${requiredArgs}" ${ARGN})
+    
+    set(_PATH ${EXPORT_HEADER_PATH})
+    
+    if(EXPORT_HEADER_BASE_NAME)
+        set(_BASE_NAME "${EXPORT_HEADER_BASE_NAME}")
+    else()
+        set(_BASE_NAME "")
+    endif()
+    
+    set(${basename} "${_BASE_NAME}" PARENT_SCOPE)
+    set(${path} "${_PATH}" PARENT_SCOPE)
+endfunction()
+
 # Creates a library target in the "OB Standard Fashion"
 # via the provided arguments. Also produces an install
 # component that matches the target name.
@@ -84,18 +114,26 @@ endfunction()
 #   Used for file generation, export configuration, and installation pathing.
 # TYPE: Type of library, follows BUILD_SHARED_LIBS if not defined
 # EXPORT_HEADER:
+#   Inner Form:
+#       EXPORT_HEADER
+#           BASENAME MYLIB
+#           PATH "path/of/export/header.h"
+#            
 #   This function generates an export header that provides export macros
 #   for a library to more easily support shared builds. This argument is
 #   to contain the sub-path (filename included) that the export header
-#   is placed within the the portion of the projects include tree dedicated
-#   to this library (automatically determined via NAMESPACE and ALIAS). It
-#   will be the same path used to include the header in source.
+#   is placed within the the portion of the project's include tree dedicated
+#   to this library. It will be the same path used to include the header in source.
 #
 #   For example, if the path provided is "mylib/section/export.h"
 #   Then the header can be included within the source for this target via:
 #   #include "mylib/section/export.h"
 #
 #   It will be added as an include file and install automatically.
+#
+#   The BASE_NAME argument is optional sets the prefix of all macros present
+#   in the header in accordance with the CMake command GENERATE_EXPORT_HEADER.
+#   if not provided it will be set to "${NAMESPACE}_${ALIAS}".
 #
 #   This argument is required unless the TYPE is INTERFACE.
 # HEADERS_PRIVATE:
@@ -323,16 +361,25 @@ function(ob_add_standard_library target)
         # This is required regardless of whether or not the lib is actually shared in order for the sources that
         # use the macros this provides to compile
         include(GenerateExportHeader)
+        __ob_parse_export_header(_eh_bn _eh_path ${_EXPORT_HEADER})
+        
+        if(_eh_bn)
+            set(export_header_basename "${_eh_bn}")
+        else()
+            set(export_header_basename "${NAMESPACE}_${ALIAS}")
+        endif()
+        
+        set(eh_gen_rel_path "${_eh_path}")
+        set(eh_gen_path "${CMAKE_CURRENT_BINARY_DIR}/include/${eh_gen_rel_path}")
 
-        # The STATIC_DEFINE portion of this function only needs to be used if the project is setup to build the
+        # The STATIC_DEFINE portion of 'generate_export_header' only needs to be used if the project is setup to build the
         # static and shared versions of the library from the same configuration, as then only one header is
         # generated and used for both. We don't do this however, and the header generation is smart enough to
         # resolve the macros to empty strings when configuring a static library. The function also ensures the
         # correct definition is set on the target to use the EXPORT variant of the macro value instead of the
         # IMPORT variant.
-        set(eh_gen_rel_path "${_EXPORT_HEADER}")
-        set(eh_gen_path "${CMAKE_CURRENT_BINARY_DIR}/include/${eh_gen_rel_path}")
         generate_export_header(${_TARGET_NAME}
+            BASE_NAME "${export_header_basename}"
             EXPORT_FILE_NAME "${eh_gen_path}"
         )
 
