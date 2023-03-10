@@ -30,6 +30,10 @@ include("${__OB_CMAKE_PRIVATE}/common.cmake")
 #   target_sources(<tgt> PRIVATE <resources>), mainly for .qrc or .rc files
 # LINKS:
 #   Same contents/arguments as with target_link_libraries().
+# DEFINITIONS
+#   Same contents/arguments as with target_compile_definitions().
+# OPTIONS:
+#   Same contents/arguments as with target_compile_options().
 # CONFIG:
 #   This optional argument can take two forms.
 #
@@ -76,6 +80,8 @@ function(ob_add_standard_executable target)
         SOURCE_GEN
         RESOURCE
         LINKS
+        DEFINITIONS
+        OPTIONS
         CONFIG
     )
 
@@ -105,6 +111,8 @@ function(ob_add_standard_executable target)
     set(_SOURCE_GEN "${STD_EXECUTABLE_SOURCE_GEN}")
     set(_RESOURCE "${STD_EXECUTABLE_RESOURCE}")
     set(_LINKS "${STD_EXECUTABLE_LINKS}")
+    set(_DEFINITIONS "${STD_LIBRARY_DEFINITIONS}")
+    set(_OPTIONS "${STD_LIBRARY_OPTIONS}"
     set(_CONFIG "${STD_EXECUTABLE_CONFIG}")
 
     # Compute Intermediate Values
@@ -195,6 +203,16 @@ function(ob_add_standard_executable target)
     # Link to libraries
     if(_LINKS)
         target_link_libraries(${_TARGET_NAME} ${_LINKS})
+    endif()
+    
+    # Add definitions
+    if(_DEFINITIONS)
+        target_compile_definitions(${_TARGET_NAME} ${_DEFINITIONS})
+    endif()
+    
+    # Add options
+    if(_OPTIONS)
+        target_compile_options(${_TARGET_NAME} ${_OPTIONS})
     endif()
 
     # Configure target properties
