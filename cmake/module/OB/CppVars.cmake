@@ -1,5 +1,4 @@
 include("${__OB_CMAKE_PRIVATE}/common.cmake")
-ob_module_minimum_required(3.20.0)
 
 #########################################################################################
 #
@@ -63,6 +62,8 @@ ob_module_minimum_required(3.20.0)
 ##########################################################################################
 
 function(ob_add_cpp_vars target)
+    __ob_command(ob_add_cpp_vars "3.15.0")
+
     #---------------- Function Setup ----------------------
     # Const variables
     set(GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/src")

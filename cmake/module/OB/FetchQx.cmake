@@ -1,5 +1,4 @@
 include("${__OB_CMAKE_PRIVATE}/common.cmake")
-ob_module_minimum_required(3.20.0)
 
 # Sets up Qx to be built/installed as an external project for use in the main project
 
@@ -9,6 +8,8 @@ ob_module_minimum_required(3.20.0)
 #              If provided, only the components in the list will be configured.
 
 function(ob_fetch_qx)
+    __ob_command(ob_fetch_qx "3.11.0")
+
     # Additional Function inputs
     set(oneValueArgs
         REF

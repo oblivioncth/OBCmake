@@ -1,5 +1,4 @@
 include("${__OB_CMAKE_PRIVATE}/common.cmake")
-ob_module_minimum_required(3.20.0)
 
 # Configures and calls CPack in a straightforward manner, designed to be called from
 # top-level CMakeLists.txt
@@ -15,6 +14,8 @@ ob_module_minimum_required(3.20.0)
 # to have been used.
 
 function(ob_standard_project_package)
+    __ob_command(ob_standard_project_package "3.0.0")
+
     # Additional Function inputs
     set(oneValueArgs
         VENDOR

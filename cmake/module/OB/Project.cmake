@@ -1,11 +1,12 @@
 include("${__OB_CMAKE_PRIVATE}/common.cmake")
-ob_module_minimum_required(3.20.0)
 
 # - Set's non-intrusive default install prefix for top level projects
 # - Adds the install directory to the clean target
 # - Defines a variable containing "EXCLUDE_FROM_ALL" if project is not top-level, empty otherwise
 # - Defines a variable containing "ALL" if project is top-level, empty otherwise
 macro(ob_top_level_project_setup)
+    __ob_command(ob_top_level_project_setup "3.21.0")
+
     if(${PROJECT_IS_TOP_LEVEL})
         message(STATUS "NOTE: ${PROJECT_NAME} is being configured as a top-level project")
 
@@ -50,6 +51,8 @@ endmacro()
 # TODO: Add tuneable arguments to this as needed
 
 macro(ob_standard_project_setup)
+    __ob_command(ob_standard_project_setup "3.21.0")
+
     # Note current cmake minimum version
     set(PROJECT_CMAKE_MINIMUM_REQUIRED_VERSION "${CMAKE_MINIMUM_REQUIRED_VERSION}")
 
@@ -95,6 +98,8 @@ macro(ob_standard_project_setup)
 endmacro()
 
 function(__ob_generate_std_primary_package_config_file)
+    __ob_internal_command(__ob_generate_std_primary_package_config_file "3.18.0")
+
     #---------------- Function Setup ----------------------
     # Const variables
     set(CFG_TEMPLATE_FILE "${__OB_CMAKE_PRIVATE}/templates/__standard_primary_pkg_cfg.cmake.in")
@@ -133,7 +138,6 @@ function(__ob_generate_std_primary_package_config_file)
 
     # Handle dependencies
     if(STD_PCF_DEPENDS)
-        include("${__OB_CMAKE_PRIVATE}/common.cmake")
         # Create dependency check statements via the "PACKAGE", "COMPONENT" and "VERSION" sets
         ob_parse_arguments_list(
             "PACKAGE"
@@ -170,6 +174,8 @@ function(__ob_generate_std_primary_package_config_file)
 endfunction()
 
 function(__ob_split_target_config_nsa_str str ns_out alias_out)
+    __ob_internal_command(__ob_split_target_config_nsa_str "3.0.0")
+
     # Const
     set(SEP "::")
 
@@ -242,6 +248,8 @@ endfunction()
 # only needed for any targets that the project didn't make use of the ob_ functions to
 # to add.
 function(ob_standard_project_package_config)
+    __ob_command(ob_standard_project_package_config "3.11.0")
+
     #---------------- Function Setup ----------------------
     # Const variables
     set(OUTPUT_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/cmake")
@@ -370,6 +378,8 @@ endfunction()
 #
 # The install component for both installs is set to PROJECT_NAME_LC.
 function(ob_standard_project_misc_install)
+    __ob_command(ob_standard_project_misc_install "3.6.0")
+
     #---------------- Installs  ----------------------
 
     # Install README and LICENSE

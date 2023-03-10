@@ -1,7 +1,8 @@
 include("${__OB_CMAKE_PRIVATE}/common.cmake")
-ob_module_minimum_required(3.20.0)
 
 function(ob_string_to_proper_case str return)
+  __ob_command(ob_string_to_proper_case "3.2.0")
+
   string(SUBSTRING ${str} 0 1 FIRST_LETTER)
   string(SUBSTRING ${str} 1 -1 OTHER_LETTERS)
   string(TOUPPER ${FIRST_LETTER} FIRST_LETTER_UC)
@@ -11,6 +12,8 @@ function(ob_string_to_proper_case str return)
 endfunction()
 
 function(ob_create_header_guard prefix name return)
+    __ob_command(ob_create_header_guard "3.0.0")
+
     # Replace all dashes and space with underscore, force uppercase
     string(REGEX REPLACE "[\r\n\t -]" "_" prefix_clean ${prefix})
     string(REGEX REPLACE "[\r\n\t -]" "_" name_clean ${name})
@@ -21,6 +24,8 @@ function(ob_create_header_guard prefix name return)
 endfunction()
 
 function(ob_get_subdirectory_list path return)
+    __ob_command(ob_get_subdirectory_list "3.0.0")
+
     file(GLOB path_children RELATIVE "${path}" "${path}/*")
     foreach(child ${path_children})
         if(IS_DIRECTORY "${path}/${child}")
@@ -32,6 +37,7 @@ function(ob_get_subdirectory_list path return)
 endfunction()
 
 function(ob_get_proper_system_name return)
+    __ob_command(ob_get_proper_system_name "3.0.0")
     if(CMAKE_SYSTEM_NAME STREQUAL Windows)
         set(${return} Windows PARENT_SCOPE)
     elseif(CMAKE_SYSTEM_NAME STREQUAL Linux)
@@ -57,6 +63,7 @@ function(ob_get_proper_system_name return)
 endfunction()
 
 function(ob_get_system_architecture return)
+    __ob_command(ob_get_system_architecture "3.0.0")
     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
       set(sys_arch x64)
     else()
@@ -123,6 +130,8 @@ endfunction()
 # with "parsed_files" then containing the result.
 
 function(ob_parse_arguments_list start_keyword parser return)
+    __ob_command(ob_parse_arguments_list "3.18.0")
+
     # Constants
     set(FORMAL_PARAMETER_COUNT 3)
 
@@ -191,6 +200,8 @@ endfunction()
 # be used instead, which will affect every project added at the same or lower scope
 # after the function returns
 function(ob_cache_project_version)
+    __ob_command(ob_cache_project_version "3.15.0")
+
     set(INJECTION_FILE "${__OB_CMAKE_PRIVATE}/__project_cache_version_injection.cmake")
 
     if(ARGC GREATER 1)
@@ -206,6 +217,8 @@ endfunction()
 # extra "required-keywords" argument. Handles argument validation and ensures
 # that all required keywords were provided
 macro(ob_parse_arguments prefix opt ovk mvk rk)
+    __ob_command(ob_parse_arguments "3.0.0")
+
     # Parse
     cmake_parse_arguments("${prefix}" "${opt}" "${ovk}" "${mvk}" ${ARGN})
 

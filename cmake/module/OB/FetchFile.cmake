@@ -1,7 +1,8 @@
 include("${__OB_CMAKE_PRIVATE}/common.cmake")
-ob_module_minimum_required(3.20.0)
 
 function(ob_fetch_file)
+    __ob_command(ob_fetch_file "3.20.0")
+
     include(FetchContent)
 
     # Additional Function inputs

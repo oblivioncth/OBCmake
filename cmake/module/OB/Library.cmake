@@ -1,8 +1,9 @@
 include("${__OB_CMAKE_PRIVATE}/common.cmake")
-ob_module_minimum_required(3.23.0)
 
 # Helpers
 function(__ob_process_header_paths processed_paths middle_path)
+    __ob_internal_command(__ob_process_header_paths "3.0.0")
+
     # Function inputs
     set(oneValueArgs
         BASE
@@ -40,6 +41,8 @@ function(__ob_process_header_paths processed_paths middle_path)
 endfunction()
 
 function(__ob_register_header_set set_name group_name base_dir)
+    __ob_internal_command(__ob_register_header_set "3.23.0")
+
     set(header_args "${ARGN}")
 
     # Get full paths
@@ -141,6 +144,7 @@ endfunction()
 #   The config file is installed as:
 #   ${CMAKE_INSTALL_PREFIX)/cmake/${NAMESPACE}/${NAMESPACE}${ALIAS}Config.cmake
 function(ob_add_standard_library target)
+    __ob_command(ob_add_standard_library "3.23.0")
 
     #------------ Argument Handling ---------------
 
@@ -393,9 +397,7 @@ function(ob_add_standard_library target)
     )
 
     # Package Config
-    if(_CONFIG)
-        include("${__OB_CMAKE_PRIVATE}/common.cmake")
-        
+    if(_CONFIG)        
         __ob_parse_std_target_config_option(${_TARGET_NAME}
             ${_NAMESPACE}
             ${_ALIAS}

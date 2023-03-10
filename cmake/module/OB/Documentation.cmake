@@ -1,11 +1,12 @@
 include("${__OB_CMAKE_PRIVATE}/common.cmake")
-ob_module_minimum_required(3.20.0)
 
 # Essentially just defines and populates the following variables
 # if their paths can be located:
 # - QT_HELP_GEN_PATH: path to qhelpgenerator executable
 # - QT_DOCS_DIR: path to the root of Qt documentation
 function(ob_find_qt_doc_resources qt_prefix)
+    __ob_command(ob_find_qt_doc_resources "3.0.0")
+
     # Handle using cache so that users can easily override via UI or command-line
 
     # Could use crazy amounts of file system searching to check for every Qt root under the standard Qt install
@@ -113,6 +114,8 @@ endfunction()
 # - QT_MODULES: List of Qt modules to link to via .tag files (i.e. qtcore, qtquick, etc).
 #   Ignored if no QT_PREFIX was provided.
 function(ob_standard_documentation target)
+    __ob_command(ob_standard_documentation "3.12.0")
+
     #---------------- Function Setup ----------------------
     # Const variables
 

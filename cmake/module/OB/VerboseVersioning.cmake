@@ -7,7 +7,7 @@ include("${__OB_CMAKE_PRIVATE}/common.cmake")
 # of date.
 
 function(ob_setup_verbose_versioning return)
-    #__ob_command(ob_setup_verbose_versioning "3.2.0")
+    __ob_command(ob_setup_verbose_versioning "3.2.0")
 
     # Handle fallback value
     if(NO_GIT)

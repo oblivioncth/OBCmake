@@ -1,7 +1,7 @@
 #================= Project Setup ==========================
 
 # CMake
-cmake_minimum_required(VERSION 3.20.0...3.25.0)
+cmake_minimum_required(VERSION 3.0.0...3.25.0)
 
 # Project
 # NOTE: DON'T USE TRAILING ZEROS IN VERSIONS

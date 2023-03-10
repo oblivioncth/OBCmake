@@ -1,5 +1,4 @@
 include("${__OB_CMAKE_PRIVATE}/common.cmake")
-ob_module_minimum_required(3.20.0)
 
 # Creates an executable target in the "OB Standard Fashion"
 # via the provided arguments. Also produces an install
@@ -57,6 +56,7 @@ ob_module_minimum_required(3.20.0)
 # WIN32:
 #   Same as supplying WIN32 to add_executable()
 function(ob_add_standard_executable target)
+    __ob_command(ob_add_standard_executable "3.16.0")
 
     #------------ Argument Handling ---------------
 
@@ -355,8 +355,6 @@ function(ob_add_standard_executable target)
 
     # Package Config
     if(_CONFIG)
-        include("${__OB_CMAKE_PRIVATE}/common.cmake")
-
         __ob_parse_std_target_config_option(${_TARGET_NAME}
             ${_NAMESPACE}
             ${_ALIAS}

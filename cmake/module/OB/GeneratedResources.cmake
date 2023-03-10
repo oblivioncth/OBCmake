@@ -1,5 +1,4 @@
 include("${__OB_CMAKE_PRIVATE}/common.cmake")
-ob_module_minimum_required(3.20.0)
 
 # function(add_generated_resources_collection target)
 # Creates a qrc resource file in the given directory with the
@@ -22,6 +21,8 @@ ob_module_minimum_required(3.20.0)
 # PREFIX: "/"
 
 function(__ob_parse_file_entry return)
+    __ob_internal_command(__ob_parse_file_entry "3.0.0")
+
     #---------------- Function Setup ----------------------
     # Const variables
     set(ALIAS_ENTRY_TEMPLATE "<file alias=\"@FILE_ENTRY_ALIAS@\">@FILE_ENTRY_PATH@</file>")
@@ -52,7 +53,8 @@ function(__ob_parse_file_entry return)
 endfunction()
 
 function(__ob_parse_file_entry_list return)
-
+    __ob_internal_command(__ob_parse_file_entry_list "3.12.0")
+    
     # Working vars (not required to "initialize" in cmake, but here for clarity)
     set(HAVE_FIRST_PATH FALSE)
     set(ENTRY_ARGS "")
@@ -88,6 +90,8 @@ function(__ob_parse_file_entry_list return)
 endfunction()
 
 function(ob_add_generated_resources_collection target)
+    __ob_command(ob_add_generated_resources_collection "3.12.0")
+
     #---------------- Function Setup ----------------------
 
     # Const variables

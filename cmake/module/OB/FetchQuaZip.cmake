@@ -1,5 +1,4 @@
 include("${__OB_CMAKE_PRIVATE}/common.cmake")
-ob_module_minimum_required(3.24.0)
 
 # Sets up QuaZip to be built/installed as an external project for use in the main project
 
@@ -7,6 +6,8 @@ ob_module_minimum_required(3.24.0)
 #       a commit hash is preferred for speed and reliability
 # QT_VER - Optional major version number of Qt to force QuaZip to use
 function(ob_fetch_quazip)
+    __ob_command(ob_fetch_quazip "3.24.0")
+
     include(FetchContent)
 
     # ----- Arguments --------------------------------------------------------------------------------------------

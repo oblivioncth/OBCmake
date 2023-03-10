@@ -1,7 +1,8 @@
 include("${__OB_CMAKE_PRIVATE}/common.cmake")
-ob_module_minimum_required(3.20.0)
 
 function(ob_fetch_libsquish svn_rev)
+    __ob_command(ob_fetch_libsquish "3.13.0")
+
     include(FetchContent)
 
     FetchContent_Declare(LIBSQUISH
