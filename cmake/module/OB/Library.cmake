@@ -195,10 +195,10 @@ function(ob_add_standard_library target)
         NAMESPACE
         ALIAS
         TYPE
-        EXPORT_HEADER
     )
 
     set(multiValueArgs
+        EXPORT_HEADER
         HEADERS_PRIVATE
         HEADERS_API
         HEADERS_API_GEN
