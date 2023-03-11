@@ -139,7 +139,7 @@ function(ob_standard_documentation target)
 
     # Parse arguments
     include(OB/Utility)
-    ob_parse_arguments(STD_DOCS "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    ob_parse_arguments(STD_DOCS "" "${oneValueArgs}" "${multiValueArgs}" "${requiredArgs}" ${ARGN})
 
     # Handle undefineds
     if(DEFINED STD_DOCS_PROJ_NAME)
