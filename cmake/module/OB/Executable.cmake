@@ -148,8 +148,10 @@ function(ob_add_standard_executable target)
         # Ignore non-relevant system specific implementation
         string(REGEX MATCH [[_win\.cpp$]] IS_WIN_IMPL "${impl}")
         string(REGEX MATCH [[_linux\.cpp$]] IS_LINUX_IMPL "${impl}")
+        string(REGEX MATCH [[_darwin\.cpp$]] IS_MAC_IMPL "${impl}")
         if((IS_WIN_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Windows") OR
-           (IS_LINUX_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Linux"))
+           (IS_LINUX_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Linux") OR
+           (IS_MAC_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Darwin"))
             continue()
         endif()
 
@@ -162,10 +164,12 @@ function(ob_add_standard_executable target)
     if(_SOURCE_GEN)
         foreach(impl_gen ${_SOURCE})
             # Ignore non-relevant system specific implementation
-            string(REGEX MATCH [[_win\.cpp$]] IS_WIN_IMPL "${impl_gen}")
-            string(REGEX MATCH [[_linux\.cpp$]] IS_LINUX_IMPL "${impl_gen}")
+            string(REGEX MATCH [[_win\.cpp$]] IS_WIN_IMPL "${impl}")
+            string(REGEX MATCH [[_linux\.cpp$]] IS_LINUX_IMPL "${impl}")
+            string(REGEX MATCH [[_darwin\.cpp$]] IS_MAC_IMPL "${impl}")
             if((IS_WIN_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Windows") OR
-               (IS_LINUX_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Linux"))
+               (IS_LINUX_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Linux") OR
+               (IS_MAC_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Darwin"))
                 continue()
             endif()
 
@@ -179,10 +183,12 @@ function(ob_add_standard_executable target)
     if(_RESOURCE)
         foreach(res ${_RESOURCE})
             # Ignore non-relevant system specific implementation
-            string(REGEX MATCH [[_win\.$]] IS_WIN_RES "${res}")
-            string(REGEX MATCH [[_linux\.$]] IS_LINUX_RES "${res}")
-            if((IS_WIN_RES AND NOT CMAKE_SYSTEM_NAME STREQUAL "Windows") OR
-               (IS_LINUX_RES AND NOT CMAKE_SYSTEM_NAME STREQUAL "Linux"))
+            string(REGEX MATCH [[_win\.cpp$]] IS_WIN_IMPL "${impl}")
+            string(REGEX MATCH [[_linux\.cpp$]] IS_LINUX_IMPL "${impl}")
+            string(REGEX MATCH [[_darwin\.cpp$]] IS_MAC_IMPL "${impl}")
+            if((IS_WIN_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Windows") OR
+               (IS_LINUX_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Linux") OR
+               (IS_MAC_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Darwin"))
                 continue()
             endif()
 
@@ -225,9 +231,7 @@ function(ob_add_standard_executable target)
         set_target_properties(${_TARGET_NAME} PROPERTIES
             OUTPUT_NAME "${_OUTPUT_NAME}"
         )
-    endif()
-
-    if(CMAKE_SYSTEM_NAME STREQUAL Linux)
+    else()
         set_target_properties(${_TARGET_NAME} PROPERTIES
             OUTPUT_NAME "${_OUTPUT_NAME_LC}"
         )
@@ -267,7 +271,7 @@ function(ob_add_standard_executable target)
         # TODO Add passthrough arguments for appending to the filters of file(GET_RUNTIME_DEPENDENCIES)
         if(CMAKE_SYSTEM_NAME STREQUAL Windows)
             set(_runtime_path "${CMAKE_INSTALL_BINDIR}")
-        elseif(CMAKE_SYSTEM_NAME STREQUAL Linux)
+        elseif(CMAKE_SYSTEM_NAME STREQUAL Linux OR CMAKE_SYSTEM_NAME STREQUAL Darwin)
             set(_runtime_path "${CMAKE_INSTALL_LIBDIR}")
         else()
             set(_runtime_path "${CMAKE_INSTALL_LIBDIR}")

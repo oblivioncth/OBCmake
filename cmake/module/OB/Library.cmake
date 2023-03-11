@@ -276,8 +276,10 @@ function(ob_add_standard_library target)
             # Ignore non-relevant system specific implementation
             string(REGEX MATCH [[_win\.cpp$]] IS_WIN_IMPL "${impl}")
             string(REGEX MATCH [[_linux\.cpp$]] IS_LINUX_IMPL "${impl}")
+            string(REGEX MATCH [[_darwin\.cpp$]] IS_MAC_IMPL "${impl}")
             if((IS_WIN_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Windows") OR
-               (IS_LINUX_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Linux"))
+               (IS_LINUX_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Linux") OR
+               (IS_MAC_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Darwin"))
                 continue()
             endif()
 
@@ -426,10 +428,7 @@ function(ob_add_standard_library target)
         set_target_properties(${_TARGET_NAME} PROPERTIES
             OUTPUT_NAME "${_NAMESPACE}${_ALIAS}"
         )
-    endif()
-
-
-    if(CMAKE_SYSTEM_NAME STREQUAL Linux)
+    else()
         set_target_properties(${_TARGET_NAME} PROPERTIES
             OUTPUT_NAME "${_NAMESPACE_LC}-${_ALIAS_LC}"
         )
