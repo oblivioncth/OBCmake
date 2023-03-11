@@ -243,7 +243,7 @@ function(ob_add_standard_library target)
     set(_DOC_ONLY "${STD_LIBRARY_DOC_ONLY}")
     set(_LINKS "${STD_LIBRARY_LINKS}")
     set(_DEFINITIONS "${STD_LIBRARY_DEFINITIONS}")
-    set(_OPTIONS "${STD_LIBRARY_OPTIONS}"
+    set(_OPTIONS "${STD_LIBRARY_OPTIONS}")
     set(_CONFIG "${STD_LIBRARY_CONFIG}")
 
     # Compute Intermediate Values
