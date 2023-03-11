@@ -62,15 +62,15 @@ function(ob_get_proper_system_name return)
     endif()
 endfunction()
 
-function(ob_get_system_architecture return)
-    __ob_command(ob_get_system_architecture "3.0.0")
+function(ob_get_system_bitness return)
+    __ob_command(ob_get_system_bitness "3.0.0")
     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-      set(sys_arch x64)
+      set(sys_bit 64)
     else()
-      set(sys_arch x86)
+      set(sys_bit 86)
     endif()
 
-    set(${return} "${sys_arch}" PARENT_SCOPE)
+    set(${return} "${sys_bit}" PARENT_SCOPE)
 endfunction()
 
 # Form:
