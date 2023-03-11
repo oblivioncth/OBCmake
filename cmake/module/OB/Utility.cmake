@@ -224,7 +224,7 @@ macro(ob_parse_arguments prefix opt ovk mvk rk)
 
     # Validate
     foreach(unk_val ${${prefix}_UNPARSED_ARGUMENTS})
-        message(WARNING "Ignoring unrecognized parameter: ${unk_val}")
+        message(FATAL_ERROR "Ignoring unrecognized parameter: ${unk_val}")
     endforeach()
 
     # Unused because some functions support passing a keyword with no value
