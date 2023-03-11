@@ -97,82 +97,6 @@ macro(ob_standard_project_setup)
     string(TOUPPER ${PROJECT_NAMESPACE} PROJECT_NAMESPACE_UC)
 endmacro()
 
-function(__ob_generate_std_primary_package_config_file)
-    __ob_internal_command(__ob_generate_std_primary_package_config_file "3.18.0")
-
-    #---------------- Function Setup ----------------------
-    # Const variables
-    set(CFG_TEMPLATE_FILE "${__OB_CMAKE_PRIVATE}/templates/__standard_primary_pkg_cfg.cmake.in")
-    string(CONCAT DEPENDENCY_CHECKS_HEADING
-        "# Check for hard dependencies\n"
-        "include(CMakeFindDependencyMacro)\n"
-    )
-    string(CONCAT CONFIG_INCLUDES_HEADING
-        "# Import target configs\n"
-    )
-
-    set(INCLUDE_TEMPLATE [=[include("${CMAKE_CURRENT_LIST_DIR}/@SINGLE_INCLUDE@")]=])
-
-     # Function inputs
-    set(oneValueArgs
-        OUTPUT
-        INSTALL_PATH
-        PACKAGE_NAME
-    )
-
-    set(multiValueArgs
-        INCLUDES
-        DEPENDS
-    )
-
-    set(requiredArgs
-        OUTPUT
-        INCLUDES
-        INSTALL_PATH
-        PACKAGE_NAME
-    )
-
-    # Parse arguments
-    include(OB/Utility)
-    ob_parse_arguments(STD_PCF "" "${oneValueArgs}" "${multiValueArgs}" "${requiredArgs}" ${ARGN})
-
-    # Handle dependencies
-    if(STD_PCF_DEPENDS)
-        # Create dependency check statements via the "PACKAGE", "COMPONENT" and "VERSION" sets
-        ob_parse_arguments_list(
-            "PACKAGE"
-            "__ob_parse_dependency"
-            dependency_check_statements
-            ${STD_PCF_DEPENDS}
-        )
-
-        # Create multi-line string for dependency checks
-        set(DEPENDENCY_CHECKS "${DEPENDENCY_CHECKS_HEADING}")
-        foreach(dep_statement ${dependency_check_statements})
-            set(DEPENDENCY_CHECKS "${DEPENDENCY_CHECKS}${dep_statement}\n")
-        endforeach()
-        set(DEPENDENCY_CHECKS "${DEPENDENCY_CHECKS}\n")
-    endif()
-
-    # Handle Include Statements
-    set(CONFIG_INCLUDES "${CONFIG_INCLUDES_HEADING}")
-    foreach(inc ${STD_PCF_INCLUDES})
-        set(SINGLE_INCLUDE ${inc})
-        string(CONFIGURE "${INCLUDE_TEMPLATE}" one_include @ONLY)
-        set(CONFIG_INCLUDES "${CONFIG_INCLUDES}${one_include}\n")
-    endforeach()
-
-    # Create config file
-    set(PACKAGE_NAME "${STD_PCF_PACKAGE_NAME}")# For configure
-
-    include(CMakePackageConfigHelpers)
-    configure_package_config_file(
-        "${CFG_TEMPLATE_FILE}"
-        "${STD_PCF_OUTPUT}"
-        INSTALL_DESTINATION "${STD_PCF_INSTALL_PATH}"
-    )
-endfunction()
-
 function(__ob_split_target_config_nsa_str str ns_out alias_out)
     __ob_internal_command(__ob_split_target_config_nsa_str "3.0.0")
 
@@ -196,6 +120,206 @@ function(__ob_split_target_config_nsa_str str ns_out alias_out)
     set(${alias_out} "${alias}" PARENT_SCOPE)
 endfunction()
 
+function(__ob_process_config_target_config output)
+    __ob_internal_command(__ob_process_config_target_config "3.0.0")
+
+    # Const variables
+    set(_tmpl_set_inclusion [[set(__inclusion "${CMAKE_CURRENT_LIST_DIR}/@+INCL_PATH+@")]])
+    set(_tmpl_if_not_exists [[if(NOT EXISTS "${__inclusion}")]])
+    set(_tmpl_if_exist_and_sel [[if(EXISTS "${__inclusion}") AND @+CMP+@ IN_LIST @+PKG_NAME+@_FIND_COMPONENTS)]])
+    set(_tmpl_if_sel_or_default [[if(@+CMP+@ IN_LIST @+PKG_NAME+@_FIND_COMPONENTS OR NOT @+PKG_NAME+@_FIND_COMPONENTS)]])
+    set(_tmpl_include [[include("${__inclusion}")]])
+    set(_tmpl_err_no_always [[message(FATAL_ERROR "A mandatory inclusion of @+PKG_NAME+@ was missing!")]])
+    set(_tmpl_err_no_default [[message(FATAL_ERROR "A default inclusion of @+PKG_NAME+@ was missing!")]])
+    set(_tmpl_found_comp [[set(@+PKG_NAME+@_@+CMP+@_FOUND TRUE)]])
+    set(_tmpl_endif [[endif()]])
+    
+    # Arguments
+    set(opt
+        DEFAULT
+        OPTIONAL
+    )
+    
+    set(ova
+        TARGET
+        COMPONENT
+    )
+        
+    set(req
+        TARGET
+    )
+
+    # Parse arguments
+    ob_parse_arguments(STD_PCF "${opt}" "${ova}" "" "${req}" ${ARGN})
+    
+    # Simplify inputs
+    set(_TARGET "${STD_PCF_TARGET}")
+    set(_COMPONENT "${STD_PCF_COMPONENT}")
+    set(_DEFAULT "${STD_PCF_DEFAULT}")
+    set(_OPTIONAL "${STD_PCF_OPTIONAL}")
+    
+    # Check that target exists
+    if(NOT TARGET "${_TARGET}")
+        if(_OPTIONAL)
+            set(${output} "" PARENT_SCOPE)
+            return()
+        else()
+            message(FATAL_ERROR "${_TARGET} is not a valid target!")
+        endif()
+    endif()
+    
+    # Prepare config string
+    if(NOT _COMPONENT)
+        string(CONCAT config_str
+            "${_tmpl_set_inclusion}\n"
+            "${_tmpl_if_not_exists}\n"
+            "   ${_tmpl_err_no_always}\n"
+            "${_tmpl_endif}\n"
+            "${_tmpl_include}\n"
+        )
+    elseif(_DEFAULT)
+        string(CONCAT config_str
+            "${_tmpl_set_inclusion}\n"
+            "${_tmpl_if_not_exists}\n"
+            "   ${_tmpl_err_no_default}\n"
+            "else${_tmpl_if_sel_or_default}\n"
+            "   ${_tmpl_found_comp}\n"
+            "   ${_tmpl_include}\n"
+            "${_tmpl_endif}\n"
+        )
+    else()
+        string(CONCAT config_str
+            "${_tmpl_set_inclusion}\n"
+            "${_tmpl_if_exist_and_sel}\n"
+            "   ${_tmpl_found_comp}\n"
+            "   ${_tmpl_include}\n"
+            "${_tmpl_endif}\n"
+        )
+    endif()
+    
+    # Split namespace and alias from target
+    __ob_split_target_config_nsa_str("${_TARGET}" ns alias)
+    
+    # Prepare configure arguments
+    set(+PKG_NAME+ "${pkg_name}") # NOTE: Taken from parent scope
+    set(+CMP+ "${_COMPONENT}")
+    set(+INCL_PATH+ "${alias}/${ns}${alias}Config.cmake")
+
+    # Configure and return string
+    string(CONFIGURE "${config_str}" prepared_str @ONLY)
+    set(${output} "${prepared_str}" PARENT_SCOPE)
+endfunction()
+
+function(__ob_process_config_opt_std pkg_name gen_file)
+    __ob_internal_command(__ob_process_config_opt_std "3.18.0")
+    
+    # Const variables
+    set(CFG_TEMPLATE_FILE "${__OB_CMAKE_PRIVATE}/templates/__standard_primary_pkg_cfg.cmake.in")
+    set(+PACKAGE_NAME+ "${pkg_name}")
+    string(CONCAT +PRESUME_FOUND+
+        "# Start by assuming package is found\n"
+        "set(${pkg_name}_FOUND TRUE)\n"
+        "\n"
+    )
+    string(CONCAT DEPENDENCY_CHECKS_HEADING
+        "# Check for hard dependencies\n"
+        "include(CMakeFindDependencyMacro)\n"
+    )
+    string(CONCAT CONFIG_INCLUDES_HEADING
+        "# Import target configs\n"
+    )
+
+    set(mva
+        TARGET_CONFIGS
+        DEPENDS
+    )
+    
+    set(req
+        TARGET_CONFIGS
+    )
+
+    # Parse arguments
+    ob_parse_arguments(STD_PCF "" "" "${mva}" "${req}" ${ARGN})
+    
+    # Handle target configs
+    ob_parse_arguments_list(
+        "TARGET"
+        "__ob_process_config_target_config"
+        target_config_statements
+        ${STD_PCF_TARGET_CONFIGS}
+    )
+    
+    set(+CONFIG_INCLUDES+ "${CONFIG_INCLUDES_HEADING}")
+    foreach(cfg_statement ${target_config_statements})
+        set(+CONFIG_INCLUDES+ "${+CONFIG_INCLUDES+}${cfg_statement}\n")
+    endforeach()
+    
+    # Handle dependencies
+    if(STD_PCF_DEPENDS)
+        # Create dependency check statements via the "PACKAGE", "COMPONENT" and "VERSION" sets
+        ob_parse_arguments_list(
+            "PACKAGE"
+            "__ob_parse_dependency"
+            dependency_check_statements
+            ${STD_PCF_DEPENDS}
+        )
+
+        # Create multi-line string for dependency checks
+        set(+DEPENDENCY_CHECKS+ "${DEPENDENCY_CHECKS_HEADING}")
+        foreach(dep_statement ${dependency_check_statements})
+            set(+DEPENDENCY_CHECKS+ "${+DEPENDENCY_CHECKS+}${dep_statement}\n")
+        endforeach()
+        set(+DEPENDENCY_CHECKS+ "${+DEPENDENCY_CHECKS+}\n")
+    endif()
+    
+    # Configure file
+    configure_package_config_file(
+        "${CFG_TEMPLATE_FILE}"
+        "${gen_file}"
+        INSTALL_DESTINATION "cmake"
+        NO_SET_AND_CHECK_MACRO
+    )    
+endfunction()
+
+function(__ob_process_config_opt_custom in_path gen_file)
+    __ob_internal_command(__ob_process_config_opt_custom "3.0.0")
+
+        configure_package_config_file(
+            "${in_path}"
+            "${gen_file}"
+            INSTALL_DESTINATION "cmake"
+        )
+endfunction()
+
+function(__ob_process_config_opt pkg_name gen_file)
+    __ob_internal_command(__ob_process_config_opt "3.18.0")
+
+    set(ova
+        CUSTOM
+    )
+    
+    set(mva
+        STANDARD
+    )
+
+    # Parse arguments
+    ob_parse_arguments(CONFIG "" "${ova}" "${mva}" "" ${ARGN})
+
+    # Must have one, and only one form
+    if(DEFINED CONFIG_CUSTOM AND CONFIG_STANDARD)
+        message(FATAL_ERROR "CUSTOM and STANDARD mode are mutually exclusive!")
+    elseif(NOT DEFINED CONFIG_CUSTOM AND NOT CONFIG_STANDARD)
+        message(FATAL_ERROR "Either CUSTOM or STANDARD must be used!")
+    endif()
+    
+    # Standard Form
+    if(CONFIG_STANDARD)
+        __ob_process_config_opt_std("${pkg_name}" "${gen_file}" ${CONFIG_STANDARD})
+    else() # Custom Form
+        __ob_process_config_opt_custom("${CONFIG_CUSTOM}" "${gen_file}")
+    endif()
+endfunction()
+
 # Creates a standard package config and version config file for the project.
 #
 # PROJECT_VERSION is used for the package version. Uses the CammelCase style of package
@@ -208,7 +332,11 @@ endfunction()
 #
 #   First:
 #       CONFIG
+#       CONFIG STANDARD
 #           TARGET_CONFIGS
+#               TARGET
+#               COMPONENT
+#               DEFAULT
 #           DEPENDS
 #
 #   This form configures a package configuration file set to include
@@ -219,6 +347,26 @@ endfunction()
 #   entry will result in the final config file including each target config as:
 #   "${CMAKE_CURRENT_LIST_DIR}/Namespace/NamespaceAliasConfig.cmake".
 #   The config is installed into ${CMAKE_INSTALL_PREFIX}/cmake, making the inclusion paths
+#   TARGET_CONFIGS is to be a list of entries that correlate to target configs.
+#   Each must have at least a TARGET in the form Namespace::Alias,
+#   which will result in the final config file including the target config as:
+#   "${CMAKE_CURRENT_LIST_DIR}/Namespace/NamespaceAliasConfig.cmake". Only the above alias
+#   form is supported and the command relies on the given target config existing to
+#   function properly.
+#
+#   If COMPONENT is specified for a given item, the inclusion of that target config in
+#   the generated config will only occur if that component is requested by the packages
+#   consumer. If DEFAULT follows the COMPONENT argument for a given item, then the
+#   target config will also be included if no components are specified when searching
+#   for the package.
+#
+#   If OPTIONAL is specified, the entry is ignored if the specified target does not exist
+#   instead of being counted as a FATAL_ERROR.
+#
+#   The generated config will be configured such that if a TARGET without a COMPONENT or
+#   a DEFAULT TARGET is missing at "find_package time" it will be considered an error.
+#
+#   The generated config is installed into ${CMAKE_INSTALL_PREFIX}/cmake, making the inclusion paths
 #   effectively:
 #   "${CMAKE_INSTALL_PREFIX}/cmake/Alias/NamespaceAliasConfig.cmake".
 #
@@ -248,13 +396,12 @@ endfunction()
 # only needed for any targets that the project didn't make use of the ob_ functions to
 # to add.
 function(ob_standard_project_package_config)
-    __ob_command(ob_standard_project_package_config "3.11.0")
+    __ob_command(ob_standard_project_package_config "3.18.0")
 
     #---------------- Function Setup ----------------------
     # Const variables
     set(OUTPUT_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/cmake")
-    set(INSTALL_DEST "cmake")
-
+    
     # Function inputs
     set(oneValueArgs
         PACKAGE_NAME
@@ -285,70 +432,10 @@ function(ob_standard_project_package_config)
 
     # Create config
     include(CMakePackageConfigHelpers)
-
-    # Parse config parameters directly in this function to avoid awkward variable passing
-    set(cfg_gen_name "${PACKAGE_NAME}Config.cmake")
-    set(cfg_gen_path "${CMAKE_CURRENT_BINARY_DIR}/cmake/${cfg_gen_name}")
-    set(ver_gen_name "${PACKAGE_NAME}ConfigVersion.cmake")
-    set(ver_gen_path "${CMAKE_CURRENT_BINARY_DIR}/cmake/${ver_gen_name}")
-
-    set(op
-        STANDARD
-    )
-
-    set(ova
-        CUSTOM
-    )
-
-    set(mva
-        TARGET_CONFIGS
-        DEPENDS
-    )
-
-    # Parse arguments
-    ob_parse_arguments(CONFIG "${op}" "${ova}" "${mva}" "" ${STD_PKG_CFG_CONFIG})
-
-    # Must have one, and only one form
-    if(DEFINED CONFIG_CUSTOM AND (CONFIG_STANDARD OR DEFINED CONFIG_DEPENDS))
-        message(FATAL_ERROR "CUSTOM and STANDARD mode are mutually exclusive!")
-    elseif(NOT DEFINED CONFIG_CUSTOM AND NOT CONFIG_STANDARD)
-        message(FATAL_ERROR "Either CUSTOM or STANDARD must be used!")
-    endif()
-
-    # Standard Form
-    if(CONFIG_STANDARD)
-        # Must have passed TARGET_CONFIGS
-        if(NOT CONFIG_TARGET_CONFIGS)
-            message(FATAL_ERROR "TARGET_CONFIGS is required when not using CUSTOM")
-        endif()
-
-        # Create include statements for config
-        foreach(tgt_cf ${CONFIG_TARGET_CONFIGS})
-            # Ensure target is valid
-            if(NOT TARGET "${tgt_cf}")
-                message(FATAL_ERROR "${tgt_cf} is not a valid target!")
-            endif()
-
-            __ob_split_target_config_nsa_str("${tgt_cf}" ns alias)
-            list(APPEND cfg_includes "${alias}/${ns}${alias}Config.cmake")
-        endforeach()
-
-        # Generate config
-        __ob_generate_std_primary_package_config_file(
-            PACKAGE_NAME "${PACKAGE_NAME}"
-            OUTPUT "${cfg_gen_path}"
-            INCLUDES ${cfg_includes}
-            INSTALL_PATH "${INSTALL_DEST}"
-            DEPENDS ${CONFIG_DEPENDS}
-        )
-    else() # Custom Form
-        configure_package_config_file(
-            "${CONFIG_CUSTOM}"
-            "${cfg_gen_path}"
-            INSTALL_DESTINATION "${INSTALL_DEST}"
-        )
-    endif()
-
+    set(cfg_gen_path "${OUTPUT_PREFIX}/${PACKAGE_NAME}Config.cmake")
+    set(ver_gen_path "${OUTPUT_PREFIX}/${PACKAGE_NAME}ConfigVersion.cmake")
+    __ob_process_config_opt("${PACKAGE_NAME}" "${cfg_gen_path}" ${STD_PKG_CFG_CONFIG})
+   
     # Create version file
     write_basic_package_version_file(
         "${ver_gen_path}"
@@ -361,7 +448,7 @@ function(ob_standard_project_package_config)
         "${ver_gen_path}"
         "${cfg_gen_path}"
         COMPONENT ${PROJECT_NAME_LC}
-        DESTINATION "${INSTALL_DEST}"
+        DESTINATION "cmake"
         ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
     )
 endfunction()
