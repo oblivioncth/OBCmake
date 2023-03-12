@@ -46,12 +46,21 @@ endmacro()
 # - Calls ob_setup_verbose_versioning() and defines PROJECT_VERSION_VERBOSE to the result
 # - Defines PROJECT_FILE_TEMPLATES set to "${CMAKE_CURRENT_SOURCE_DIR}/cmake/file_templates"
 # - Appends "${CMAKE_CURRENT_SOURCE_DIR}/cmake/module" to CMAKE_MODULE_PATH
-# - Defines PROJECT_NAMESPACE set to PROJECT_NAME
+# - Defines PROJECT_NAMESPACE(_UC)(_LC) set to passed argument, PROJECT_NAME if not set
 #
 # TODO: Add tuneable arguments to this as needed
 
 macro(ob_standard_project_setup)
     __ob_command(ob_standard_project_setup "3.21.0")
+
+    # Arguments   
+    set(ova
+        NAMESPACE
+    )
+        
+    # Parse arguments
+    include(OB/Utility)
+    ob_parse_arguments(__OB_PROJ_SETUP "" "${ova}" "" "" ${ARGN})
 
     # Note current cmake minimum version
     set(PROJECT_CMAKE_MINIMUM_REQUIRED_VERSION "${CMAKE_MINIMUM_REQUIRED_VERSION}")
@@ -91,8 +100,12 @@ macro(ob_standard_project_setup)
     list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/module")
     set(PROJECT_FILE_TEMPLATES "${CMAKE_CURRENT_SOURCE_DIR}/cmake/file_templates")
 
-    # Define namespace var using project name
-    set(PROJECT_NAMESPACE "${PROJECT_NAME}")
+    # Define namespace var
+    if(__OB_PROJ_SETUP_NAMESPACE)
+        set(PROJECT_NAMESPACE "${__OB_PROJ_SETUP_NAMESPACE}")
+    else()
+        set(PROJECT_NAMESPACE "${PROJECT_NAME}")
+    endif()
     string(TOLOWER ${PROJECT_NAMESPACE} PROJECT_NAMESPACE_LC)
     string(TOUPPER ${PROJECT_NAMESPACE} PROJECT_NAMESPACE_UC)
 endmacro()
