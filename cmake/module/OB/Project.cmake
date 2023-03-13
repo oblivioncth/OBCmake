@@ -336,9 +336,9 @@ endfunction()
 # Creates a standard package config and version config file for the project.
 #
 # PROJECT_VERSION is used for the package version. Uses the CammelCase style of package
-# config files.
+# config files. # TODO make the case style configureable
 #
-# - PACKAGE_NAME is "${PROJECT_NAME}" if not defined
+# - PACKAGE_NAME is "${PROJECT_NAMESPACE}" if not defined
 # - COMPATIBILITY is to be defined the same as in write_basic_package_version_file()
 # - CONFIG:
 #   This argument is mandatory and can take two forms.
@@ -401,7 +401,7 @@ endfunction()
 #   said command.
 #
 #   Both files are installed to ${CMAKE_INSTALL_PREFIX}/cmake under the component
-#   PROJECT_NAME_LC.
+#   PROJECT_NAMESPACE_LC.
 #
 # TODO: At some point maybe have 'ob_add_standard_library()' and any similar functions
 # create internal cache variables with any target configs they create so that they
@@ -438,7 +438,7 @@ function(ob_standard_project_package_config)
     if(STD_PKG_CFG_PACKAGE_NAME)
         set(PACKAGE_NAME "${STD_PKG_CFG_PACKAGE_NAME}")
     else()
-        set(PACKAGE_NAME "${PROJECT_NAME}")
+        set(PACKAGE_NAME "${PROJECT_NAMESPACE}")
     endif()
 
     #---------------- Prepare Configuration  ----------------------
@@ -460,7 +460,7 @@ function(ob_standard_project_package_config)
     install(FILES
         "${ver_gen_path}"
         "${cfg_gen_path}"
-        COMPONENT ${PROJECT_NAME_LC}
+        COMPONENT ${PROJECT_NAMESPACE_LC}
         DESTINATION "cmake"
         ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
     )
@@ -476,7 +476,7 @@ endfunction()
 # This function uses the SUB_PROJ_EXCLUDE_FROM_ALL variable to disable these installs
 # when the project is used as a sub-project
 #
-# The install component for both installs is set to PROJECT_NAME_LC.
+# The install component for both installs is set to PROJECT_NAMESPACE_LC.
 function(ob_standard_project_misc_install)
     __ob_command(ob_standard_project_misc_install "3.6.0")
 
