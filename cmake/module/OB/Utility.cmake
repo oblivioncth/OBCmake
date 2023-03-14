@@ -225,6 +225,11 @@ endfunction()
 # (allows for simpler syntax when forwarding arguments that may or may not be defined).
 # Explicitly defining the missing arguments as empty strings avoids a plethora of
 # "uninitialized variable" warnings when this pattern is used.
+#
+# NOTE: Because this is a macro, callers can still use ${PREFIX}_KEYWORDSS_MISSING_VALUES
+# to see if an argument was completely omitted or provided without a value.
+# If necessary this can be tweaked to return a list of arguments without a value directly,
+# or completely change the model of the arguments by making them keyword based themselves.
 macro(ob_parse_arguments prefix opt ovk mvk rk)
     __ob_command(ob_parse_arguments "3.0.0")
 

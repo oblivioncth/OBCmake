@@ -326,10 +326,10 @@ function(__ob_process_config_opt pkg_name gen_file)
     ob_parse_arguments(CONFIG "" "${ova}" "${mva}" "" ${ARGN})
 
     # Must have one, and only one form
-    if(DEFINED CONFIG_CUSTOM AND CONFIG_STANDARD)
+    if(CONFIG_CUSTOM AND CONFIG_STANDARD)
         message(FATAL_ERROR "CUSTOM and STANDARD mode are mutually exclusive!")
-    elseif(NOT DEFINED CONFIG_CUSTOM AND NOT CONFIG_STANDARD)
-        message(FATAL_ERROR "Either CUSTOM or STANDARD must be used!")
+    elseif(NOT CONFIG_CUSTOM AND NOT CONFIG_STANDARD)
+        message(FATAL_ERROR "Either CUSTOM or STANDARD must be provided with values!")
     endif()
     
     # Standard Form

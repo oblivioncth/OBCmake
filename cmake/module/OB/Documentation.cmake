@@ -142,13 +142,13 @@ function(ob_standard_documentation target)
     ob_parse_arguments(STD_DOCS "" "${oneValueArgs}" "${multiValueArgs}" "${requiredArgs}" ${ARGN})
 
     # Handle undefineds
-    if(DEFINED STD_DOCS_PROJ_NAME)
+    if(STD_DOCS_PROJ_NAME)
         set(doc_proj_name "${STD_DOCS_PROJ_NAME}")
     else()
         set(doc_proj_name "${PROJECT_NAME}")
     endif()
 
-    if(DEFINED STD_DOCS_INSTALL_DESTINATION)
+    if(STD_DOCS_INSTALL_DESTINATION)
         set(doc_install_dest "${STD_DOCS_INSTALL_DESTINATION}")
     else()
         set(doc_install_dest "doc")
@@ -200,7 +200,7 @@ function(ob_standard_documentation target)
     endif()
 
     #---------------------- Configure Qt Link ---------------------
-    if(DEFINED STD_DOCS_QT_PREFIX)
+    if(STD_DOCS_QT_PREFIX)
         # Try to get Qt doc information
         ob_find_qt_doc_resources("${STD_DOCS_QT_PREFIX}")
 

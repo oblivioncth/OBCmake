@@ -45,13 +45,13 @@ function(__ob_parse_dependency return)
 
     #---------------- Parse Dependency  ----------------------
 
-    if(DEFINED DEPENDENCY_VERSION)
+    if(DEPENDENCY_VERSION)
         set(PACKAGE_STATEMENT "${DEPENDENCY_PACKAGE} ${DEPENDENCY_VERSION}")
     else()
         set(PACKAGE_STATEMENT "${DEPENDENCY_PACKAGE}")
     endif()
 
-    if(DEFINED DEPENDENCY_COMPONENTS)
+    if(DEPENDENCY_COMPONENTS)
         # Split components list to one string
         set(components_list "")
         foreach(comp ${DEPENDENCY_COMPONENTS})
@@ -104,7 +104,7 @@ function(__ob_generate_std_target_package_config_file)
     ob_parse_arguments(STD_TCF "" "${oneValueArgs}" "${multiValueArgs}" "${requiredArgs}" ${ARGN})
 
     # Handle dependencies
-    if(DEFINED STD_TCF_DEPENDS)
+    if(STD_TCF_DEPENDS)
         # Create dependency check statements via the "PACKAGE", "COMPONENT" and "VERSION" sets
         ob_parse_arguments_list(
             "PACKAGE"
@@ -169,10 +169,10 @@ function(__ob_parse_std_target_config_option target ns alias)
     ob_parse_arguments(CONFIG "${options}" "${oneValueArgs}" "${multiValueArgs}" "" ${ARGN})
 
     # Must have one, and only one form
-    if(DEFINED CONFIG_CUSTOM AND (CONFIG_STANDARD OR DEFINED CONFIG_DEPENDS))
+    if(CONFIG_CUSTOM AND (CONFIG_STANDARD OR CONFIG_DEPENDS))
         message(FATAL_ERROR "CUSTOM and STANDARD mode are mutually exclusive!")
-    elseif(NOT DEFINED CONFIG_CUSTOM AND NOT CONFIG_STANDARD)
-        message(FATAL_ERROR "Either CUSTOM or STANDARD must be used!")
+    elseif(NOT CONFIG_CUSTOM AND NOT CONFIG_STANDARD)
+        message(FATAL_ERROR "Either CUSTOM with a value or STANDARD must be used!")
     endif()
 
     # Standard Form

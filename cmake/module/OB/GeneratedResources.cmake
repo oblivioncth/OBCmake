@@ -43,7 +43,7 @@ function(__ob_parse_file_entry return)
     ob_parse_arguments(FILE_ENTRY "" "${oneValueArgs}" "" "${requiredArgs}" ${ARGN})
 
     #---------------- Parse Entry ----------------------
-    if(DEFINED FILE_ENTRY_ALIAS)
+    if(FILE_ENTRY_ALIAS)
         string(CONFIGURE "${ALIAS_ENTRY_TEMPLATE}" PARSED_ENTRY @ONLY)
     else()
         string(CONFIGURE "${ENTRY_TEMPLATE}" PARSED_ENTRY @ONLY)
@@ -117,10 +117,10 @@ function(ob_add_generated_resources_collection target)
     ob_parse_arguments(GEN_RES "" "${oneValueArgs}" "${multiValueArgs}" "${requiredArgs}" ${ARGN})
 
     # Handle defaults/undefineds
-    if(NOT DEFINED GEN_RES_OUTPUT)
+    if(NOT GEN_RES_OUTPUT)
         set(GEN_RES_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/res")
     endif()
-    if(NOT DEFINED GEN_RES_PREFIX)
+    if(NOT GEN_RES_PREFIX)
         set(GEN_RES_PREFIX "/")
     endif()
 
