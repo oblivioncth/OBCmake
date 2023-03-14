@@ -77,6 +77,13 @@ macro(ob_standard_project_setup)
     # will search "../lib" for shared libraries, allowing them to run as they are structured within an install package.
     if(WIN32)
         if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+            # This causes executables and DLLs to all be built in this project's (generally top-level) binary directory
+            # instead of each sub-directory (usually per-target). This is a bit unorganized but there isn't a better
+            # method of supporting projects with shared libraries at the moment as this is required for any built
+            # executables to be able to find their DLLS. The only other way would be to add the build directory of each
+            # shared library target to the PATH environment variable of each executable when launching them. CMake has
+            # acccess to this info but can't enforce since executables are started directly by the user or through an IDE.
+            # An IDE could in theory do this but it would be clunky and none do AFAIK.
             set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
         endif()
     elseif(NOT APPLE)
