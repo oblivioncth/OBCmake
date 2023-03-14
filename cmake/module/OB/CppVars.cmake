@@ -105,6 +105,7 @@ function(ob_add_cpp_vars target)
 
 
     # Generate defines
+    set(GENERATED_MACROS "") # Avoids uninitialized var warning
     while(CPP_VARS_VARS)
         # Get key/value
         list(POP_FRONT CPP_VARS_VARS __KEY __VALUE)
