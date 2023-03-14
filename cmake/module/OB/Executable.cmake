@@ -117,8 +117,8 @@ function(ob_add_standard_executable target)
     set(_SOURCE_GEN "${STD_EXECUTABLE_SOURCE_GEN}")
     set(_RESOURCE "${STD_EXECUTABLE_RESOURCE}")
     set(_LINKS "${STD_EXECUTABLE_LINKS}")
-    set(_DEFINITIONS "${STD_LIBRARY_DEFINITIONS}")
-    set(_OPTIONS "${STD_LIBRARY_OPTIONS}")
+    set(_DEFINITIONS "${STD_EXECUTABLE_DEFINITIONS}")
+    set(_OPTIONS "${STD_EXECUTABLE_OPTIONS}")
     set(_CONFIG "${STD_EXECUTABLE_CONFIG}")
 
     # Compute Intermediate Values
