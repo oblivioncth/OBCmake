@@ -215,7 +215,16 @@ endfunction()
 
 # Same as the non-PARSE_ARGV signature of cmake_parse_arguments() but with an
 # extra "required-keywords" argument. Handles argument validation and ensures
-# that all required keywords were provided
+# that all required keywords were provided.
+#
+# CAUTION: This function also will define the _ARG_NAME variables for ALL
+# argument keywords even if they weren't defined, setting them to an empty
+# string if so. This means it is best the check them via if(MY_ARG_NAME) without
+# performing variable substitution, and better supports the pattern of using such
+# a check to support treating the option as missing when it is provided with no value
+# (allows for simpler syntax when forwarding arguments that may or may not be defined).
+# Explicitly defining the missing arguments as empty strings avoids a plethora of
+# "uninitialized variable" warnings when this pattern is used.
 macro(ob_parse_arguments prefix opt ovk mvk rk)
     __ob_command(ob_parse_arguments "3.0.0")
 
@@ -238,9 +247,19 @@ macro(ob_parse_arguments prefix opt ovk mvk rk)
     #    message(FATAL_ERROR "Not all required values were present!")
     #endif()
 
+    # Check for required arguments
     foreach(arg ${rk})
         if(NOT ${prefix}_${arg})
             message(FATAL_ERROR "'${arg}' must be defined and have a value!")
         endif()
     endforeach()
+    
+    # Define missing values as empty strings (option values are always defined)
+    list(APPEND __ob_all_value_args ${ovk} ${mvk})
+    foreach(arg ${__ob_all_value_args})
+        if(NOT DEFINED ${prefix}_${arg})
+            set(${prefix}_${arg} "")
+        endif()
+    endforeach()
+    unset(__ob_all_value_args)
 endmacro()
