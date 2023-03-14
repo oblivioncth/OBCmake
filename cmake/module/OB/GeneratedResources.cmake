@@ -19,6 +19,9 @@ include("${__OB_CMAKE_PRIVATE}/common.cmake")
 # Defaults:
 # OUTPUT: "${CMAKE_CURRENT_BINARY_DIR}/res"
 # PREFIX: "/"
+#
+# NOTE: Unless the ALIAS feature of this is needed, just use
+# qt_add_resources() instead.
 
 function(__ob_parse_file_entry return)
     __ob_internal_command(__ob_parse_file_entry "3.0.0")
