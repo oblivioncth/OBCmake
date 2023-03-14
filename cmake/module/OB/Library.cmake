@@ -390,7 +390,7 @@ function(ob_add_standard_library target)
         if(_eh_bn)
             set(export_header_basename "${_eh_bn}")
         else()
-            set(export_header_basename "${NAMESPACE}_${ALIAS}")
+            set(export_header_basename "${_NAMESPACE}_${_ALIAS}")
         endif()
         
         set(eh_gen_rel_path "${_eh_path}")
