@@ -41,3 +41,14 @@ function(ob_fetch_libsquish svn_rev)
     # Create a reasonable alias for the target
     add_library(Squish::Squish ALIAS squish)
 endfunction()
+
+function(ob_fetch_modern_libsquish git_ref)
+    __ob_command(ob_fetch_qi_qmp "3.11.0")
+
+    include(FetchContent)
+    FetchContent_Declare(LIBSQUISH
+        GIT_REPOSITORY "https://github.com/oblivioncth/libsquish"
+        GIT_TAG ${git_ref}
+    )
+    FetchContent_MakeAvailable(LIBSQUISH)
+endfunction()
