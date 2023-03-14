@@ -19,8 +19,8 @@ include("${__OB_CMAKE_PRIVATE}/common.cmake")
 #
 #   Used for file generation, export configuration, and installation pathing.
 # OUTPUT_NAME:
-#   Name to use for the built executable. Will always be lowercase on Linux platforms.
-#   Set to ALIAS if not defined.
+#   Maps to the OUTPUT_NAME property of the target. If not provided, by default its set
+#   based on the ALIAS value using casing that's typical for the target platform
 # SOURCE:
 #   Files are assumed to be under "${CMAKE_CURRENT_SOURCE_DIR}/src"
 # SOURCE_GEN:
@@ -99,12 +99,18 @@ function(ob_add_standard_executable target)
     # Standardized set and defaulted values
     set(_TARGET_NAME "${target}")
     set(_NAMESPACE "${STD_EXECUTABLE_NAMESPACE}")
+    string(TOLOWER ${_NAMESPACE} _NAMESPACE_LC)
     set(_ALIAS "${STD_EXECUTABLE_ALIAS}")
+    string(TOLOWER ${_ALIAS} _ALIAS_LC)
 
     if(STD_EXECUTABLE_OUTPUT_NAME)
         set(_OUTPUT_NAME "${STD_EXECUTABLE_OUTPUT_NAME}")
     else()
-        set(_OUTPUT_NAME "${_ALIAS}")
+        if(CMAKE_SYSTEM_NAME STREQUAL Windows)
+            set(_OUTPUT_NAME "${_ALIAS}")
+        else()
+            set(_OUTPUT_NAME "${_ALIAS_LC}")
+        endif()
     endif()
 
     set(_SOURCE "${STD_EXECUTABLE_SOURCE}")
@@ -121,10 +127,6 @@ function(ob_add_standard_executable target)
     else()
         set(_USE_QT FALSE)
     endif()
-
-    string(TOLOWER "${_NAMESPACE}" _NAMESPACE_LC)
-    string(TOLOWER "${_ALIAS}" _ALIAS_LC)
-    string(TOLOWER "${_OUTPUT_NAME}" _OUTPUT_NAME_LC)
 
     if(STD_EXECUTABLE_WIN32)
         set(_OPTION_WIN32 "WIN32")
@@ -225,17 +227,8 @@ function(ob_add_standard_executable target)
     set_target_properties(${_TARGET_NAME} PROPERTIES
         EXPORT_NAME "${_ALIAS}"
         DEBUG_POSTFIX "d"
+        OUTPUT_NAME "${_OUTPUT_NAME}"
     )
-
-    if(CMAKE_SYSTEM_NAME STREQUAL Windows)
-        set_target_properties(${_TARGET_NAME} PROPERTIES
-            OUTPUT_NAME "${_OUTPUT_NAME}"
-        )
-    else()
-        set_target_properties(${_TARGET_NAME} PROPERTIES
-            OUTPUT_NAME "${_OUTPUT_NAME_LC}"
-        )
-    endif()
 
     # Install target and configure export
     install(TARGETS ${_TARGET_NAME}

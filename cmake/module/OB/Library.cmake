@@ -112,6 +112,10 @@ endfunction()
 #   added automatically after first prepending the provided namespace.
 #
 #   Used for file generation, export configuration, and installation pathing.
+# OUTPUT_NAME:
+#   Maps to the OUTPUT_NAME property of the target. If not provided, by default its set
+#   based on the NAMESPACE and ALIAS values using casing that's typical for the
+#   target platform
 # TYPE: Type of library, follows BUILD_SHARED_LIBS if not defined
 # EXPORT_HEADER:
 #   Inner Form:
@@ -194,6 +198,7 @@ function(ob_add_standard_library target)
     set(oneValueArgs
         NAMESPACE
         ALIAS
+        OUTPUT_NAME
         TYPE
     )
 
@@ -224,7 +229,19 @@ function(ob_add_standard_library target)
     # Standardized set and defaulted values
     set(_TARGET_NAME "${target}")
     set(_NAMESPACE "${STD_LIBRARY_NAMESPACE}")
+    string(TOLOWER ${_NAMESPACE} _NAMESPACE_LC)
     set(_ALIAS "${STD_LIBRARY_ALIAS}")
+    string(TOLOWER ${_ALIAS} _ALIAS_LC)
+
+    if(STD_LIBRARY_OUTPUT_NAME)
+        set(_OUTPUT_NAME "${STD_LIBRARY_OUTPUT_NAME}")
+    else()
+        if(CMAKE_SYSTEM_NAME STREQUAL Windows)
+            set(_OUTPUT_NAME "${_NAMESPACE}${_ALIAS}")
+        else()
+            set(_OUTPUT_NAME "${_NAMESPACE_LC}-${_ALIAS_LC}")
+        endif()
+    endif()
 
     if(STD_LIBRARY_TYPE)
         set(_TYPE "${STD_LIBRARY_TYPE}")
@@ -243,7 +260,7 @@ function(ob_add_standard_library target)
     set(_DOC_ONLY "${STD_LIBRARY_DOC_ONLY}")
     set(_LINKS "${STD_LIBRARY_LINKS}")
     set(_DEFINITIONS "${STD_LIBRARY_DEFINITIONS}")
-    set(_OPTIONS "${STD_LIBRARY_OPTIONS}")
+    set(_OPTIONS "${STD_LIBRARY_OPTIONS}")    
     set(_CONFIG "${STD_LIBRARY_CONFIG}")
 
     # Compute Intermediate Values
@@ -252,9 +269,6 @@ function(ob_add_standard_library target)
     else()
         set(_USE_QT FALSE)
     endif()
-
-    string(TOLOWER ${_NAMESPACE} _NAMESPACE_LC)
-    string(TOLOWER ${_ALIAS} _ALIAS_LC)
 
     #---------------- Library Setup -------------------
 
@@ -422,17 +436,8 @@ function(ob_add_standard_library target)
         VERSION ${PROJECT_VERSION}
         DEBUG_POSTFIX "d"
         EXPORT_NAME "${_ALIAS}"
+        OUTPUT_NAME "${_OUTPUT_NAME}"
     )
-
-    if(CMAKE_SYSTEM_NAME STREQUAL Windows)
-        set_target_properties(${_TARGET_NAME} PROPERTIES
-            OUTPUT_NAME "${_NAMESPACE}${_ALIAS}"
-        )
-    else()
-        set_target_properties(${_TARGET_NAME} PROPERTIES
-            OUTPUT_NAME "${_NAMESPACE_LC}-${_ALIAS_LC}"
-        )
-    endif()
 
     # Install target and export
     install(TARGETS ${_TARGET_NAME}
