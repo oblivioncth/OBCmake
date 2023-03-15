@@ -289,5 +289,5 @@ function(ob_standard_documentation target)
         ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
     )
 
-    message(STATUS "Doxygen configured for ${PROJECT_NAME}. Build target '${target}' to build the documentation.")
+    message(STATUS "Doxygen configured for ${PROJECT_NAME}. Build target '${target}' to build the documentation specifically, or simply build 'all'.")
 endfunction()
