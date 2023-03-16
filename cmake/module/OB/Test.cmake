@@ -23,7 +23,7 @@ include("${__OB_CMAKE_PRIVATE}/common.cmake")
 # WIN32:
 #   Same as supplying WIN32 to add_executable()
 function(ob_add_standard_test target)
-__ob_command(ob_add_standard_executable "3.16.0")
+__ob_command(ob_add_standard_test "3.16.0")
 
 #------------ Argument Handling ---------------
 
@@ -170,13 +170,13 @@ __ob_command(ob_add_standard_executable "3.16.0")
             message(WARNING "A test that uses Qt was created but the variable Qt6_PREFIX_PATH is empty or not available. The test might not be able to run properly if it depends on Qt DLLs.")
         endif()
     endif()
-endforeach()
+endfunction()
 
 # Uses ob_add_standard_test() to create an executable/test
 # with several presumed parameters. The test name is determined
 # using the name of the current source directory, i.e.
-# "tst_${CURRENT_DIR_NAME}". The supplied TARGET_PREFIX is then applied
-# when creating the target: "prefix_tst_${CURRENT_DIR_NAME}".
+# "tst_${CURRENT_SOURCE_DIR_NAME}". The supplied TARGET_PREFIX is then applied
+# when creating the target: "prefix_tst_${CURRENT_SOURCE_DIR_NAME}".
 # Finally the test is assumed to contain at least one source file
 # with the same name as the test ending in a .cpp extension within
 # the current directory.
@@ -187,6 +187,8 @@ endforeach()
 # The WIN32, LINKS, DEFINITIONS, and OPTIONS fields are forwarded directly
 # to ob_add_standard_test()
 function(ob_add_basic_standard_test)
+__ob_command(ob_add_basic_standard_test "3.16.0")
+
     # Function inputs 
     set(options
         WIN32
@@ -228,8 +230,8 @@ function(ob_add_basic_standard_test)
     endif()
 
     # Determine names
-    cmake_path(GET "${CMAKE_CURRENT_SOURCE_DIR}" FILENAME test_dir_name)
-    set(test_name "tst_${tst_dir_name}")
+    cmake_path(GET CMAKE_CURRENT_SOURCE_DIR FILENAME test_dir_name)
+    set(test_name "tst_${test_dir_name}")
     set(test_target "${_TARGET_PREFIX}_${test_name}")
     
     # Compose source list
