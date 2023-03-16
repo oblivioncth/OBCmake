@@ -8,11 +8,11 @@ include("${__OB_CMAKE_PRIVATE}/common.cmake")
 # Argument Notes:
 # ---------------
 # SOURCE:
-#   Files are assumed to be under "${CMAKE_CURRENT_SOURCE_DIR}/src"
+#   Files are assumed to be under "${CMAKE_CURRENT_SOURCE_DIR}"
 # SOURCE_GEN:
-#   Files are assumed to be under "${CMAKE_CURRENT_BINARY_DIR}/src"
+#   Files are assumed to be under "${CMAKE_CURRENT_BINARY_DIR}"
 # RESOURCE:
-#   Files are assumed to be under "${CMAKE_CURRENT_SOURCE_DIR}/res". Added via
+#   Files are assumed to be under "${CMAKE_CURRENT_SOURCE_DIR}". Added via
 #   target_sources(<tgt> PRIVATE <resources>), mainly for .qrc or .rc files
 # LINKS:
 #   Same contents/arguments as with target_link_libraries().
@@ -93,7 +93,7 @@ __ob_command(ob_add_standard_executable "3.16.0")
             continue()
         endif()
 
-        list(APPEND full_impl_paths "${CMAKE_CURRENT_SOURCE_DIR}/src/${impl}")
+        list(APPEND full_impl_paths "${CMAKE_CURRENT_SOURCE_DIR}/${impl}")
     endforeach()
 
     target_sources(${_TARGET_NAME} PRIVATE ${full_impl_paths})
@@ -111,7 +111,7 @@ __ob_command(ob_add_standard_executable "3.16.0")
                 continue()
             endif()
 
-            list(APPEND full_impl_gen_paths "${CMAKE_CURRENT_SOURCE_DIR}/src/${impl_gen}")
+            list(APPEND full_impl_gen_paths "${CMAKE_CURRENT_SOURCE_DIR}/${impl_gen}")
         endforeach()
 
         target_sources(${_TARGET_NAME} PRIVATE ${full_impl_gen_paths})
@@ -130,7 +130,7 @@ __ob_command(ob_add_standard_executable "3.16.0")
                 continue()
             endif()
 
-            list(APPEND full_res_paths "${CMAKE_CURRENT_SOURCE_DIR}/res/${res}")
+            list(APPEND full_res_paths "${CMAKE_CURRENT_SOURCE_DIR}/${res}")
         endforeach()
         
         target_sources(${_TARGET_NAME} PRIVATE ${full_res_paths})
@@ -140,8 +140,8 @@ __ob_command(ob_add_standard_executable "3.16.0")
     # level of the target hierarchy
     target_include_directories(${_TARGET_NAME}
         PRIVATE
-            "${CMAKE_CURRENT_SOURCE_DIR}/src"
-            "${CMAKE_CURRENT_BINARY_DIR}/src"
+            "${CMAKE_CURRENT_SOURCE_DIR}"
+            "${CMAKE_CURRENT_BINARY_DIR}"
     )
 
     # Link to libraries
@@ -171,3 +171,84 @@ __ob_command(ob_add_standard_executable "3.16.0")
         endif()
     endif()
 endforeach()
+
+# Uses ob_add_standard_test() to create an executable/test
+# with several presumed parameters. The test name is determined
+# using the name of the current source directory, i.e.
+# "tst_${CURRENT_DIR_NAME}". The supplied TARGET_PREFIX is then applied
+# when creating the target: "prefix_tst_${CURRENT_DIR_NAME}".
+# Finally the test is assumed to contain at least one source file
+# with the same name as the test ending in a .cpp extension within
+# the current directory.
+#
+# Additional files may be supplied via ADDITIONAL_SOURCES and the final
+# target name is optionally returned via TARGET_VAR.
+#
+# The WIN32, LINKS, DEFINITIONS, and OPTIONS fields are forwarded directly
+# to ob_add_standard_test()
+function(ob_add_basic_standard_test)
+    # Function inputs 
+    set(options
+        WIN32
+    )
+    
+    set(oneValueArgs
+        TARGET_PREFIX
+        TARGET_VAR
+    )
+
+    set(multiValueArgs
+        ADDITIONAL_SOURCES
+        LINKS
+        DEFINITIONS
+        OPTIONS
+    )
+
+    # Required Arguments (All Types)
+    set(requiredArgs
+        TARGET_PREFIX
+    )
+    
+    # Parse arguments
+    include(OB/Utility)
+    ob_parse_arguments(BASIC_TEST "${options}" "${oneValueArgs}" "${multiValueArgs}" "${requiredArgs}" ${ARGN})
+    
+    # Standardized set and defaulted values
+    set(_TARGET_PREFIX "${BASIC_TEST_TARGET_PREFIX}")
+    set(_TARGET_VAR "${BASIC_TEST_TARGET_VAR}")
+    set(_ADDITIONAL_SOURCES "${BASIC_TEST_ADDITIONAL_SOURCES}")
+    set(_LINKS "${BASIC_TEST_LINKS}")
+    set(_DEFINITIONS "${BASIC_TEST_DEFINITIONS}")
+    set(_OPTIONS "${BASIC_TEST_OPTIONS}")
+
+    if(BASIC_TEST_WIN32)
+        set(_OPTION_WIN32 "WIN32")
+    else()
+        set(_OPTION_WIN32 "")
+    endif()
+
+    # Determine names
+    cmake_path(GET "${CMAKE_CURRENT_SOURCE_DIR}" FILENAME test_dir_name)
+    set(test_name "tst_${tst_dir_name}")
+    set(test_target "${_TARGET_PREFIX}_${test_name}")
+    
+    # Compose source list
+    set(source_list "${test_name}.cpp")
+    if(_ADDITIONAL_SOURCES)
+        list(APPEND source_list ${_ADDITIONAL_SOURCES})
+    endif()
+    
+    # Create test
+    ob_add_standard_test(${test_target}
+        SOURCE ${source_list}
+        LINKS ${_LINKS}
+        DEFINITIONS ${_DEFINITIONS}
+        OPTIONS ${_OPTIONS}
+        ${_OPTION_WIN32}
+    )
+
+    # Return final target name
+    if(_TARGET_VAR)
+        set(${TARGET_VAR} "${test_target}" PARENT_SCOPE)
+    endif()
+endfunction()
