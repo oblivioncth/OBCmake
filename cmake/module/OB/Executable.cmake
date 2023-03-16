@@ -200,8 +200,8 @@ function(ob_add_standard_executable target)
         target_sources(${_TARGET_NAME} PRIVATE ${full_res_paths})
     endif()
 
-    # Include current soure and generated source directories for easy includes from the top
-    # level of the target hiearchy
+    # Include current source and generated source directories for easy includes from the top
+    # level of the target hierarchy
     target_include_directories(${_TARGET_NAME}
         PRIVATE
             "${CMAKE_CURRENT_SOURCE_DIR}/src"
