@@ -198,6 +198,9 @@ function(ob_standard_documentation target)
     if(EXISTS "${header_path}")
         set(DOXYGEN_LAYOUT_FILE "${header_path}")
     endif()
+    
+    # Create tag file
+    set(DOXYGEN_GENERATE_TAGFILE "${DOC_BUILD_PATH}/${PROJECT_NAME}.tag")
 
     #---------------------- Configure Qt Link ---------------------
     if(STD_DOCS_QT_PREFIX)
