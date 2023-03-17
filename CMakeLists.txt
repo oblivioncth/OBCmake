@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.0.0...3.25.0)
 # Project
 # NOTE: DON'T USE TRAILING ZEROS IN VERSIONS
 project(OBCMake
-    VERSION 0.2
+    VERSION 0.3
     LANGUAGES NONE
     DESCRIPTION "oblivioncth's CMake scripts"
 )
