@@ -251,6 +251,6 @@ __ob_command(ob_add_basic_standard_test "3.16.0")
 
     # Return final target name
     if(_TARGET_VAR)
-        set(${TARGET_VAR} "${test_target}" PARENT_SCOPE)
+        set(${_TARGET_VAR} "${test_target}" PARENT_SCOPE)
     endif()
 endfunction()
