@@ -1,3 +1,5 @@
+include("${__OB_CMAKE_PRIVATE}/common.cmake")
+
 # function(add_generated_resources_collection target)
 # Creates a qrc resource file in the given directory with the
 # given resources and adds the file to the given target
@@ -17,8 +19,13 @@
 # Defaults:
 # OUTPUT: "${CMAKE_CURRENT_BINARY_DIR}/res"
 # PREFIX: "/"
+#
+# NOTE: Unless the ALIAS feature of this is needed, just use
+# qt_add_resources() instead.
 
-function(__parse_file_entry return)
+function(__ob_parse_file_entry return)
+    __ob_internal_command(__ob_parse_file_entry "3.0.0")
+
     #---------------- Function Setup ----------------------
     # Const variables
     set(ALIAS_ENTRY_TEMPLATE "<file alias=\"@FILE_ENTRY_ALIAS@\">@FILE_ENTRY_PATH@</file>")
@@ -29,29 +36,17 @@ function(__parse_file_entry return)
         PATH
         ALIAS
     )
+    
+    set(requiredArgs
+        PATH
+    )
 
     # Parse arguments
-    cmake_parse_arguments(FILE_ENTRY "" "${oneValueArgs}" "" ${ARGN})
-
-    # Validate input
-    foreach(unk_val ${FILE_ENTRY_UNPARSED_ARGUMENTS})
-        message(WARNING "Ignoring unrecognized parameter: ${unk_val}")
-    endforeach()
-
-    if(FILE_ENTRY_KEYWORDS_MISSING_VALUES)
-        foreach(missing_val ${FILE_ENTRY_KEYWORDS_MISSING_VALUES})
-            message(WARNING "A value for '${missing_val}' must be provided")
-        endforeach()
-        message(FATAL_ERROR "Not all required values were present!")
-    endif()
-
-    # Handle defaults/undefineds
-    if(NOT DEFINED FILE_ENTRY_PATH)
-        message(FATAL_ERROR "A path for each file entry must be included!")
-    endif()
+    include(OB/Utility)
+    ob_parse_arguments(FILE_ENTRY "" "${oneValueArgs}" "" "${requiredArgs}" ${ARGN})
 
     #---------------- Parse Entry ----------------------
-    if(DEFINED FILE_ENTRY_ALIAS)
+    if(FILE_ENTRY_ALIAS)
         string(CONFIGURE "${ALIAS_ENTRY_TEMPLATE}" PARSED_ENTRY @ONLY)
     else()
         string(CONFIGURE "${ENTRY_TEMPLATE}" PARSED_ENTRY @ONLY)
@@ -60,8 +55,9 @@ function(__parse_file_entry return)
     set(${return} "${PARSED_ENTRY}" PARENT_SCOPE)
 endfunction()
 
-function(__parse_file_entry_list return)
-
+function(__ob_parse_file_entry_list return)
+    __ob_internal_command(__ob_parse_file_entry_list "3.12.0")
+    
     # Working vars (not required to "initialize" in cmake, but here for clarity)
     set(HAVE_FIRST_PATH FALSE)
     set(ENTRY_ARGS "")
@@ -73,7 +69,7 @@ function(__parse_file_entry_list return)
         if("${word}" STREQUAL "PATH")
             if(${HAVE_FIRST_PATH})
                 # Parse sub-list
-                __parse_file_entry(PARSED_ENTRY ${ENTRY_ARGS})
+                __ob_parse_file_entry(PARSED_ENTRY ${ENTRY_ARGS})
                 list(APPEND PARSED_LIST "${PARSED_ENTRY}")
 
                 # Reset intermediate argument list
@@ -87,7 +83,7 @@ function(__parse_file_entry_list return)
     endforeach()
 
     # Process last sub-list (above loop ends while populating final sub-list)
-    __parse_file_entry(PARSED_ENTRY ${ENTRY_ARGS})
+    __ob_parse_file_entry(PARSED_ENTRY ${ENTRY_ARGS})
     list(APPEND PARSED_LIST "${PARSED_ENTRY}")
 
     # Concatenate items
@@ -96,14 +92,16 @@ function(__parse_file_entry_list return)
     set(${return} "${FULLY_PARSED}" PARENT_SCOPE)
 endfunction()
 
-function(add_generated_resources_collection target)
+function(ob_add_generated_resources_collection target)
+    __ob_command(ob_add_generated_resources_collection "3.12.0")
+
     #---------------- Function Setup ----------------------
 
     # Const variables
     set(GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/res")
     set(GENERATED_NAME "resources.qrc")
     set(GENERATED_PATH "${GENERATED_DIR}/${GENERATED_NAME}")
-    set(TEMPLATE_FILE "__resources.qrc.in")
+    set(TEMPLATE_FILE "${__OB_CMAKE_PRIVATE}/templates/__resources.qrc.in")
 
     # Additional Function inputs
     set(oneValueArgs
@@ -113,31 +111,20 @@ function(add_generated_resources_collection target)
     set(multiValueArgs
         FILES
     )
+    set(requiredArgs
+        FILES
+    )
 
     # Parse arguments
-    cmake_parse_arguments(GEN_RES "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-
-    # Validate input
-    foreach(unk_val ${GEN_RES_UNPARSED_ARGUMENTS})
-        message(WARNING "Ignoring unrecognized parameter: ${unk_val}")
-    endforeach()
-
-    if(GEN_RES_KEYWORDS_MISSING_VALUES)
-        foreach(missing_val ${GEN_RES_KEYWORDS_MISSING_VALUES})
-            message(WARNING "A value for '${missing_val}' must be provided")
-        endforeach()
-        message(FATAL_ERROR "Not all required values were present!")
-    endif()
+    include(OB/Utility)
+    ob_parse_arguments(GEN_RES "" "${oneValueArgs}" "${multiValueArgs}" "${requiredArgs}" ${ARGN})
 
     # Handle defaults/undefineds
-    if(NOT DEFINED GEN_RES_OUTPUT)
+    if(NOT GEN_RES_OUTPUT)
         set(GEN_RES_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/res")
     endif()
-    if(NOT DEFINED GEN_RES_PREFIX)
+    if(NOT GEN_RES_PREFIX)
         set(GEN_RES_PREFIX "/")
-    endif()
-    if(NOT DEFINED GEN_RES_FILES)
-        message(FATAL_ERROR "A file list must be included!")
     endif()
 
     #---------------- Collection File Generation ----------------------
@@ -146,10 +133,10 @@ function(add_generated_resources_collection target)
     set(__RES_PREFIX ${GEN_RES_PREFIX})
 
     # Set file entries for file configuration
-    __parse_file_entry_list(__RES_FILES ${GEN_RES_FILES})
+    __ob_parse_file_entry_list(__RES_FILES ${GEN_RES_FILES})
 
     # Generate resources.qrc
-    configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/${TEMPLATE_FILE}"
+    configure_file("${TEMPLATE_FILE}"
         "${GENERATED_PATH}"
         @ONLY
         NEWLINE_STYLE UNIX

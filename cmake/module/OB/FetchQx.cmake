@@ -1,3 +1,5 @@
+include("${__OB_CMAKE_PRIVATE}/common.cmake")
+
 # Sets up Qx to be built/installed as an external project for use in the main project
 
 # git_ref - Tag, branch name, or commit hash to retrieve. According to CMake docs,
@@ -5,7 +7,9 @@
 # components - An optional semi-colon or whitespace delimited list of Qx components.
 #              If provided, only the components in the list will be configured.
 
-function(fetch_qx)
+function(ob_fetch_qx)
+    __ob_command(ob_fetch_qx "3.11.0")
+
     # Additional Function inputs
     set(oneValueArgs
         REF
@@ -15,20 +19,12 @@ function(fetch_qx)
     )
 
     # Parse arguments
-    cmake_parse_arguments(FETCH_QX "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    include(OB/Utility)
+    ob_parse_arguments(FETCH_QX "" "${oneValueArgs}" "${multiValueArgs}" "" ${ARGN})
 
     # Validate input
-    foreach(unk_val ${FETCH_QX_UNPARSED_ARGUMENTS})
-        message(WARNING "Ignoring unrecognized parameter: ${unk_val}")
-    endforeach()
 
-    if(FETCH_QX_KEYWORDS_MISSING_VALUES)
-        foreach(missing_val ${FETCH_QX_KEYWORDS_MISSING_VALUES})
-            message(WARNING "A value for '${missing_val}' must be provided")
-        endforeach()
-        message(WARNING "Not all required values were present!")
-    endif()
-
+    # Handle optionals/defaults
     if(FETCH_QX_REF)
         set(OPTIONAL_REF "GIT_TAG" ${FETCH_QX_REF})
     endif()
@@ -36,8 +32,12 @@ function(fetch_qx)
     if(FETCH_QX_COMPONENTS)
         set(QX_COMPONENTS ${FETCH_QX_COMPONENTS})
     endif()
-    
 
+    # Cause Qx to declare a cache variable with its version so that it can be read by the caller
+    include(OB/Utility)
+    ob_cache_project_version(Qx)
+
+    # Fetch
     include(FetchContent)
     FetchContent_Declare(Qx
         GIT_REPOSITORY "https://github.com/oblivioncth/Qx"

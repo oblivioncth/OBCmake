@@ -1,3 +1,5 @@
+include("${__OB_CMAKE_PRIVATE}/common.cmake")
+
 #########################################################################################
 #
 # CppVars.cmake
@@ -43,7 +45,7 @@
 # Will result in the header file "cmake_forwards.h" with the following contents:
 #
 # cmake_forwards.h``````````````````
-# 
+#
 # #ifndef CMAKE_FORWARDS_H
 # #define CMAKE_FORWARDS_H
 
@@ -59,12 +61,14 @@
 #
 ##########################################################################################
 
-function(add_cpp_vars target)
+function(ob_add_cpp_vars target)
+    __ob_command(ob_add_cpp_vars "3.15.0")
+
     #---------------- Function Setup ----------------------
     # Const variables
-    set(GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}")
-    set(TEMPLATE_FILE "__cpp_vars.h.in")
-    
+    set(GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/src")
+    set(TEMPLATE_FILE "${__OB_CMAKE_PRIVATE}/templates/__cpp_vars.h.in")
+
     # Additional Function inputs
     set(oneValueArgs
         NAME
@@ -73,29 +77,15 @@ function(add_cpp_vars target)
     set(multiValueArgs
         VARS
     )
+    
+    set(requiredArgs
+        NAME
+        VARS
+    )
 
     # Parse arguments
-    cmake_parse_arguments(CPP_VARS "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-
-    # Validate input
-    foreach(unk_val ${CPP_VARS_UNPARSED_ARGUMENTS})
-        message(WARNING "Ignoring unrecognized parameter: ${unk_val}")
-    endforeach()
-
-    if(CPP_VARS_KEYWORDS_MISSING_VALUES)
-        foreach(missing_val ${CPP_VARS_KEYWORDS_MISSING_VALUES})
-            message(WARNING "A value for '${missing_val}' must be provided")
-        endforeach()
-        message(FATAL_ERROR "Not all required values were present!")
-    endif()
-
-    # Handle defaults/undefineds
-    if(NOT DEFINED CPP_VARS_NAME)
-        message(FATAL_ERROR "A name for the variable group must be provided!")
-    endif()
-    if(NOT DEFINED CPP_VARS_VARS)
-        message(FATAL_ERROR "Variables were not provided!")
-    endif()
+    include(OB/Utility)
+    ob_parse_arguments(CPP_VARS "" "${oneValueArgs}" "${multiValueArgs}" "${requiredArgs}" ${ARGN})
 
     # Validate VARS input
     list(LENGTH CPP_VARS_VARS __VARSC)
@@ -112,13 +102,14 @@ function(add_cpp_vars target)
     set(GENERATED_NAME "${__NAME_LC}.h")
     set(GENERATED_PATH "${GENERATED_DIR}/${GENERATED_NAME}")
     set(GENERATED_GUARD "${__NAME_UC}_H")
-    
+
 
     # Generate defines
+    set(GENERATED_MACROS "") # Avoids uninitialized var warning
     while(CPP_VARS_VARS)
         # Get key/value
         list(POP_FRONT CPP_VARS_VARS __KEY __VALUE)
-        
+
         # Validate key
         if("${__KEY}" MATCHES "[ ]")
             message(FATAL_ERROR "${CMAKE_CURRENT_FUNCTION} a key cannot contain spaces!")
@@ -127,9 +118,9 @@ function(add_cpp_vars target)
         # Update define list
         set(GENERATED_MACROS "${GENERATED_MACROS}#define ${CPP_VARS_PREFIX}${__KEY} ${__VALUE}\n")
     endwhile()
-    
+
     # Generate header
-    configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/${TEMPLATE_FILE}"
+    configure_file("${TEMPLATE_FILE}"
         "${GENERATED_PATH}"
         @ONLY
         NEWLINE_STYLE UNIX

@@ -1,9 +1,13 @@
-function(set_win_executable_details target)
+include("${__OB_CMAKE_PRIVATE}/common.cmake")
+
+function(ob_set_win_executable_details target)
+    __ob_command(ob_set_win_executable_details "3.20.0")
+
     # Const variables
     set(GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/rc_gen")
     set(GENERATED_NAME "resources.rc")
     set(GENERATED_PATH "${GENERATED_DIR}/${GENERATED_NAME}")
-    set(TEMPLATE_FILE "__resources.rc.in")
+    set(TEMPLATE_FILE "${__OB_CMAKE_PRIVATE}/templates/__resources.rc.in")
 
     # Additional Function inputs
     set(oneValueArgs
@@ -21,19 +25,7 @@ function(set_win_executable_details target)
     )
 
     # Parse arguments
-    cmake_parse_arguments(WIN_ED "" "${oneValueArgs}" "" ${ARGN})
-
-    # Validate input
-    foreach(unk_val ${WIN_ED_UNPARSED_ARGUMENTS})
-        message(WARNING "Ignoring unrecognized parameter: ${unk_val}")
-    endforeach()
-
-    if(WIN_ED_KEYWORDS_MISSING_VALUES)
-        foreach(missing_val ${WIN_ED_KEYWORDS_MISSING_VALUES})
-            message(WARNING "A value for '${missing_val}' must be provided")
-        endforeach()
-        message(FATAL_ERROR "Not all required values were present!")
-    endif()
+    ob_parse_arguments(WIN_ED "" "${oneValueArgs}" "" "" ${ARGN})
 
     # Determine absolute icon path (relative to caller)
     cmake_path(ABSOLUTE_PATH WIN_ED_ICON
@@ -59,7 +51,7 @@ function(set_win_executable_details target)
     set(VER_PRODUCTVERSION_STR "${WIN_ED_PRODUCT_VER}")
 
     # Generate resources.rc
-    configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/${TEMPLATE_FILE}"
+    configure_file("${TEMPLATE_FILE}"
         "${GENERATED_PATH}"
         @ONLY
         NEWLINE_STYLE UNIX

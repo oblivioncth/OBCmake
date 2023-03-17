@@ -1,4 +1,8 @@
-function(fetch_file)
+include("${__OB_CMAKE_PRIVATE}/common.cmake")
+
+function(ob_fetch_file)
+    __ob_command(ob_fetch_file "3.20.0")
+
     include(FetchContent)
 
     # Additional Function inputs
@@ -7,21 +11,16 @@ function(fetch_file)
         URL
         PATH_VAR
     )
+    
+    set(requiredArgs
+        NAME
+        URL
+        PATH_VAR
+    )
 
     # Parse arguments
-    cmake_parse_arguments(FILE_FETCH "" "${oneValueArgs}" "" ${ARGN})
-
-    # Validate input
-    foreach(unk_val ${FILE_FETCH_UNPARSED_ARGUMENTS})
-        message(WARNING "Ignoring unrecognized parameter: ${unk_val}")
-    endforeach()
-
-    if(FILE_FETCH_KEYWORDS_MISSING_VALUES)
-        foreach(missing_val ${FILE_FETCH_KEYWORDS_MISSING_VALUES})
-            message(WARNING "A value for '${missing_val}' must be provided")
-        endforeach()
-        message(FATAL_ERROR "Not all required values were present!")
-    endif()
+    include(OB/Utility)
+    ob_parse_arguments(FILE_FETCH "" "${oneValueArgs}" "" "${requiredArgs}" ${ARGN})
 
     # Setup file download via FetchContent
     FetchContent_Declare(${FILE_FETCH_NAME}
@@ -36,6 +35,6 @@ function(fetch_file)
     # Determine file download path
     cmake_path(GET FILE_FETCH_URL FILENAME FILE_NAME)
     set(FETCHED_FILE_PATH "${${FILE_FETCH_NAME}_SOURCE_DIR}/${FILE_NAME}")
-	
+
     set(${FILE_FETCH_PATH_VAR} "${FETCHED_FILE_PATH}" PARENT_SCOPE)
 endfunction()
