@@ -69,6 +69,9 @@ set(DOXYGEN_OUTPUT_DIRECTORY ${DOC_BUILD_PATH})
 
 # Base Theme
 set(DOXYGEN_GENERATE_TREEVIEW YES)
+set(DOXYGEN_DISABLE_INDEX NO)
+set(DOXYGEN_FULL_SIDEBAR NO)
+set(DOXYGEN_HTML_COLORSTYLE LIGHT)
 list(APPEND DOXYGEN_HTML_EXTRA_STYLESHEET
     "${DOC_MAIN_RESOURCE_PATH}/theme/doxygen-awesome/doxygen-awesome.css"
     "${DOC_MAIN_RESOURCE_PATH}/theme/doxygen-awesome/doxygen-awesome-sidebar-only.css"
