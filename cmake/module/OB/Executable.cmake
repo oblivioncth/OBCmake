@@ -358,6 +358,7 @@ function(ob_add_standard_executable target)
                     TARGET "${_TARGET_NAME}"
                     FILENAME_VARIABLE qt_runtime_deploy_script
                     NO_UNSUPPORTED_PLATFORM_ERROR
+                    NO_COMPILER_RUNTIME
                 )
 
                 install(SCRIPT ${qt_runtime_deploy_script}
