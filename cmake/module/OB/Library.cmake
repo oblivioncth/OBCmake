@@ -434,10 +434,17 @@ function(ob_add_standard_library target)
         target_compile_definitions(${_TARGET_NAME} ${_DEFINITIONS})
     endif()
     
-    # Add recognized global definitions
-    if(QT_NO_CAST_FROM_ASCII)
-        target_compile_definitions(${_TARGET_NAME} ${interface_private} QT_NO_CAST_FROM_ASCII)
-    endif()
+    # Add recognized common definitions
+    list(APPEND __recog_defs
+        QT_NO_CAST_FROM_ASCII
+        QT_RESTRICTED_CAST_FROM_ASCII
+    )
+    
+    foreach(__gd ${__recog_defs})
+        if(${${__gd}})
+            target_compile_definitions(${_TARGET_NAME} ${interface_private} ${__gd})
+        endif()
+    endforeach()
     
     # Add options
     if(_OPTIONS)
