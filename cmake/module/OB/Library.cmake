@@ -269,6 +269,14 @@ function(ob_add_standard_library target)
     else()
         set(_USE_QT FALSE)
     endif()
+    
+    if("${_TYPE}" STREQUAL "INTERFACE")
+        set(interface_private "INTERFACE")
+        set(interface_public "INTERFACE")
+    else()
+        set(interface_private "PRIVATE")
+        set(interface_public "PUBLIC")
+    endif()
 
     #---------------- Library Setup -------------------
 
@@ -424,6 +432,11 @@ function(ob_add_standard_library target)
     # Add definitions
     if(_DEFINITIONS)
         target_compile_definitions(${_TARGET_NAME} ${_DEFINITIONS})
+    endif()
+    
+    # Add recognized global definitions
+    if(QT_NO_CAST_FROM_ASCII)
+        target_compile_definitions(${_TARGET_NAME} ${interface_private} QT_NO_CAST_FROM_ASCII)
     endif()
     
     # Add options
