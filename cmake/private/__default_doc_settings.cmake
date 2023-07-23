@@ -47,6 +47,9 @@ endif()
 if(NOT DEFINED DOXYGEN_SORT_MEMBERS_CTORS_1ST)
     SET(DOXYGEN_SORT_MEMBERS_CTORS_1ST YES)
 endif()
+if(NOT DEFINED DOXYGEN_FULL_PATH_NAMES)
+    SET(DOXYGEN_FULL_PATH_NAMES NO)
+endif()
 
 # Configure custom command/macro processing
 list(APPEND DOXYGEN_ALIASES
@@ -54,9 +57,16 @@ list(APPEND DOXYGEN_ALIASES
     "component{2}=\"@par Import:^^@code find_package(${PROJECT_NAME} REQUIRED COMPONENTS \\1)@endcode ^^@par Link:^^@code target_link_libraries(target_name ${PROJECT_NAME}::\\1)@endcode ^^@par Include:^^@code #include <${PROJECT_NAME_LC}/\\2>@endcode\""
 )
 
+# Workarounds for
+# 1) Doxygen doesn't understand Q_DECLARE_FLAGS fully
+# 2) Ignore declspec attributes, causes issues with source located documentation
+# 3) Always document Win dependent things
+# 4) Always document Linux dependent things
 list(APPEND DOXYGEN_PREDEFINED
 	"Q_DECLARE_FLAGS(flagsType,enumType)=typedef QFlags<enumType> flagsType\;"
     "__declspec(x)="
+    "_WIN32"
+    "__linux__"
 )
 
 # Prevent unwanted quoting
@@ -69,6 +79,9 @@ set(DOXYGEN_OUTPUT_DIRECTORY ${DOC_BUILD_PATH})
 
 # Base Theme
 set(DOXYGEN_GENERATE_TREEVIEW YES)
+set(DOXYGEN_DISABLE_INDEX NO)
+set(DOXYGEN_FULL_SIDEBAR NO)
+set(DOXYGEN_HTML_COLORSTYLE LIGHT)
 list(APPEND DOXYGEN_HTML_EXTRA_STYLESHEET
     "${DOC_MAIN_RESOURCE_PATH}/theme/doxygen-awesome/doxygen-awesome.css"
     "${DOC_MAIN_RESOURCE_PATH}/theme/doxygen-awesome/doxygen-awesome-sidebar-only.css"

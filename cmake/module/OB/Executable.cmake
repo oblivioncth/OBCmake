@@ -133,6 +133,14 @@ function(ob_add_standard_executable target)
     else()
         set(_OPTION_WIN32 "")
     endif()
+    
+    if("${_TYPE}" STREQUAL "INTERFACE")
+        set(interface_private "INTERFACE")
+        set(interface_public "INTERFACE")
+    else()
+        set(interface_private "PRIVATE")
+        set(interface_public "PUBLIC")
+    endif()
 
     #---------------- Executable Setup -------------------
 
@@ -217,6 +225,18 @@ function(ob_add_standard_executable target)
     if(_DEFINITIONS)
         target_compile_definitions(${_TARGET_NAME} ${_DEFINITIONS})
     endif()
+    
+    # Add recognized common definitions
+    list(APPEND __recog_defs
+        QT_NO_CAST_FROM_ASCII
+        QT_RESTRICTED_CAST_FROM_ASCII
+    )
+    
+    foreach(__gd ${__recog_defs})
+        if(${${__gd}})
+            target_compile_definitions(${_TARGET_NAME} ${interface_private} ${__gd})
+        endif()
+    endforeach()
     
     # Add options
     if(_OPTIONS)
@@ -358,6 +378,7 @@ function(ob_add_standard_executable target)
                     TARGET "${_TARGET_NAME}"
                     FILENAME_VARIABLE qt_runtime_deploy_script
                     NO_UNSUPPORTED_PLATFORM_ERROR
+                    NO_COMPILER_RUNTIME
                 )
 
                 install(SCRIPT ${qt_runtime_deploy_script}
