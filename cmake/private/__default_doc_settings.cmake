@@ -59,10 +59,12 @@ list(APPEND DOXYGEN_ALIASES
 
 # Workarounds for
 # 1) Doxygen doesn't understand Q_DECLARE_FLAGS fully
-# 2) Ignore declspec attributes, causes issues with source located documentation
-# 3) Always document Win dependent things
-# 4) Always document Linux dependent things
+# 2) Doxygen doesn't understand QX_ERROR_TYPE fully
+# 3) Ignore declspec attributes, causes issues with source located documentation
+# 4) Always document Win dependent things
+# 5) Always document Linux dependent things
 list(APPEND DOXYGEN_PREDEFINED
+    "QX_ERROR_TYPE(Type,name,code)=Type final : public Qx::AbstractError<name, code>"
 	"Q_DECLARE_FLAGS(flagsType,enumType)=typedef QFlags<enumType> flagsType\;"
     "__declspec(x)="
     "_WIN32"
