@@ -156,56 +156,44 @@ function(ob_add_standard_executable target)
     # Add implementation
     foreach(impl ${_SOURCE})
         # Ignore non-relevant system specific implementation
-        string(REGEX MATCH [[_win\.cpp$]] IS_WIN_IMPL "${impl}")
-        string(REGEX MATCH [[_linux\.cpp$]] IS_LINUX_IMPL "${impl}")
-        string(REGEX MATCH [[_darwin\.cpp$]] IS_MAC_IMPL "${impl}")
-        if((IS_WIN_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Windows") OR
-           (IS_LINUX_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Linux") OR
-           (IS_MAC_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Darwin"))
-            continue()
+        __ob_validate_source_for_system("${impl}" applicable_impl)
+        if(applicable_impl)
+            list(APPEND full_impl_paths "${CMAKE_CURRENT_SOURCE_DIR}/src/${impl}")
         endif()
-
-        list(APPEND full_impl_paths "${CMAKE_CURRENT_SOURCE_DIR}/src/${impl}")
     endforeach()
 
-    target_sources(${_TARGET_NAME} PRIVATE ${full_impl_paths})
+    if(full_impl_paths)
+        target_sources(${_TARGET_NAME} PRIVATE ${full_impl_paths})
+    endif()
 
     # Add generated implementation
     if(_SOURCE_GEN)
-        foreach(impl_gen ${_SOURCE})
+        foreach(impl_gen ${_SOURCE_GEN})
             # Ignore non-relevant system specific implementation
-            string(REGEX MATCH [[_win\.cpp$]] IS_WIN_IMPL "${impl}")
-            string(REGEX MATCH [[_linux\.cpp$]] IS_LINUX_IMPL "${impl}")
-            string(REGEX MATCH [[_darwin\.cpp$]] IS_MAC_IMPL "${impl}")
-            if((IS_WIN_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Windows") OR
-               (IS_LINUX_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Linux") OR
-               (IS_MAC_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Darwin"))
-                continue()
+            __ob_validate_source_for_system("${impl_gen}" applicable_impl_gen)
+            if(applicable_impl_gen)
+                list(APPEND full_impl_gen_paths "${CMAKE_CURRENT_BINARY_DIR}/src/${impl_gen}")
             endif()
-
-            list(APPEND full_impl_gen_paths "${CMAKE_CURRENT_SOURCE_DIR}/src/${impl_gen}")
         endforeach()
 
-        target_sources(${_TARGET_NAME} PRIVATE ${full_impl_gen_paths})
+        if(applicable_impl_gen)
+            target_sources(${_TARGET_NAME} PRIVATE ${full_impl_gen_paths})
+        endif()
     endif()
     
     # Add resources
     if(_RESOURCE)
         foreach(res ${_RESOURCE})
             # Ignore non-relevant system specific implementation
-            string(REGEX MATCH [[_win\.cpp$]] IS_WIN_IMPL "${impl}")
-            string(REGEX MATCH [[_linux\.cpp$]] IS_LINUX_IMPL "${impl}")
-            string(REGEX MATCH [[_darwin\.cpp$]] IS_MAC_IMPL "${impl}")
-            if((IS_WIN_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Windows") OR
-               (IS_LINUX_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Linux") OR
-               (IS_MAC_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Darwin"))
-                continue()
+            __ob_validate_source_for_system("${res}" applicable_res)
+            if(applicable_res)
+                list(APPEND full_res_paths "${CMAKE_CURRENT_SOURCE_DIR}/res/${res}")
             endif()
-
-            list(APPEND full_res_paths "${CMAKE_CURRENT_SOURCE_DIR}/res/${res}")
         endforeach()
         
-        target_sources(${_TARGET_NAME} PRIVATE ${full_res_paths})
+        if(full_res_paths)
+            target_sources(${_TARGET_NAME} PRIVATE ${full_res_paths})
+        endif()
     endif()
 
     # Include current source and generated source directories for easy includes from the top
