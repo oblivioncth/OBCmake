@@ -295,20 +295,15 @@ function(ob_add_standard_library target)
     # Add implementation
     if(_IMPLEMENTATION)
         foreach(impl ${_IMPLEMENTATION})
-            # Ignore non-relevant system specific implementation
-            string(REGEX MATCH [[_win\.cpp$]] IS_WIN_IMPL "${impl}")
-            string(REGEX MATCH [[_linux\.cpp$]] IS_LINUX_IMPL "${impl}")
-            string(REGEX MATCH [[_darwin\.cpp$]] IS_MAC_IMPL "${impl}")
-            if((IS_WIN_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Windows") OR
-               (IS_LINUX_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Linux") OR
-               (IS_MAC_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Darwin"))
-                continue()
+            __ob_validate_source_for_system("${impl}" applicable_impl)
+            if(applicable_impl)
+                list(APPEND full_impl_paths "${CMAKE_CURRENT_SOURCE_DIR}/src/${impl}")
             endif()
-
-            list(APPEND full_impl_paths "${CMAKE_CURRENT_SOURCE_DIR}/src/${impl}")
         endforeach()
 
-        target_sources(${_TARGET_NAME} PRIVATE ${full_impl_paths})
+        if(full_impl_paths)
+            target_sources(${_TARGET_NAME} PRIVATE ${full_impl_paths})
+        endif()
     endif()
 
     # Doc
@@ -332,10 +327,15 @@ function(ob_add_standard_library target)
     # Add private headers
     if(_HEADERS_PRIVATE)
         foreach(p_header ${_HEADERS_PRIVATE})
-            list(APPEND full_pheader_paths "${CMAKE_CURRENT_SOURCE_DIR}/src/${p_header}")
+            __ob_validate_source_for_system("${p_header}" applicable_p_header)
+            if(applicable_p_header)
+                list(APPEND full_pheader_paths "${CMAKE_CURRENT_SOURCE_DIR}/src/${p_header}")
+            endif()
         endforeach()
 
-        target_sources(${_TARGET_NAME} PRIVATE ${full_pheader_paths})
+        if(full_pheader_paths)
+            target_sources(${_TARGET_NAME} PRIVATE ${full_pheader_paths})
+        endif()
     endif()
 
     # Add standard API headers

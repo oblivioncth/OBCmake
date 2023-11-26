@@ -199,3 +199,27 @@ function(__ob_parse_std_target_config_option target ns alias)
         ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
     )
 endfunction()
+
+function(__ob_validate_source_for_system source return)
+    __ob_internal_command(__ob_validate_source_for_system "3.0.0")
+
+    string(REGEX MATCH [[_win\.]] IS_WIN_SPECIFIC "${source}")
+    if(IS_WIN_SPECIFIC AND NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
+        set(${return} FALSE PARENT_SCOPE)
+        return()
+    endif()
+    
+    string(REGEX MATCH [[_linux\.]] IS_LINUX_SPECIFIC "${source}")
+    if(IS_LINUX_SPECIFIC AND NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        set(${return} FALSE PARENT_SCOPE)
+        return()
+    endif()
+    
+    string(REGEX MATCH [[_darwin\.]] IS_MAC_SPECIFIC "${source}")
+    if(IS_MAC_SPECIFIC AND NOT CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+        set(${return} FALSE PARENT_SCOPE)
+        return()
+    endif()
+    
+    set(${return} TRUE PARENT_SCOPE)
+endfunction()
