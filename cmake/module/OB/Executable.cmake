@@ -164,6 +164,11 @@ function(ob_add_standard_executable target)
 
     if(full_impl_paths)
         target_sources(${_TARGET_NAME} PRIVATE ${full_impl_paths})
+        
+        source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src"
+            PREFIX "Source"
+            FILES ${full_impl_paths}
+        )
     endif()
 
     # Add generated implementation
@@ -178,6 +183,11 @@ function(ob_add_standard_executable target)
 
         if(applicable_impl_gen)
             target_sources(${_TARGET_NAME} PRIVATE ${full_impl_gen_paths})
+            
+            source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src"
+                PREFIX "Generated Source"
+                FILES ${applicable_impl_gen}
+            )
         endif()
     endif()
     
@@ -193,6 +203,12 @@ function(ob_add_standard_executable target)
         
         if(full_res_paths)
             target_sources(${_TARGET_NAME} PRIVATE ${full_res_paths})
+            
+            # Group files with their parent directories stripped
+            source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/res"
+                PREFIX "Resource"
+                FILES ${full_res_paths}
+            )
         endif()
     endif()
 
