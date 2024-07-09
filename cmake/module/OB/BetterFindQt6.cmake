@@ -13,11 +13,11 @@ macro(ob_find_qt6_package)
             set(Qt6_PREFIX_PATH ${PACKAGE_PREFIX_DIR})
         else()
             # Determine based on config script path
-            cmake_path(REMOVE_FILENAME ${Qt6_CONFIG}
+            cmake_path(REMOVE_FILENAME Qt6_CONFIG
                 OUTPUT_VARIABLE __QT_CONFIG_PATH
             )
-            cmake_path(ABSOLUTE_PATH "${__QT_CONFIG_PATH}/../../../"
-                NORMALIZE
+            set(__QT_PREFIX_PATH "${__QT_CONFIG_PATH}/../../../")
+            cmake_path(NORMAL_PATH __QT_PREFIX_PATH
                 OUTPUT_VARIABLE Qt6_PREFIX_PATH
             )
         endif()
