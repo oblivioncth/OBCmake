@@ -403,7 +403,7 @@ function(ob_add_standard_executable target)
                 # This function check for appropriate platforms by itself
                 qt_generate_deploy_app_script(
                     TARGET "${_TARGET_NAME}"
-                    FILENAME_VARIABLE qt_runtime_deploy_script
+                    OUTPUT_SCRIPT qt_runtime_deploy_script
                     NO_UNSUPPORTED_PLATFORM_ERROR
                     NO_COMPILER_RUNTIME
                 )
