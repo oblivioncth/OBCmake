@@ -349,7 +349,6 @@ function(ob_add_standard_executable target)
             foreach(_rdep ${_runtime_deps_resolved})
                 file(INSTALL
                   DESTINATION "${CMAKE_INSTALL_PREFIX}/${OB_RUNTIME_PATH}"
-                  TYPE SHARED_LIBRARY
                   FILES "${_rdep}"
                   FOLLOW_SYMLINK_CHAIN
             )
