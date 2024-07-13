@@ -4,6 +4,11 @@ include("${__OB_CMAKE_PRIVATE}/common.cmake")
 # - Adds the install directory to the clean target
 # - Defines a variable containing "EXCLUDE_FROM_ALL" if project is not top-level, empty otherwise
 # - Defines a variable containing "ALL" if project is top-level, empty otherwise
+# - Sets reasonable rpath (likely runpath) defaults for both build and install paths, with the build
+#   paths in particular being useful for if the object (generally a shared lib) is copied without
+#   using the normal CMake install commands (like in the case of the Executable module). Once CMake
+#   has a better way of installing JUST the runtime dependencies of projects pulled via FetchContent
+#   (in-tree dependencies), the build RPATh manipulation can likely be dropped  
 macro(ob_top_level_project_setup)
     __ob_command(ob_top_level_project_setup "3.21.0")
 
@@ -19,6 +24,20 @@ macro(ob_top_level_project_setup)
 
         # Clean install when clean target is ran
         set_directory_properties(PROPERTIES ADDITIONAL_CLEAN_FILES "${CMAKE_INSTALL_PREFIX}")
+
+        # Set good defaults for RPATH's on *nix (mac ignored for now since it's not formally supported.
+        # Setting the same defaults for the "build" values will help when a library is installed
+        # simply by copying, like in the case for the Executable module (which is a workaround)
+        if(NOT APPLE)
+            set(CMAKE_INSTALL_RPATH
+                "$ORIGIN"
+                "$ORIGIN/../lib"
+            )
+            set(CMAKE_BUILD_RPATH
+                "$ORIGIN"
+                "$ORIGIN/../lib"
+            )
+        endif() 
 
         # Define vars
         set(TOP_PROJ_INCLUDE_IN_ALL "ALL")
