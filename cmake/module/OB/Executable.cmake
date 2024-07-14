@@ -164,6 +164,11 @@ function(ob_add_standard_executable target)
 
     if(full_impl_paths)
         target_sources(${_TARGET_NAME} PRIVATE ${full_impl_paths})
+        
+        source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src"
+            PREFIX "Source"
+            FILES ${full_impl_paths}
+        )
     endif()
 
     # Add generated implementation
@@ -178,6 +183,11 @@ function(ob_add_standard_executable target)
 
         if(applicable_impl_gen)
             target_sources(${_TARGET_NAME} PRIVATE ${full_impl_gen_paths})
+            
+            source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src"
+                PREFIX "Generated Source"
+                FILES ${applicable_impl_gen}
+            )
         endif()
     endif()
     
@@ -193,6 +203,12 @@ function(ob_add_standard_executable target)
         
         if(full_res_paths)
             target_sources(${_TARGET_NAME} PRIVATE ${full_res_paths})
+            
+            # Group files with their parent directories stripped
+            source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/res"
+                PREFIX "Resource"
+                FILES ${full_res_paths}
+            )
         endif()
     endif()
 
@@ -209,27 +225,30 @@ function(ob_add_standard_executable target)
         target_link_libraries(${_TARGET_NAME} ${_LINKS})
     endif()
 
-    # Add wayland support to static Qt executables on Linux
-    if(_USE_QT AND CMAKE_SYSTEM_NAME STREQUAL Linux)
+    # Add wayland support to Qt executables on Linux, if available
+    if(_USE_QT AND CMAKE_SYSTEM_NAME STREQUAL Linux AND TARGET Qt6::WaylandClient AND TARGET Qt6::QWaylandIntegrationPlugin)
         # We don't want to override the default platform plugin (usually xcb), but just
-        # include the wayland platform plugin with static executeables if the plugin
+        # include the wayland platform plugin with executeables if the plugin
         # is available. This avoids the warning
         #
-        # qt.qpa.plugin could not find the qt platform static plugin "wayland" in ""
+        # qt.qpa.plugin could not find the qt platform plugin "wayland" in ""
         #
         # from being printed by said executeables when they're run in a Desktop
-        # environment that uses Wayland, and allows usesrs to start them under
+        # environment that uses Wayland, and allows users to start them under
         # wayland if desired. If wayland ever becomes the default this won't be
         # required anymore as the default platform plugin is always statically
         # linked (see qt_internal_add_plugin())
         #
         # Default logic for app that use Qt GUI (otherwise mkspecs are used):
         # https://github.com/qt/qtbase/blob/2636258b29fb09551f78a26512790dc66a4a3036/src/gui/CMakeLists.txt#L32
-        if(TARGET Qt6::QWaylandIntegrationPlugin)
-            qt_import_plugins(${_TARGET_NAME}
-                INCLUDE Qt6::QWaylandIntegrationPlugin
-            )
-        endif()
+        #
+        # It seems like the qt_import_plugins() call probably adds the plugin, while
+        # linking to the waylandclient target ensures that wayland related dependencies
+        # are deployed in shared builds
+        qt_import_plugins(${_TARGET_NAME}
+            INCLUDE Qt6::QWaylandIntegrationPlugin
+        )
+        target_link_libraries(${_TARGET_NAME} PRIVATE Qt6::WaylandClient)
     endif()
 
     # Add definitions
@@ -333,7 +352,6 @@ function(ob_add_standard_executable target)
             foreach(_rdep ${_runtime_deps_resolved})
                 file(INSTALL
                   DESTINATION "${CMAKE_INSTALL_PREFIX}/${OB_RUNTIME_PATH}"
-                  TYPE SHARED_LIBRARY
                   FILES "${_rdep}"
                   FOLLOW_SYMLINK_CHAIN
             )
@@ -387,7 +405,7 @@ function(ob_add_standard_executable target)
                 # This function check for appropriate platforms by itself
                 qt_generate_deploy_app_script(
                     TARGET "${_TARGET_NAME}"
-                    FILENAME_VARIABLE qt_runtime_deploy_script
+                    OUTPUT_SCRIPT qt_runtime_deploy_script
                     NO_UNSUPPORTED_PLATFORM_ERROR
                     NO_COMPILER_RUNTIME
                 )
