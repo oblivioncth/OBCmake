@@ -225,27 +225,11 @@ function(ob_add_standard_executable target)
         target_link_libraries(${_TARGET_NAME} ${_LINKS})
     endif()
 
-    # Add wayland support to static Qt executables on Linux
-    if(_USE_QT AND CMAKE_SYSTEM_NAME STREQUAL Linux)
-        # We don't want to override the default platform plugin (usually xcb), but just
-        # include the wayland platform plugin with static executeables if the plugin
-        # is available. This avoids the warning
-        #
-        # qt.qpa.plugin could not find the qt platform static plugin "wayland" in ""
-        #
-        # from being printed by said executeables when they're run in a Desktop
-        # environment that uses Wayland, and allows usesrs to start them under
-        # wayland if desired. If wayland ever becomes the default this won't be
-        # required anymore as the default platform plugin is always statically
-        # linked (see qt_internal_add_plugin())
-        #
-        # Default logic for app that use Qt GUI (otherwise mkspecs are used):
-        # https://github.com/qt/qtbase/blob/2636258b29fb09551f78a26512790dc66a4a3036/src/gui/CMakeLists.txt#L32
-        if(TARGET Qt6::QWaylandIntegrationPlugin)
-            qt_import_plugins(${_TARGET_NAME}
-                INCLUDE Qt6::QWaylandIntegrationPlugin
-            )
-        endif()
+    # Add wayland support to Qt executables on Linux, if available
+    if(_USE_QT AND CMAKE_SYSTEM_NAME STREQUAL Linux AND TARGET Qt6::WaylandClient)
+        # Shouldn't be an issue to add it as PRIVATE specifically even if it's
+        # already linked using a different scope.
+        target_link_libraries(${_TARGET_NAME} PRIVATE Qt6::WaylandClient)
     endif()
 
     # Add definitions
