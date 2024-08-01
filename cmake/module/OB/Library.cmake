@@ -141,7 +141,7 @@ endfunction()
 #
 #   This argument is required unless the TYPE is INTERFACE.
 # HEADERS_PRIVATE:
-#   Files are assumed to be under "${CMAKE_CURRENT_SOURCE_DIR}/include"
+#   Files are assumed to be under "${CMAKE_CURRENT_SOURCE_DIR}/src"
 # HEADERS_API:
 #   Inner Form:
 #       HEADERS_API
@@ -347,6 +347,13 @@ function(ob_add_standard_library target)
             source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src"
                 PREFIX "Private Headers"
                 FILES ${full_pheader_paths}
+            )
+            
+            # Include current source directory for easy includes of
+            # private headers from the top level of the target hierarchy
+            target_include_directories(${_TARGET_NAME}
+                PRIVATE
+                    "${CMAKE_CURRENT_SOURCE_DIR}/src"
             )
         endif()
     endif()
