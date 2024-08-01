@@ -166,6 +166,7 @@ function(ob_add_standard_executable target)
         target_sources(${_TARGET_NAME} PRIVATE ${full_impl_paths})
         
         source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src"
+            # "Implementation" is preferred, but we also want this group to appear below header groups
             PREFIX "Source"
             FILES ${full_impl_paths}
         )

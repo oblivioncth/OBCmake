@@ -306,7 +306,8 @@ function(ob_add_standard_library target)
             
             # Group files with their parent directories stripped
             source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src"
-                PREFIX "Source"
+                # "Implementation" is preferred, but we also want this group to appear below header groups
+                PREFIX "Source" 
                 FILES ${full_impl_paths}
             )
         endif()
