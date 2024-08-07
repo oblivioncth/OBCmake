@@ -301,8 +301,7 @@ function(ob_add_standard_library target)
             
             # Group files with their parent directories stripped
             source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src"
-                # "Implementation" is preferred, but we also want this group to appear below header groups
-                PREFIX "Source" 
+                PREFIX "Implementation" 
                 FILES ${full_impl_paths}
             )
             
@@ -336,7 +335,7 @@ function(ob_add_standard_library target)
     # Add standard API headers
     if(_HEADERS_API)
         __ob_register_header_set("headers_api"
-            "Include Headers"
+            "Headers Include"
             "${CMAKE_CURRENT_SOURCE_DIR}/include"
             ${_HEADERS_API}
         )
@@ -345,7 +344,7 @@ function(ob_add_standard_library target)
     # Add generated API headers
     if(_HEADERS_API_GEN)
         __ob_register_header_set("headers_api_gen"
-            "Generated Include Headers"
+            "Headers Include Generated"
             "${CMAKE_CURRENT_BINARY_DIR}/include"
             ${_HEADERS_API_GEN}
         )
@@ -412,7 +411,7 @@ function(ob_add_standard_library target)
 
         # Add via file set
         __ob_register_header_set("headers_export"
-            "Export Headers"
+            "Headers Export"
             "${CMAKE_CURRENT_BINARY_DIR}/include"
             FILES
                 "${eh_gen_rel_path}"
