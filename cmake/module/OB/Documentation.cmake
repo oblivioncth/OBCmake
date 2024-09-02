@@ -134,7 +134,6 @@ function(ob_standard_documentation target)
     )
     
     set(requiredArgs
-        DOXY_VER
     )
 
     # Parse arguments
@@ -142,6 +141,18 @@ function(ob_standard_documentation target)
     ob_parse_arguments(STD_DOCS "" "${oneValueArgs}" "${multiValueArgs}" "${requiredArgs}" ${ARGN})
 
     # Handle undefineds
+    if(STD_DOCS_DOXY_VER)
+        set(doxygen_version "${STD_DOCS_DOXY_VER}")
+    else()
+        set(doxygen_version "1.9.10")
+    endif() 
+    
+    if(STD_DOCS_THEME_VER)
+        set(theme_version "${STD_DOCS_THEME_VER}")
+    else()
+        set(theme_version "v2.3.3")
+    endif()  
+  
     if(STD_DOCS_PROJ_NAME)
         set(doc_proj_name "${STD_DOCS_PROJ_NAME}")
     else()
@@ -152,12 +163,6 @@ function(ob_standard_documentation target)
         set(doc_proj_name "${STD_DOCS_PROJ_NAME}")
     else()
         set(doc_proj_name "${PROJECT_NAME}")
-    endif()
-
-    if(STD_DOCS_THEME_VER)
-        set(theme_version "${STD_DOCS_THEME_VER}")
-    else()
-        set(theme_version "v2.3.3")
     endif()
 
     #--------------------- Define Doc Paths -----------------------
@@ -176,7 +181,7 @@ function(ob_standard_documentation target)
     
     #------------------------- Fetch Theme -----------------------
     include(OB/FetchDoxygenAwesome)
-    ob_fetch_doxygen_awesome(${theme_version} DOC_THEME_PATH)
+    ob_fetch_doxygen_awesome("${theme_version}" DOC_THEME_PATH)
 
     #------------------- Configure Documentation -----------------
 
@@ -284,7 +289,7 @@ function(ob_standard_documentation target)
     #---------------------- Setup Doxygen ------------------------
 
     # Find Doxygen package
-    find_package(Doxygen "${STD_DOCS_DOXY_VER}" REQUIRED
+    find_package(Doxygen "${doxygen_version}" REQUIRED
         COMPONENTS dot
     )
 
