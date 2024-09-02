@@ -67,7 +67,6 @@ endfunction()
 # doc/cmake/file_templates
 # doc/res/images (for DOXYGEN_IMAGE_PATH)
 # doc/res/snippets (for DOXYGEN_EXAMPLE_PATH)
-# doc/res/theme
 # doc/general (automatically added to Doxygen input list)
 # doc/CMakeLists.txt
 #
@@ -78,13 +77,12 @@ endfunction()
 # doc/res/logo.svg (optional)
 # doc/res/DoxygenLayout.xml
 # doc/res/header.html
-# doc/res/theme/doxygen-awesome
 #
 # Doxygen variables can be overridden in the standard manner before
 # calling this function.
 #
 # Other:
-# - Assumes use of Doxygen Awesome
+# - Uses Doxygen Awesome
 # - Assumes PROJECT_VERSION_VERBOSE is available
 # - Uses TOP_PROJ_INCLUDE_IN_ALL to include the documentation in the
 #   all target
@@ -95,7 +93,8 @@ endfunction()
 #
 # Arguments:
 # - TARGET_NAME: name of the doc target that is created
-# - DOXY_VER: version of Doxygen to use
+# - DOXY_VER: version of Doxygen to request
+# - THEME_VER: version of Doxygen Awesome to fetch, other than default
 # - PROJ_NAME: value for DOXYGEN_PROJ_NAME, defaults to "PROJ_NAME"
 # - INSTALL_DESTINATION: Where to install the generated documentation,
 #                        defaults to 'doc' folder relative to CMAKE_INSTALL_PREFIX
@@ -122,6 +121,7 @@ function(ob_standard_documentation target)
     # Additional Function inputs
     set(oneValueArgs
         DOXY_VER
+        THEME_VER
         PROJ_NAME
         INSTALL_DESTINATION
         QT_PREFIX
@@ -147,11 +147,17 @@ function(ob_standard_documentation target)
     else()
         set(doc_proj_name "${PROJECT_NAME}")
     endif()
-
-    if(STD_DOCS_INSTALL_DESTINATION)
-        set(doc_install_dest "${STD_DOCS_INSTALL_DESTINATION}")
+    
+    if(STD_DOCS_PROJ_NAME)
+        set(doc_proj_name "${STD_DOCS_PROJ_NAME}")
     else()
-        set(doc_install_dest "doc")
+        set(doc_proj_name "${PROJECT_NAME}")
+    endif()
+
+    if(STD_DOCS_THEME_VER)
+        set(theme_version "${STD_DOCS_THEME_VER}")
+    else()
+        set(theme_version "v2.3.3")
     endif()
 
     #--------------------- Define Doc Paths -----------------------
@@ -159,7 +165,7 @@ function(ob_standard_documentation target)
     set(DOC_MAIN_SCRIPTS_PATH "${DOC_MAIN_ROOT}/cmake")
 
     # Source
-    set(DOC_MAIN_RESOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/res")
+    set(DOC_MAIN_RESOURCE_PATH "${DOC_MAIN_ROOT}/res")
     set(DOC_GENERATED_PATH "${CMAKE_CURRENT_BINARY_DIR}/docin")
 
     # Build
@@ -167,6 +173,10 @@ function(ob_standard_documentation target)
 
     # Cmake related
     set(DOC_MAIN_TEMPLATES_PATH "${DOC_MAIN_SCRIPTS_PATH}/file_templates")
+    
+    #------------------------- Fetch Theme -----------------------
+    include(OB/FetchDoxygenAwesome)
+    ob_fetch_doxygen_awesome(${theme_version} DOC_THEME_PATH)
 
     #------------------- Configure Documentation -----------------
 
@@ -217,7 +227,7 @@ function(ob_standard_documentation target)
             # Process tags
             foreach(doc_module ${STD_DOCS_QT_MODULES})
                 list(APPEND DOXYGEN_TAGFILES
-                        ${QT_DOCS_DIR}/${doc_module}/${doc_module}.tags=https://doc.qt.io/qt-6/
+                    ${QT_DOCS_DIR}/${doc_module}/${doc_module}.tags=https://doc.qt.io/qt-6/
                 )
             endforeach()
         endif()
