@@ -19,5 +19,5 @@ function(ob_fetch_doxygen_awesome git_ref return)
     )
     FetchContent_MakeAvailable(doxygen-awesome-css)
     
-    set(${return} ${doxygen-awesome-css_SOURCE_DIR} PARENT_SCOPE)
+    set(${return} "${doxygen-awesome-css_SOURCE_DIR}" PARENT_SCOPE)
 endfunction()

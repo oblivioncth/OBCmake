@@ -105,7 +105,8 @@ list(APPEND DOXYGEN_HTML_EXTRA_STYLESHEET
 
 # Customization
 list(APPEND DOXYGEN_HTML_EXTRA_STYLESHEET
-    "${__OB_CMAKE_PRIVATE}/static-theme-customization.css"
+    "${__OB_CMAKE_PRIVATE}/__doc_static_theme_customization.css"
+    "${DOC_GEN_RESOURCE_PATH}/__doc_theme_color_customization.css"
 )
 
 # Extensions - General

@@ -53,6 +53,192 @@ function(ob_find_qt_doc_resources qt_prefix)
     endif()
 endfunction()
 
+# Adds tag if missing
+macro(__ob_ensure_triplet_tag triplet_var)
+    if(NOT ${triplet_var} MATCHES "^#")
+        string(PREPEND triplet_var "#")
+    endif()
+endmacro()
+
+# Scales S or L of a color
+function(__ob_scale_color_prop prop_var dir percent return)
+    __ob_internal_command(__ob_scale_color_prop "3.7.0")
+    
+    # Expand
+    set(prop ${${prop_var}})
+    
+    __ob_assert(prop GREATER_EQUAL 0 AND prop LESS_EQUAL 100)
+    __ob_assert(percent GREATER_EQUAL 0 AND percent LESS_EQUAL 100)
+    
+    # Currently this function doesn't round before dividing so the result might
+    # be off by 1 due to integer division; however, since this is just to scale
+    # proportionally it barely matters at all.
+    if(dir STREQUAL "UP")
+        if(prop LESS 100)
+            math(EXPR prop "${prop} + ((100 - ${prop}) * ${percent})/100")
+        endif()
+    elseif(dir STREQUAL "DOWN")
+        if(prop GREATER 0)
+            math(EXPR prop "${prop} - (${prop} * ${percent})/100")
+        endif()
+    else()
+        message(FATAL_ERROR "Direction must be 'UP' or 'DOWN'")
+    endif()
+    
+    set(${return} ${prop} PARENT_SCOPE)
+endfunction()
+
+# Scales HSL lightness to Doxygen gamma
+function(__ob_hsl_lit_to_doxy_gam lit return)
+    __ob_internal_command(__ob_hsl_lit_to_doxy_gam "3.0.0")
+    
+    # Transform is an asymmetric triangle. 50 is lightness midpoint,
+    # while 100 is gamma midpoint, but lightness min/max is 0/100, yet
+    # gamma min/max is 40/240, so gamma has a higher upper range.
+    #
+    # A good way to map this other than the triangle is a quadratic
+    # equation that just so happens to perfectly fit all three known
+    # points:
+    #
+    # (S: 0,   G: 40)
+    # (S: 50,  G: 100)
+    # (s: 100, G: 240)
+    #
+    # Which is y=0.016x^2 +0.4x+40.
+    #
+    # To avoid floating point math, we use:
+    #
+    # y = (16x^2 + 400x + 40000)/1000
+    include(OB/Math)
+    math(EXPR gamma_s "16 * ${lit} * ${lit} + 400 * ${lit} + 40000")
+    ob_round(${gamma_s} 3 gamma_s)
+    math(EXPR gamma "${gamma_s}/1000")
+    
+    set(${return} ${gamma} PARENT_SCOPE)
+endfunction()
+
+# Generates a CSS file with color settings for Doxygen Awesome based on input
+# Also returns the HSL of the primary color
+function(__ob_generate_color_css output_dir r_ph r_ps r_pl)
+    __ob_internal_command(__ob_generate_color_css "3.0.0")
+    
+    include(OB/Color)
+    
+    # Implementation relies on NIGHT_PRIMARY coming before other nights!
+    set(colors
+        PRIMARY
+        PRIMARY_DARK
+        PRIMARY_LIGHT
+        NIGHT_PRIMARY
+        NIGHT_PRIMARY_DARK
+        NIGHT_PRIMARY_LIGHT
+    )
+    
+    # Additional Function inputs
+    set(oneValueArgs
+        ${colors}
+    )
+
+    set(multiValueArgs
+    )
+    
+    set(requiredArgs
+        PRIMARY
+    )
+
+    # Parse arguments
+    include(OB/Utility)
+    ob_parse_arguments(COLORS "" "${oneValueArgs}" "${multiValueArgs}" "${requiredArgs}" ${ARGN})
+    
+    # Setup default maps
+    set(DEF_ADJ_S_PRIMARY) # Unused
+    set(DEF_ADJ_L_PRIMARY) # Unused
+    set(DEF_ADJ_S_PRIMARY_DARK
+        "COLORS_PRIMARY_S" "DOWN" 35
+    )
+    set(DEF_ADJ_L_PRIMARY_DARK
+        "COLORS_PRIMARY_L" "DOWN" 28
+    )
+    set(DEF_ADJ_S_PRIMARY_LIGHT
+        "COLORS_PRIMARY_S" "DOWN" 5
+    )
+    set(DEF_ADJ_L_PRIMARY_LIGHT
+        "COLORS_PRIMARY_L" "UP" 35
+    )
+    set(DEF_ADJ_S_NIGHT_PRIMARY
+        "COLORS_PRIMARY_S" "UP" 5
+    )
+    set(DEF_ADJ_L_NIGHT_PRIMARY
+        "COLORS_PRIMARY_L" "UP" 7
+    )
+    set(DEF_ADJ_S_NIGHT_PRIMARY_DARK
+        "COLORS_NIGHT_PRIMARY_S" "DOWN" 20 
+    )
+    set(DEF_ADJ_L_NIGHT_PRIMARY_DARK
+        "COLORS_NIGHT_PRIMARY_L" "UP" 18 # Dark is light in night mode
+    )
+    set(DEF_ADJ_S_NIGHT_PRIMARY_LIGHT
+        "COLORS_NIGHT_PRIMARY_S" "DOWN" 38
+    )
+    set(DEF_ADJ_L_NIGHT_PRIMARY_LIGHT
+        "COLORS_NIGHT_PRIMARY_L" "DOWN" 33 # Light is dark in night mode
+    )
+    
+    # Handle defaults
+    foreach(color ${colors})
+        set(input_name "COLORS_${color}")
+        if(NOT ${input_name})
+            # Get adjust args
+            set(s_key "DEF_ADJ_S_${color}")
+            set(l_key "DEF_ADJ_L_${color}")
+            __ob_assert(DEFINED ${s_key} AND DEFINED ${l_key})
+            
+            # Prepare input args
+            set(def_adj_s ${${s_key}})
+            set(def_adj_l ${${l_key}})
+            
+            # Create adjusted color
+            set(h ${COLORS_PRIMARY_H})
+            __ob_scale_color_prop(${def_adj_s} s)
+            __ob_scale_color_prop(${def_adj_l} l)
+            
+            # Convert
+            ob_hsl_to_rgb(${h} ${s} ${l} r g b)
+            ob_rgb_to_hex(${r} ${g} ${b} triplet)
+            set(${input_name} "${triplet}")
+        else()
+            # Get RGB/HSL of given value
+            __ob_ensure_triplet_tag(${input_name})
+            set(input ${${input_name}})
+            ob_hex_to_rgb("${input}" r g b)
+            ob_rgb_to_hsl(${r} ${g} ${b} h s l)
+        endif()
+        
+        # Define color components for colors that may derive from this one
+        set(${input_name}_R ${r})
+        set(${input_name}_G ${g})
+        set(${input_name}_B ${b})
+        set(${input_name}_H ${h})
+        set(${input_name}_S ${s})
+        set(${input_name}_L ${l})
+    endforeach()
+        
+    # Generate css
+    set(filename "__doc_theme_color_customization.css")
+    set(template_file "${__OB_CMAKE_PRIVATE}/templates/${filename}.in")
+    set(generated_path "${output_dir}/${filename}")
+    configure_file("${template_file}"
+        "${generated_path}"
+        @ONLY
+        NEWLINE_STYLE UNIX
+    )
+    
+    # Return primary HSL
+    set(${r_ph} ${COLORS_PRIMARY_H} PARENT_SCOPE)
+    set(${r_ps} ${COLORS_PRIMARY_S} PARENT_SCOPE)
+    set(${r_pl} ${COLORS_PRIMARY_L} PARENT_SCOPE)
+endfunction()
+
 # Configures a documentation target for the project
 #
 # TODO: Make this more flexible via function arguments,
@@ -112,6 +298,20 @@ endfunction()
 #                     ./res/snippets
 # - QT_MODULES: List of Qt modules to link to via .tag files (i.e. qtcore, qtquick, etc).
 #   Ignored if no QT_PREFIX was provided.
+# - THEME_COLORS:
+#     Inner Form:
+#           THEME_COLORS
+#               PRIMARY
+#               PRIMARY_DARK
+#               PRIMARY_LIGHT
+#               NIGHT_PRIMARY
+#               NIGHT_PRIMARY_DARK
+#               NIGHT_PRIMARY_LIGHT
+#   
+#   This argument sets the colors for the Doxygen Awesome theme, as well as any relevant
+#   standard Doxygen colors. PRIMARY is required, but the rest are optional, and will
+#   be derived from PRIMARY if not provided. THE DARK_ prefixed values are for dark
+#   mode. Each is to be specified as an hexadecimal RBG triplet.
 function(ob_standard_documentation target)
     __ob_command(ob_standard_documentation "3.12.0")
 
@@ -131,9 +331,11 @@ function(ob_standard_documentation target)
         INPUT_LIST
         ADDITIONAL_ROOTS
         QT_MODULES
+        THEME_COLORS
     )
     
     set(requiredArgs
+        THEME_COLORS
     )
 
     # Parse arguments
@@ -168,10 +370,12 @@ function(ob_standard_documentation target)
     #--------------------- Define Doc Paths -----------------------
     set(DOC_MAIN_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
     set(DOC_MAIN_SCRIPTS_PATH "${DOC_MAIN_ROOT}/cmake")
+    set(DOC_GEN_ROOT "${CMAKE_CURRENT_BINARY_DIR}/gen")
 
     # Source
     set(DOC_MAIN_RESOURCE_PATH "${DOC_MAIN_ROOT}/res")
-    set(DOC_GENERATED_PATH "${CMAKE_CURRENT_BINARY_DIR}/docin")
+    set(DOC_GEN_INPUT_PATH "${DOC_GEN_ROOT}/input")
+    set(DOC_GEN_RESOURCE_PATH "${DOC_GEN_ROOT}/res")
 
     # Build
     set(DOC_BUILD_PATH "${CMAKE_CURRENT_BINARY_DIR}/doc")
@@ -179,9 +383,32 @@ function(ob_standard_documentation target)
     # Cmake related
     set(DOC_MAIN_TEMPLATES_PATH "${DOC_MAIN_SCRIPTS_PATH}/file_templates")
     
-    #------------------------- Fetch Theme -----------------------
+    #----------------------- Prepare Theme -----------------------
+    
+    # Fetch
     include(OB/FetchDoxygenAwesome)
     ob_fetch_doxygen_awesome("${theme_version}" DOC_THEME_PATH)
+    
+    # Generate color css
+    __ob_generate_color_css(
+        "${DOC_GEN_RESOURCE_PATH}"
+        primary_h
+        primary_s
+        primary_l
+        ${STD_DOCS_THEME_COLORS}
+    )
+    
+    # Set Doxygen colorstyle if not already
+    if(NOT DEFINED DOXYGEN_HTML_COLORSTYLE_HUE)
+        set(DOXYGEN_HTML_COLORSTYLE_HUE ${primary_h})
+    endif()
+    if(NOT DEFINED DOXYGEN_HTML_COLORSTYLE_SAT)
+        set(DOXYGEN_HTML_COLORSTYLE_SAT ${primary_s})
+    endif()
+    if(NOT DEFINED DOXYGEN_HTML_COLORSTYLE_GAMMA)
+        __ob_hsl_lit_to_doxy_gam(${primary_l} doxy_gamma)
+        set(DOXYGEN_HTML_COLORSTYLE_GAMMA ${doxy_gamma})
+    endif()
 
     #------------------- Configure Documentation -----------------
 
@@ -249,13 +476,13 @@ function(ob_standard_documentation target)
 
     # Configure files
     configure_file("${DOC_MAIN_TEMPLATES_PATH}/mainpage.md.in"
-        "${DOC_GENERATED_PATH}/mainpage.md"
+        "${DOC_GEN_INPUT_PATH}/mainpage.md"
         @ONLY
     )
 
     # Doc Input
     set(DOC_INPUT_LIST
-        "${DOC_GENERATED_PATH}/mainpage.md"
+        "${DOC_GEN_INPUT_PATH}/mainpage.md"
         "${STD_DOCS_INPUT_LIST}"
     )
 
