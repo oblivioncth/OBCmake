@@ -110,7 +110,7 @@ list(APPEND DOXYGEN_HTML_EXTRA_STYLESHEET
 )
 
 # Extensions - General
-set(DOXYGEN_HTML_HEADER "${DOC_MAIN_RESOURCE_PATH}/header.html")
+set(DOXYGEN_HTML_HEADER "${DOC_GEN_RESOURCE_PATH}/__doc_theme_header.html")
 
 # Extensions - Dark Mode Toggle
 list(APPEND DOXYGEN_HTML_EXTRA_FILES "${DOC_THEME_PATH}/doxygen-awesome-darkmode-toggle.js")

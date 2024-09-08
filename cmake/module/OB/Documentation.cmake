@@ -239,6 +239,39 @@ function(__ob_generate_color_css output_dir r_ph r_ps r_pl)
     set(${r_pl} ${COLORS_PRIMARY_L} PARENT_SCOPE)
 endfunction()
 
+function(__ob_generate_doc_theme_header)
+    __ob_internal_command(__ob_generate_doc_theme_header "3.0.0")
+    
+    find_package(Git)
+
+    if(Git_FOUND)
+        # Describe repo
+        execute_process(
+            COMMAND "${GIT_EXECUTABLE}" remote get-url --push origin
+            WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
+            COMMAND_ERROR_IS_FATAL ANY
+            RESULT_VARIABLE res
+            OUTPUT_VARIABLE GIT_REMOTE_URL
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+
+        # Check for result
+        if(GIT_REMOTE STREQUAL "")
+            message(FATAL_ERROR "Git returned an empty remote for documentation!")
+        endif()
+    else()
+        message(FATAL_ERROR "Need Git to get remote URL for documentation!")
+    endif()
+    
+    set(filename "__doc_theme_header.html")
+    set(template_file "${__OB_CMAKE_PRIVATE}/templates/${filename}.in")
+    set(generated_path "${DOC_GEN_RESOURCE_PATH}/${filename}")
+    configure_file("${template_file}"
+        "${generated_path}"
+        @ONLY
+    )
+endfunction()
+
 # Configures a documentation target for the project
 #
 # TODO: Make this more flexible via function arguments,
@@ -409,6 +442,9 @@ function(ob_standard_documentation target)
         __ob_hsl_lit_to_doxy_gam(${primary_l} doxy_gamma)
         set(DOXYGEN_HTML_COLORSTYLE_GAMMA ${doxy_gamma})
     endif()
+    
+    # Generate header
+    __ob_generate_doc_theme_header()
 
     #------------------- Configure Documentation -----------------
 
