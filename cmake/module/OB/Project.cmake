@@ -25,20 +25,6 @@ macro(ob_top_level_project_setup)
         # Clean install when clean target is ran
         set_directory_properties(PROPERTIES ADDITIONAL_CLEAN_FILES "${CMAKE_INSTALL_PREFIX}")
 
-        # Set good defaults for RPATH's on *nix (mac ignored for now since it's not formally supported.
-        # Setting the same defaults for the "build" values will help when a library is installed
-        # simply by copying, like in the case for the Executable module (which is a workaround)
-        if(NOT APPLE)
-            set(CMAKE_INSTALL_RPATH
-                "$ORIGIN"
-                "$ORIGIN/../lib"
-            )
-            set(CMAKE_BUILD_RPATH
-                "$ORIGIN"
-                "$ORIGIN/../lib"
-            )
-        endif() 
-
         # Define vars
         set(TOP_PROJ_INCLUDE_IN_ALL "ALL")
         set(SUB_PROJ_EXCLUDE_FROM_ALL "")
@@ -106,13 +92,28 @@ macro(ob_standard_project_setup)
             set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
         endif()
     elseif(NOT APPLE)
-        file(RELATIVE_PATH __ob_bin2lib_path
-            ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}
-            ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}
+        # Set good defaults for RPATH's on *nix (mac ignored for now since it's not formally supported).
+        # Setting the same defaults for the "build" values will help when a library is installed
+        # simply by copying, like in the case for the Executable module (which is a workaround)        
+        file(RELATIVE_PATH __ob_rel_bin2lib_path
+            ${CMAKE_INSTALL_FULL_BINDIR}
+            ${CMAKE_INSTALL_FULL_LIBDIR}
         )
-        list(APPEND CMAKE_INSTALL_RPATH $ORIGIN $ORIGIN/${__ob_bin2lib_path})
-        list(REMOVE_DUPLICATES CMAKE_INSTALL_RPATH)
+        set(__ob_rpaths
+            "$ORIGIN" 
+            "$ORIGIN/${__ob_bin2lib_path}"
+        )
+        foreach(rpath ${__ob_rpaths})
+            if(NOT rpath IN_LIST CMAKE_BUILD_RPATH)
+                list(APPEND CMAKE_BUILD_RPATH "${rpath}")
+            endif()
+            if(NOT rpath IN_LIST CMAKE_INSTALL_RPATH)
+                list(APPEND CMAKE_INSTALL_RPATH "${rpath}")
+            endif()
+        endforeach()
+        
         unset(__ob_bin2lib_path)
+        unset(__ob_rpaths)
     endif()
 
     # Perform top-level setup
