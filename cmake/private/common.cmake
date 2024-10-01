@@ -223,3 +223,15 @@ function(__ob_validate_source_for_system source return)
     
     set(${return} TRUE PARENT_SCOPE)
 endfunction()
+
+# Asserts that a condition (provided by ARGN) is true and prints a
+# FATAL_ERROR containing the condition if not.
+function(__ob_assert)
+    __ob_internal_command(ob_assert "3.7.0")
+    # We can use the following call to allow ";" in the condition, should that be required
+    cmake_parse_arguments(PARSE_ARGV 0 COND "" "" "")
+    if(NOT (${COND_UNPARSED_ARGUMENTS}))
+        string(REPLACE ";" " " COND_STR "${COND_UNPARSED_ARGUMENTS}")
+        message(FATAL_ERROR "Assertion check failed: ${COND_STR}")
+    endif()
+endfunction()

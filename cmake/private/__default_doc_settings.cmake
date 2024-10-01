@@ -99,27 +99,28 @@ set(DOXYGEN_DISABLE_INDEX NO)
 set(DOXYGEN_FULL_SIDEBAR NO)
 set(DOXYGEN_HTML_COLORSTYLE LIGHT)
 list(APPEND DOXYGEN_HTML_EXTRA_STYLESHEET
-    "${DOC_MAIN_RESOURCE_PATH}/theme/doxygen-awesome/doxygen-awesome.css"
-    "${DOC_MAIN_RESOURCE_PATH}/theme/doxygen-awesome/doxygen-awesome-sidebar-only.css"
+    "${DOC_THEME_PATH}/doxygen-awesome.css"
+    "${DOC_THEME_PATH}/doxygen-awesome-sidebar-only.css"
 )
 
 # Customization
 list(APPEND DOXYGEN_HTML_EXTRA_STYLESHEET
-    "${DOC_MAIN_RESOURCE_PATH}/theme/doxygen-awesome/doxygen-awesome-customize.css"
+    "${__OB_CMAKE_PRIVATE}/__doc_static_theme_customization.css"
+    "${DOC_GEN_RESOURCE_PATH}/__doc_theme_color_customization.css"
 )
 
 # Extensions - General
-set(DOXYGEN_HTML_HEADER "${DOC_MAIN_RESOURCE_PATH}/header.html")
+set(DOXYGEN_HTML_HEADER "${DOC_GEN_RESOURCE_PATH}/__doc_theme_header.html")
 
 # Extensions - Dark Mode Toggle
-list(APPEND DOXYGEN_HTML_EXTRA_FILES "${DOC_MAIN_RESOURCE_PATH}/theme/doxygen-awesome/doxygen-awesome-darkmode-toggle.js")
-list(APPEND DOXYGEN_HTML_EXTRA_STYLESHEET "${DOC_MAIN_RESOURCE_PATH}/theme/doxygen-awesome/doxygen-awesome-sidebar-only-darkmode-toggle.css")
+list(APPEND DOXYGEN_HTML_EXTRA_FILES "${DOC_THEME_PATH}/doxygen-awesome-darkmode-toggle.js")
+list(APPEND DOXYGEN_HTML_EXTRA_STYLESHEET "${DOC_THEME_PATH}/doxygen-awesome-sidebar-only-darkmode-toggle.css")
 
 # Extensions - Fragment Copy Button
-list(APPEND DOXYGEN_HTML_EXTRA_FILES "${DOC_MAIN_RESOURCE_PATH}/theme/doxygen-awesome/doxygen-awesome-fragment-copy-button.js")
+list(APPEND DOXYGEN_HTML_EXTRA_FILES "${DOC_THEME_PATH}/doxygen-awesome-fragment-copy-button.js")
 
 # Extensions - Paragraph Linking
-list(APPEND DOXYGEN_HTML_EXTRA_FILES "${DOC_MAIN_RESOURCE_PATH}/theme/doxygen-awesome/doxygen-awesome-paragraph-link.js")
+list(APPEND DOXYGEN_HTML_EXTRA_FILES "${DOC_THEME_PATH}/doxygen-awesome-paragraph-link.js")
 
 # Best matching class diagram options
 set(DOXYGEN_DOT_IMAGE_FORMAT svg)

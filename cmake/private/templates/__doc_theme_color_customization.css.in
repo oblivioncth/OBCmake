@@ -1,0 +1,11 @@
+html {
+    --primary-color: @COLORS_PRIMARY@;
+    --primary-dark-color: @COLORS_PRIMARY_DARK@;
+    --primary-light-color: @COLORS_PRIMARY_LIGHT@;
+}
+
+html.dark-mode {
+    --primary-color: @COLORS_NIGHT_PRIMARY@;
+    --primary-dark-color: @COLORS_NIGHT_PRIMARY_DARK@;
+    --primary-light-color: @COLORS_NIGHT_PRIMARY_LIGHT@;
+}

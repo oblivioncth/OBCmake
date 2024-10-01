@@ -268,3 +268,11 @@ macro(ob_parse_arguments prefix opt ovk mvk rk)
     endforeach()
     unset(__ob_all_value_args)
 endmacro()
+
+# Asserts that a condition (provided by ARGN) is true and prints a
+# FATAL_ERROR containing the condition if not.
+macro(ob_assert)
+    __ob_command(ob_assert "3.7.0")
+    # Wrapper to prevent the need of 'include(OB/Utility)' everywhere in implementation
+    __ob_assert(${ARGN})
+endmacro()

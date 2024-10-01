@@ -140,8 +140,6 @@ endfunction()
 #   if not provided it will be set to "${NAMESPACE}_${ALIAS}".
 #
 #   This argument is required unless the TYPE is INTERFACE.
-# HEADERS_PRIVATE:
-#   Files are assumed to be under "${CMAKE_CURRENT_SOURCE_DIR}/include"
 # HEADERS_API:
 #   Inner Form:
 #       HEADERS_API
@@ -204,7 +202,6 @@ function(ob_add_standard_library target)
 
     set(multiValueArgs
         EXPORT_HEADER
-        HEADERS_PRIVATE
         HEADERS_API
         HEADERS_API_GEN
         IMPLEMENTATION
@@ -252,8 +249,6 @@ function(ob_add_standard_library target)
     endif()
 
     set(_EXPORT_HEADER "${STD_LIBRARY_EXPORT_HEADER}")
-
-    set(_HEADERS_PRIVATE "${STD_LIBRARY_HEADERS_PRIVATE}")
     set(_HEADERS_API "${STD_LIBRARY_HEADERS_API}")
     set(_HEADERS_API_GEN "${STD_LIBRARY_HEADERS_API_GEN}")
     set(_IMPLEMENTATION "${STD_LIBRARY_IMPLEMENTATION}")
@@ -306,8 +301,15 @@ function(ob_add_standard_library target)
             
             # Group files with their parent directories stripped
             source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src"
-                PREFIX "Source"
+                PREFIX "Implementation" 
                 FILES ${full_impl_paths}
+            )
+            
+            # Include current source directory for easy includes of
+            # private headers from the top level of the target hierarchy
+            target_include_directories(${_TARGET_NAME}
+                PRIVATE
+                    "${CMAKE_CURRENT_SOURCE_DIR}/src"
             )
         endif()
     endif()
@@ -330,30 +332,10 @@ function(ob_add_standard_library target)
         target_sources(${_TARGET_NAME} PRIVATE ${full_doc_only_paths})
     endif()
 
-    # Add private headers
-    if(_HEADERS_PRIVATE)
-        foreach(p_header ${_HEADERS_PRIVATE})
-            __ob_validate_source_for_system("${p_header}" applicable_p_header)
-            if(applicable_p_header)
-                list(APPEND full_pheader_paths "${CMAKE_CURRENT_SOURCE_DIR}/src/${p_header}")
-            endif()
-        endforeach()
-
-        if(full_pheader_paths)
-            target_sources(${_TARGET_NAME} PRIVATE ${full_pheader_paths})
-            
-            # Group files with their parent directories stripped
-            source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src"
-                PREFIX "Private Headers"
-                FILES ${full_pheader_paths}
-            )
-        endif()
-    endif()
-
     # Add standard API headers
     if(_HEADERS_API)
         __ob_register_header_set("headers_api"
-            "Include Headers"
+            "Headers Include"
             "${CMAKE_CURRENT_SOURCE_DIR}/include"
             ${_HEADERS_API}
         )
@@ -362,7 +344,7 @@ function(ob_add_standard_library target)
     # Add generated API headers
     if(_HEADERS_API_GEN)
         __ob_register_header_set("headers_api_gen"
-            "Generated Include Headers"
+            "Headers Include Generated"
             "${CMAKE_CURRENT_BINARY_DIR}/include"
             ${_HEADERS_API_GEN}
         )
@@ -429,7 +411,7 @@ function(ob_add_standard_library target)
 
         # Add via file set
         __ob_register_header_set("headers_export"
-            "Export Headers"
+            "Headers Export"
             "${CMAKE_CURRENT_BINARY_DIR}/include"
             FILES
                 "${eh_gen_rel_path}"
