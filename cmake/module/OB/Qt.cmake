@@ -1,11 +1,11 @@
 include("${__OB_CMAKE_PRIVATE}/common.cmake")
 
-macro(ob_find_qt6_package)
-    __ob_command(ob_find_qt6_package "3.20.0")
+macro(ob_find_package_qt6)
+    __ob_command(ob_find_package_qt6 "3.20.0")
 
     # Find Qt normally
     find_package(Qt6 ${ARGN})
-    
+
     # Only perform extra steps if Qt is found
     if(Qt6_FOUND)
         # Determine install prefix
