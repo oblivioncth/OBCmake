@@ -23,9 +23,9 @@ include("${__OB_CMAKE_PRIVATE}/common.cmake")
 # WIN32:
 #   Same as supplying WIN32 to add_executable()
 function(ob_add_standard_test target)
-__ob_command(ob_add_standard_test "3.16.0")
+    __ob_command(ob_add_standard_test "3.16.0")
 
-#------------ Argument Handling ---------------
+    #------------ Argument Handling ---------------
 
     # Function inputs
     set(options
@@ -64,8 +64,9 @@ __ob_command(ob_add_standard_test "3.16.0")
     set(_OPTIONS "${STD_TEST_OPTIONS}")
 
     # Compute Intermediate Values
-    if(_LINKS MATCHES "Qt[0-9]*::")
-        set(_USE_QT TRUE)
+    if(_LINKS)
+        include("${__OB_CMAKE_PRIVATE}/qt.cmake")
+        __ob_should_be_qt_based_target(_LINKS _USE_QT)
     else()
         set(_USE_QT FALSE)
     endif()
@@ -79,7 +80,11 @@ __ob_command(ob_add_standard_test "3.16.0")
     #---------------- Test Setup -------------------
 
     # Create executable
-    add_executable(${_TARGET_NAME} ${_OPTION_WIN32})
+    if(_USE_QT)
+        qt_add_executable(${_TARGET_NAME} ${_OPTION_WIN32})
+    else()
+        add_executable(${_TARGET_NAME} ${_OPTION_WIN32})
+    endif()
 
     # Add implementation
     foreach(impl ${_SOURCE})
