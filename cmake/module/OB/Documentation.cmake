@@ -63,13 +63,13 @@ endmacro()
 # Scales S or L of a color
 function(__ob_scale_color_prop prop_var dir percent return)
     __ob_internal_command(__ob_scale_color_prop "3.7.0")
-    
+
     # Expand
     set(prop ${${prop_var}})
-    
+
     __ob_assert(prop GREATER_EQUAL 0 AND prop LESS_EQUAL 100)
     __ob_assert(percent GREATER_EQUAL 0 AND percent LESS_EQUAL 100)
-    
+
     # Currently this function doesn't round before dividing so the result might
     # be off by 1 due to integer division; however, since this is just to scale
     # proportionally it barely matters at all.
@@ -84,14 +84,14 @@ function(__ob_scale_color_prop prop_var dir percent return)
     else()
         message(FATAL_ERROR "Direction must be 'UP' or 'DOWN'")
     endif()
-    
+
     set(${return} ${prop} PARENT_SCOPE)
 endfunction()
 
 # Scales HSL lightness to Doxygen gamma
 function(__ob_hsl_lit_to_doxy_gam lit return)
     __ob_internal_command(__ob_hsl_lit_to_doxy_gam "3.0.0")
-    
+
     # Transform is an asymmetric triangle. 50 is lightness midpoint,
     # while 100 is gamma midpoint, but lightness min/max is 0/100, yet
     # gamma min/max is 40/240, so gamma has a higher upper range.
@@ -113,7 +113,7 @@ function(__ob_hsl_lit_to_doxy_gam lit return)
     math(EXPR gamma_s "16 * ${lit} * ${lit} + 400 * ${lit} + 40000")
     ob_round(${gamma_s} 3 gamma_s)
     math(EXPR gamma "${gamma_s}/1000")
-    
+
     set(${return} ${gamma} PARENT_SCOPE)
 endfunction()
 
@@ -121,9 +121,9 @@ endfunction()
 # Also returns the HSL of the primary color
 function(__ob_generate_color_css output_dir r_ph r_ps r_pl)
     __ob_internal_command(__ob_generate_color_css "3.0.0")
-    
+
     include(OB/Color)
-    
+
     # Implementation relies on NIGHT_PRIMARY coming before other nights!
     set(colors
         PRIMARY
@@ -133,7 +133,7 @@ function(__ob_generate_color_css output_dir r_ph r_ps r_pl)
         NIGHT_PRIMARY_DARK
         NIGHT_PRIMARY_LIGHT
     )
-    
+
     # Additional Function inputs
     set(oneValueArgs
         ${colors}
@@ -141,7 +141,7 @@ function(__ob_generate_color_css output_dir r_ph r_ps r_pl)
 
     set(multiValueArgs
     )
-    
+
     set(requiredArgs
         PRIMARY
     )
@@ -149,7 +149,7 @@ function(__ob_generate_color_css output_dir r_ph r_ps r_pl)
     # Parse arguments
     include(OB/Utility)
     ob_parse_arguments(COLORS "" "${oneValueArgs}" "${multiValueArgs}" "${requiredArgs}" ${ARGN})
-    
+
     # Setup default maps
     set(DEF_ADJ_S_PRIMARY) # Unused
     set(DEF_ADJ_L_PRIMARY) # Unused
@@ -172,7 +172,7 @@ function(__ob_generate_color_css output_dir r_ph r_ps r_pl)
         "COLORS_PRIMARY_L" "UP" 7
     )
     set(DEF_ADJ_S_NIGHT_PRIMARY_DARK
-        "COLORS_NIGHT_PRIMARY_S" "DOWN" 20 
+        "COLORS_NIGHT_PRIMARY_S" "DOWN" 20
     )
     set(DEF_ADJ_L_NIGHT_PRIMARY_DARK
         "COLORS_NIGHT_PRIMARY_L" "UP" 18 # Dark is light in night mode
@@ -183,7 +183,7 @@ function(__ob_generate_color_css output_dir r_ph r_ps r_pl)
     set(DEF_ADJ_L_NIGHT_PRIMARY_LIGHT
         "COLORS_NIGHT_PRIMARY_L" "DOWN" 33 # Light is dark in night mode
     )
-    
+
     # Handle defaults
     foreach(color ${colors})
         set(input_name "COLORS_${color}")
@@ -192,16 +192,16 @@ function(__ob_generate_color_css output_dir r_ph r_ps r_pl)
             set(s_key "DEF_ADJ_S_${color}")
             set(l_key "DEF_ADJ_L_${color}")
             __ob_assert(DEFINED ${s_key} AND DEFINED ${l_key})
-            
+
             # Prepare input args
             set(def_adj_s ${${s_key}})
             set(def_adj_l ${${l_key}})
-            
+
             # Create adjusted color
             set(h ${COLORS_PRIMARY_H})
             __ob_scale_color_prop(${def_adj_s} s)
             __ob_scale_color_prop(${def_adj_l} l)
-            
+
             # Convert
             ob_hsl_to_rgb(${h} ${s} ${l} r g b)
             ob_rgb_to_hex(${r} ${g} ${b} triplet)
@@ -213,7 +213,7 @@ function(__ob_generate_color_css output_dir r_ph r_ps r_pl)
             ob_hex_to_rgb("${input}" r g b)
             ob_rgb_to_hsl(${r} ${g} ${b} h s l)
         endif()
-        
+
         # Define color components for colors that may derive from this one
         set(${input_name}_R ${r})
         set(${input_name}_G ${g})
@@ -222,7 +222,7 @@ function(__ob_generate_color_css output_dir r_ph r_ps r_pl)
         set(${input_name}_S ${s})
         set(${input_name}_L ${l})
     endforeach()
-        
+
     # Generate css
     set(filename "__doc_theme_color_customization.css")
     set(template_file "${__OB_CMAKE_PRIVATE}/templates/${filename}.in")
@@ -232,7 +232,7 @@ function(__ob_generate_color_css output_dir r_ph r_ps r_pl)
         @ONLY
         NEWLINE_STYLE UNIX
     )
-    
+
     # Return primary HSL
     set(${r_ph} ${COLORS_PRIMARY_H} PARENT_SCOPE)
     set(${r_ps} ${COLORS_PRIMARY_S} PARENT_SCOPE)
@@ -241,7 +241,7 @@ endfunction()
 
 function(__ob_generate_doc_theme_header)
     __ob_internal_command(__ob_generate_doc_theme_header "3.0.0")
-    
+
     find_package(Git)
 
     if(Git_FOUND)
@@ -262,7 +262,7 @@ function(__ob_generate_doc_theme_header)
     else()
         message(FATAL_ERROR "Need Git to get remote URL for documentation!")
     endif()
-    
+
     set(filename "__doc_theme_header.html")
     set(template_file "${__OB_CMAKE_PRIVATE}/templates/${filename}.in")
     set(generated_path "${DOC_GEN_RESOURCE_PATH}/${filename}")
@@ -340,7 +340,7 @@ endfunction()
 #               NIGHT_PRIMARY
 #               NIGHT_PRIMARY_DARK
 #               NIGHT_PRIMARY_LIGHT
-#   
+#
 #   This argument sets the colors for the Doxygen Awesome theme, as well as any relevant
 #   standard Doxygen colors. PRIMARY is required, but the rest are optional, and will
 #   be derived from PRIMARY if not provided. THE DARK_ prefixed values are for dark
@@ -366,7 +366,7 @@ function(ob_standard_documentation target)
         QT_MODULES
         THEME_COLORS
     )
-    
+
     set(requiredArgs
         THEME_COLORS
     )
@@ -380,24 +380,24 @@ function(ob_standard_documentation target)
         set(doxygen_version "${STD_DOCS_DOXY_VER}")
     else()
         set(doxygen_version "1.9.10")
-    endif() 
-    
+    endif()
+
     if(STD_DOCS_THEME_VER)
         set(theme_version "${STD_DOCS_THEME_VER}")
     else()
         set(theme_version "v2.3.3")
-    endif()  
-  
+    endif()
+
     if(STD_DOCS_PROJ_NAME)
         set(doc_proj_name "${STD_DOCS_PROJ_NAME}")
     else()
         set(doc_proj_name "${PROJECT_NAME}")
     endif()
-    
-    if(STD_DOCS_PROJ_NAME)
-        set(doc_proj_name "${STD_DOCS_PROJ_NAME}")
+
+    if(STD_DOCS_INSTALL_DESTINATION)
+        set(doc_install_dest "${STD_DOCS_INSTALL_DESTINATION}")
     else()
-        set(doc_proj_name "${PROJECT_NAME}")
+        set(doc_install_dest "doc")
     endif()
 
     #--------------------- Define Doc Paths -----------------------
@@ -415,13 +415,13 @@ function(ob_standard_documentation target)
 
     # Cmake related
     set(DOC_MAIN_TEMPLATES_PATH "${DOC_MAIN_SCRIPTS_PATH}/file_templates")
-    
+
     #----------------------- Prepare Theme -----------------------
-    
+
     # Fetch
     include(OB/FetchDoxygenAwesome)
     ob_fetch_doxygen_awesome("${theme_version}" DOC_THEME_PATH)
-    
+
     # Generate color css
     __ob_generate_color_css(
         "${DOC_GEN_RESOURCE_PATH}"
@@ -430,7 +430,7 @@ function(ob_standard_documentation target)
         primary_l
         ${STD_DOCS_THEME_COLORS}
     )
-    
+
     # Set Doxygen colorstyle if not already
     if(NOT DEFINED DOXYGEN_HTML_COLORSTYLE_HUE)
         set(DOXYGEN_HTML_COLORSTYLE_HUE ${primary_h})
@@ -442,7 +442,7 @@ function(ob_standard_documentation target)
         __ob_hsl_lit_to_doxy_gam(${primary_l} doxy_gamma)
         set(DOXYGEN_HTML_COLORSTYLE_GAMMA ${doxy_gamma})
     endif()
-    
+
     # Generate header
     __ob_generate_doc_theme_header()
 
@@ -476,7 +476,7 @@ function(ob_standard_documentation target)
     if(EXISTS "${header_path}")
         set(DOXYGEN_LAYOUT_FILE "${header_path}")
     endif()
-    
+
     # Create tag file
     set(DOXYGEN_GENERATE_TAGFILE "${DOC_BUILD_PATH}/${PROJECT_NAME}.tag")
 
