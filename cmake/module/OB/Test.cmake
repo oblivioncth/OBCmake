@@ -90,7 +90,9 @@ __ob_command(ob_add_standard_test "3.16.0")
         endif()
     endforeach()
 
-    target_sources(${_TARGET_NAME} PRIVATE ${full_impl_paths})
+    if(full_impl_paths)
+        target_sources(${_TARGET_NAME} PRIVATE ${full_impl_paths})
+    endif()
 
     # Add generated implementation
     if(_SOURCE_GEN)
@@ -102,7 +104,9 @@ __ob_command(ob_add_standard_test "3.16.0")
             endif()
         endforeach()
 
-        target_sources(${_TARGET_NAME} PRIVATE ${full_impl_gen_paths})
+        if(full_impl_gen_paths)
+            target_sources(${_TARGET_NAME} PRIVATE ${full_impl_gen_paths})
+        endif()
     endif()
 
     # Add resources
@@ -115,7 +119,9 @@ __ob_command(ob_add_standard_test "3.16.0")
             endif()
         endforeach()
 
-        target_sources(${_TARGET_NAME} PRIVATE ${full_res_paths})
+        if(full_res_paths)
+            target_sources(${_TARGET_NAME} PRIVATE ${full_res_paths})
+        endif()
     endif()
 
     # Include current source and generated source directories for easy includes from the top
