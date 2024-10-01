@@ -133,7 +133,7 @@ function(ob_add_standard_executable target)
     else()
         set(_OPTION_WIN32 "")
     endif()
-    
+
     if("${_TYPE}" STREQUAL "INTERFACE")
         set(interface_private "INTERFACE")
         set(interface_public "INTERFACE")
@@ -164,7 +164,7 @@ function(ob_add_standard_executable target)
 
     if(full_impl_paths)
         target_sources(${_TARGET_NAME} PRIVATE ${full_impl_paths})
-        
+
         source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src"
             # "Implementation" is preferred, but we also want this group to appear below header groups
             PREFIX "Source"
@@ -184,14 +184,14 @@ function(ob_add_standard_executable target)
 
         if(applicable_impl_gen)
             target_sources(${_TARGET_NAME} PRIVATE ${full_impl_gen_paths})
-            
-            source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src"
+
+            source_group(TREE "${CMAKE_CURRENT_BINARY_DIR}/src"
                 PREFIX "Generated Source"
                 FILES ${applicable_impl_gen}
             )
         endif()
     endif()
-    
+
     # Add resources
     if(_RESOURCE)
         foreach(res ${_RESOURCE})
@@ -201,10 +201,10 @@ function(ob_add_standard_executable target)
                 list(APPEND full_res_paths "${CMAKE_CURRENT_SOURCE_DIR}/res/${res}")
             endif()
         endforeach()
-        
+
         if(full_res_paths)
             target_sources(${_TARGET_NAME} PRIVATE ${full_res_paths})
-            
+
             # Group files with their parent directories stripped
             source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/res"
                 PREFIX "Resource"
@@ -256,19 +256,19 @@ function(ob_add_standard_executable target)
     if(_DEFINITIONS)
         target_compile_definitions(${_TARGET_NAME} ${_DEFINITIONS})
     endif()
-    
+
     # Add recognized common definitions
     list(APPEND __recog_defs
         QT_NO_CAST_FROM_ASCII
         QT_RESTRICTED_CAST_FROM_ASCII
     )
-    
+
     foreach(__gd ${__recog_defs})
         if(${${__gd}})
             target_compile_definitions(${_TARGET_NAME} ${interface_private} ${__gd})
         endif()
     endforeach()
-    
+
     # Add options
     if(_OPTIONS)
         target_compile_options(${_TARGET_NAME} ${_OPTIONS})
@@ -368,7 +368,7 @@ function(ob_add_standard_executable target)
             set(qt_deploy _USE_QT)
             if(NOT qt_deploy)
                 set(QT_REGEX [=[.*qt.*]=])
-            
+
                 # Check direct links more thoroughly, the above set should effectively handle this, but check anyway to be safe
                 get_target_property(direct_links ${_TARGET_NAME} "LINK_LIBRARIES")
                 foreach(link ${direct_links})
@@ -377,11 +377,11 @@ function(ob_add_standard_executable target)
                         break()
                     endif()
                 endforeach()
-                
+
                 # NOTE:
                 # There is an issue in that LINK_LIBRARIES is not actually populated with the libraries propagated from dependencies
                 # even after calling target_link_libraries(). Instead, generators first use the LINK_LIBRARIES
-                
+
                 # This is described here https://cmake.org/cmake/help/latest/prop_tgt/INTERFACE_LINK_LIBRARIES.html
                 #
                 # What this means is that if a target is created via the function that it itself does not directly link to Qt,
@@ -393,9 +393,9 @@ function(ob_add_standard_executable target)
                 # Short term solution would be to add an argument to this function that allows forcing qt_generate_deploy_app_script() to
                 # be called instead to cover that case and still gating the automatic call behind the check of _USE_QT and the
                 # LINK_LIBRARIES property. Long term solution is to propose an OPTIONAL argument or similar for qt_generate_deploy_app_script()
-                # that makes the script do nothing when the executable isn't a Qt one instead of erroring.                    
+                # that makes the script do nothing when the executable isn't a Qt one instead of erroring.
             endif()
-        
+
             if(qt_deploy)
                 # Check if Qt linkage type is the likely case
                 get_target_property(_qt_target_type Qt6::Core TYPE)
