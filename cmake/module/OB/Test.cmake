@@ -23,15 +23,15 @@ include("${__OB_CMAKE_PRIVATE}/common.cmake")
 # WIN32:
 #   Same as supplying WIN32 to add_executable()
 function(ob_add_standard_test target)
-__ob_command(ob_add_standard_test "3.16.0")
+    __ob_command(ob_add_standard_test "3.16.0")
 
-#------------ Argument Handling ---------------
+    #------------ Argument Handling ---------------
 
     # Function inputs
     set(options
         WIN32
     )
-    
+
     set(oneValueArgs
     )
 
@@ -48,11 +48,11 @@ __ob_command(ob_add_standard_test "3.16.0")
     set(requiredArgs
         SOURCE
     )
-    
+
     # Parse arguments
     include(OB/Utility)
     ob_parse_arguments(STD_TEST "${options}" "${oneValueArgs}" "${multiValueArgs}" "${requiredArgs}" ${ARGN})
-    
+
     # Standardized set and defaulted values
     set(_TARGET_NAME "${target}")
 
@@ -64,76 +64,69 @@ __ob_command(ob_add_standard_test "3.16.0")
     set(_OPTIONS "${STD_TEST_OPTIONS}")
 
     # Compute Intermediate Values
-    if(_LINKS MATCHES "Qt[0-9]*::")
-        set(_USE_QT TRUE)
+    if(_LINKS)
+        include("${__OB_CMAKE_PRIVATE}/qt.cmake")
+        __ob_should_be_qt_based_target(_LINKS _USE_QT)
     else()
         set(_USE_QT FALSE)
     endif()
-    
+
     if(STD_TEST_WIN32)
         set(_OPTION_WIN32 "WIN32")
     else()
         set(_OPTION_WIN32 "")
     endif()
-    
+
     #---------------- Test Setup -------------------
 
     # Create executable
-    add_executable(${_TARGET_NAME} ${_OPTION_WIN32})
-    
+    if(_USE_QT)
+        qt_add_executable(${_TARGET_NAME} ${_OPTION_WIN32})
+    else()
+        add_executable(${_TARGET_NAME} ${_OPTION_WIN32})
+    endif()
+
     # Add implementation
     foreach(impl ${_SOURCE})
         # Ignore non-relevant system specific implementation
-        string(REGEX MATCH [[_win\.cpp$]] IS_WIN_IMPL "${impl}")
-        string(REGEX MATCH [[_linux\.cpp$]] IS_LINUX_IMPL "${impl}")
-        string(REGEX MATCH [[_darwin\.cpp$]] IS_MAC_IMPL "${impl}")
-        if((IS_WIN_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Windows") OR
-           (IS_LINUX_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Linux") OR
-           (IS_MAC_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Darwin"))
-            continue()
+        __ob_validate_source_for_system("${impl}" applicable_impl)
+        if(applicable_impl)
+            list(APPEND full_impl_paths "${CMAKE_CURRENT_SOURCE_DIR}/${impl}")
         endif()
-
-        list(APPEND full_impl_paths "${CMAKE_CURRENT_SOURCE_DIR}/${impl}")
     endforeach()
 
-    target_sources(${_TARGET_NAME} PRIVATE ${full_impl_paths})
+    if(full_impl_paths)
+        target_sources(${_TARGET_NAME} PRIVATE ${full_impl_paths})
+    endif()
 
     # Add generated implementation
     if(_SOURCE_GEN)
         foreach(impl_gen ${_SOURCE})
             # Ignore non-relevant system specific implementation
-            string(REGEX MATCH [[_win\.cpp$]] IS_WIN_IMPL "${impl}")
-            string(REGEX MATCH [[_linux\.cpp$]] IS_LINUX_IMPL "${impl}")
-            string(REGEX MATCH [[_darwin\.cpp$]] IS_MAC_IMPL "${impl}")
-            if((IS_WIN_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Windows") OR
-               (IS_LINUX_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Linux") OR
-               (IS_MAC_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Darwin"))
-                continue()
+            __ob_validate_source_for_system("${impl_gen}" applicable_impl_gen)
+            if(applicable_impl_gen)
+                list(APPEND full_impl_gen_paths "${CMAKE_CURRENT_BINARY_DIR}/${impl_gen}")
             endif()
-
-            list(APPEND full_impl_gen_paths "${CMAKE_CURRENT_SOURCE_DIR}/${impl_gen}")
         endforeach()
 
-        target_sources(${_TARGET_NAME} PRIVATE ${full_impl_gen_paths})
+        if(full_impl_gen_paths)
+            target_sources(${_TARGET_NAME} PRIVATE ${full_impl_gen_paths})
+        endif()
     endif()
-    
+
     # Add resources
     if(_RESOURCE)
         foreach(res ${_RESOURCE})
             # Ignore non-relevant system specific implementation
-            string(REGEX MATCH [[_win\.cpp$]] IS_WIN_IMPL "${impl}")
-            string(REGEX MATCH [[_linux\.cpp$]] IS_LINUX_IMPL "${impl}")
-            string(REGEX MATCH [[_darwin\.cpp$]] IS_MAC_IMPL "${impl}")
-            if((IS_WIN_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Windows") OR
-               (IS_LINUX_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Linux") OR
-               (IS_MAC_IMPL AND NOT CMAKE_SYSTEM_NAME STREQUAL "Darwin"))
-                continue()
+            __ob_validate_source_for_system("${res}" applicable_res)
+            if(applicable_res)
+                list(APPEND full_res_paths "${CMAKE_CURRENT_SOURCE_DIR}/${res}")
             endif()
-
-            list(APPEND full_res_paths "${CMAKE_CURRENT_SOURCE_DIR}/${res}")
         endforeach()
-        
-        target_sources(${_TARGET_NAME} PRIVATE ${full_res_paths})
+
+        if(full_res_paths)
+            target_sources(${_TARGET_NAME} PRIVATE ${full_res_paths})
+        endif()
     endif()
 
     # Include current source and generated source directories for easy includes from the top
@@ -148,26 +141,26 @@ __ob_command(ob_add_standard_test "3.16.0")
     if(_LINKS)
         target_link_libraries(${_TARGET_NAME} ${_LINKS})
     endif()
-    
+
     # Add definitions
     if(_DEFINITIONS)
         target_compile_definitions(${_TARGET_NAME} ${_DEFINITIONS})
     endif()
-    
+
     # Add options
     if(_OPTIONS)
         target_compile_options(${_TARGET_NAME} ${_OPTIONS})
     endif()
-    
+
     # Add test
     add_test(NAME ${_TARGET_NAME} COMMAND ${_TARGET_NAME})
-    
+
     # Allow test to find Qt DLLs on Windows if possible
     if(WIN32 AND _USE_QT)
-        if(Qt6_PREFIX_PATH)
-            set_property(TEST ${_TARGET_NAME} PROPERTY ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${Qt6_PREFIX_PATH}/bin")
+        if(Qt_PREFIX_PATH)
+            set_property(TEST ${_TARGET_NAME} PROPERTY ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${Qt_PREFIX_PATH}/bin")
         else()
-            message(WARNING "A test that uses Qt was created but the variable Qt6_PREFIX_PATH is empty or not available. The test might not be able to run properly if it depends on Qt DLLs.")
+            message(WARNING "A test that uses Qt was created but the variable Qt_PREFIX_PATH is empty or not available. The test might not be able to run properly if it depends on Qt DLLs.")
         endif()
     endif()
 endfunction()
@@ -189,11 +182,11 @@ endfunction()
 function(ob_add_basic_standard_test)
 __ob_command(ob_add_basic_standard_test "3.16.0")
 
-    # Function inputs 
+    # Function inputs
     set(options
         WIN32
     )
-    
+
     set(oneValueArgs
         TARGET_PREFIX
         TARGET_VAR
@@ -210,11 +203,11 @@ __ob_command(ob_add_basic_standard_test "3.16.0")
     set(requiredArgs
         TARGET_PREFIX
     )
-    
+
     # Parse arguments
     include(OB/Utility)
     ob_parse_arguments(BASIC_TEST "${options}" "${oneValueArgs}" "${multiValueArgs}" "${requiredArgs}" ${ARGN})
-    
+
     # Standardized set and defaulted values
     set(_TARGET_PREFIX "${BASIC_TEST_TARGET_PREFIX}")
     set(_TARGET_VAR "${BASIC_TEST_TARGET_VAR}")
@@ -233,13 +226,13 @@ __ob_command(ob_add_basic_standard_test "3.16.0")
     cmake_path(GET CMAKE_CURRENT_SOURCE_DIR FILENAME test_dir_name)
     set(test_name "tst_${test_dir_name}")
     set(test_target "${_TARGET_PREFIX}_${test_name}")
-    
+
     # Compose source list
     set(source_list "${test_name}.cpp")
     if(_ADDITIONAL_SOURCES)
         list(APPEND source_list ${_ADDITIONAL_SOURCES})
     endif()
-    
+
     # Create test
     ob_add_standard_test(${test_target}
         SOURCE ${source_list}

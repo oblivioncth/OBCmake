@@ -68,7 +68,7 @@ endfunction()
 
 function(__ob_parse_export_header basename path)
     __ob_internal_command(__ob_process_header_paths "3.0.0")
-    
+
     # Function inputs
     set(oneValueArgs
         BASE_NAME
@@ -83,15 +83,15 @@ function(__ob_parse_export_header basename path)
     # Parse arguments
     include(OB/Utility)
     ob_parse_arguments(EXPORT_HEADER "" "${oneValueArgs}" "" "${requiredArgs}" ${ARGN})
-    
+
     set(_PATH ${EXPORT_HEADER_PATH})
-    
+
     if(EXPORT_HEADER_BASE_NAME)
         set(_BASE_NAME "${EXPORT_HEADER_BASE_NAME}")
     else()
         set(_BASE_NAME "")
     endif()
-    
+
     set(${basename} "${_BASE_NAME}" PARENT_SCOPE)
     set(${path} "${_PATH}" PARENT_SCOPE)
 endfunction()
@@ -122,7 +122,7 @@ endfunction()
 #       EXPORT_HEADER
 #           BASENAME MYLIB
 #           PATH "path/of/export/header.h"
-#            
+#
 #   This function generates an export header that provides export macros
 #   for a library to more easily support shared builds. This argument is
 #   to contain the sub-path (filename included) that the export header
@@ -255,16 +255,17 @@ function(ob_add_standard_library target)
     set(_DOC_ONLY "${STD_LIBRARY_DOC_ONLY}")
     set(_LINKS "${STD_LIBRARY_LINKS}")
     set(_DEFINITIONS "${STD_LIBRARY_DEFINITIONS}")
-    set(_OPTIONS "${STD_LIBRARY_OPTIONS}")    
+    set(_OPTIONS "${STD_LIBRARY_OPTIONS}")
     set(_CONFIG "${STD_LIBRARY_CONFIG}")
 
     # Compute Intermediate Values
-    if(_LINKS MATCHES "Qt[0-9]*::")
-        set(_USE_QT TRUE)
+    if(_LINKS)
+        include("${__OB_CMAKE_PRIVATE}/qt.cmake")
+        __ob_should_be_qt_based_target(_LINKS _USE_QT)
     else()
         set(_USE_QT FALSE)
     endif()
-    
+
     if("${_TYPE}" STREQUAL "INTERFACE")
         set(interface_private "INTERFACE")
         set(interface_public "INTERFACE")
@@ -298,13 +299,13 @@ function(ob_add_standard_library target)
 
         if(full_impl_paths)
             target_sources(${_TARGET_NAME} PRIVATE ${full_impl_paths})
-            
+
             # Group files with their parent directories stripped
             source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src"
-                PREFIX "Implementation" 
+                PREFIX "Implementation"
                 FILES ${full_impl_paths}
             )
-            
+
             # Include current source directory for easy includes of
             # private headers from the top level of the target hierarchy
             target_include_directories(${_TARGET_NAME}
@@ -388,13 +389,13 @@ function(ob_add_standard_library target)
         # use the macros this provides to compile
         include(GenerateExportHeader)
         __ob_parse_export_header(_eh_bn _eh_path ${_EXPORT_HEADER})
-        
+
         if(_eh_bn)
             set(export_header_basename "${_eh_bn}")
         else()
             set(export_header_basename "${_NAMESPACE}_${_ALIAS}")
         endif()
-        
+
         set(eh_gen_rel_path "${_eh_path}")
         set(eh_gen_path "${CMAKE_CURRENT_BINARY_DIR}/include/${eh_gen_rel_path}")
 
@@ -422,24 +423,24 @@ function(ob_add_standard_library target)
     if(_LINKS)
         target_link_libraries(${_TARGET_NAME} ${_LINKS})
     endif()
-    
+
     # Add definitions
     if(_DEFINITIONS)
         target_compile_definitions(${_TARGET_NAME} ${_DEFINITIONS})
     endif()
-    
+
     # Add recognized common definitions
     list(APPEND __recog_defs
         QT_NO_CAST_FROM_ASCII
         QT_RESTRICTED_CAST_FROM_ASCII
     )
-    
+
     foreach(__gd ${__recog_defs})
         if(${${__gd}})
             target_compile_definitions(${_TARGET_NAME} ${interface_private} ${__gd})
         endif()
     endforeach()
-    
+
     # Add options
     if(_OPTIONS)
         target_compile_options(${_TARGET_NAME} ${_OPTIONS})
@@ -480,7 +481,7 @@ function(ob_add_standard_library target)
     )
 
     # Package Config
-    if(_CONFIG)        
+    if(_CONFIG)
         __ob_parse_std_target_config_option(${_TARGET_NAME}
             ${_NAMESPACE}
             ${_ALIAS}

@@ -122,8 +122,9 @@ function(ob_add_standard_executable target)
     set(_CONFIG "${STD_EXECUTABLE_CONFIG}")
 
     # Compute Intermediate Values
-    if(_LINKS MATCHES "Qt[0-9]*::")
-        set(_USE_QT TRUE)
+    if(_LINKS)
+        include("${__OB_CMAKE_PRIVATE}/qt.cmake")
+        __ob_should_be_qt_based_target(_LINKS _USE_QT)
     else()
         set(_USE_QT FALSE)
     endif()
@@ -133,7 +134,7 @@ function(ob_add_standard_executable target)
     else()
         set(_OPTION_WIN32 "")
     endif()
-    
+
     if("${_TYPE}" STREQUAL "INTERFACE")
         set(interface_private "INTERFACE")
         set(interface_public "INTERFACE")
@@ -164,7 +165,7 @@ function(ob_add_standard_executable target)
 
     if(full_impl_paths)
         target_sources(${_TARGET_NAME} PRIVATE ${full_impl_paths})
-        
+
         source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src"
             # "Implementation" is preferred, but we also want this group to appear below header groups
             PREFIX "Source"
@@ -184,14 +185,14 @@ function(ob_add_standard_executable target)
 
         if(applicable_impl_gen)
             target_sources(${_TARGET_NAME} PRIVATE ${full_impl_gen_paths})
-            
-            source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src"
+
+            source_group(TREE "${CMAKE_CURRENT_BINARY_DIR}/src"
                 PREFIX "Generated Source"
                 FILES ${applicable_impl_gen}
             )
         endif()
     endif()
-    
+
     # Add resources
     if(_RESOURCE)
         foreach(res ${_RESOURCE})
@@ -201,10 +202,10 @@ function(ob_add_standard_executable target)
                 list(APPEND full_res_paths "${CMAKE_CURRENT_SOURCE_DIR}/res/${res}")
             endif()
         endforeach()
-        
+
         if(full_res_paths)
             target_sources(${_TARGET_NAME} PRIVATE ${full_res_paths})
-            
+
             # Group files with their parent directories stripped
             source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/res"
                 PREFIX "Resource"
@@ -227,7 +228,7 @@ function(ob_add_standard_executable target)
     endif()
 
     # Add wayland support to Qt executables on Linux, if available
-    if(_USE_QT AND CMAKE_SYSTEM_NAME STREQUAL Linux AND TARGET Qt6::WaylandClient AND TARGET Qt6::QWaylandIntegrationPlugin)
+    if(_USE_QT AND CMAKE_SYSTEM_NAME STREQUAL Linux AND TARGET ${Qt}::WaylandClient AND TARGET ${Qt}::QWaylandIntegrationPlugin)
         # We don't want to override the default platform plugin (usually xcb), but just
         # include the wayland platform plugin with executeables if the plugin
         # is available. This avoids the warning
@@ -247,28 +248,28 @@ function(ob_add_standard_executable target)
         # linking to the waylandclient target ensures that wayland related dependencies
         # are deployed in shared builds
         qt_import_plugins(${_TARGET_NAME}
-            INCLUDE Qt6::QWaylandIntegrationPlugin
+            INCLUDE ${Qt}::QWaylandIntegrationPlugin
         )
-        target_link_libraries(${_TARGET_NAME} PRIVATE Qt6::WaylandClient)
+        target_link_libraries(${_TARGET_NAME} PRIVATE ${Qt}::WaylandClient)
     endif()
 
     # Add definitions
     if(_DEFINITIONS)
         target_compile_definitions(${_TARGET_NAME} ${_DEFINITIONS})
     endif()
-    
+
     # Add recognized common definitions
     list(APPEND __recog_defs
         QT_NO_CAST_FROM_ASCII
         QT_RESTRICTED_CAST_FROM_ASCII
     )
-    
+
     foreach(__gd ${__recog_defs})
         if(${${__gd}})
             target_compile_definitions(${_TARGET_NAME} ${interface_private} ${__gd})
         endif()
     endforeach()
-    
+
     # Add options
     if(_OPTIONS)
         target_compile_options(${_TARGET_NAME} ${_OPTIONS})
@@ -364,46 +365,14 @@ function(ob_add_standard_executable target)
 
         # Qt dependencies (on Windows), only if target links to Qt and the helper script is available
         if(COMMAND "qt_generate_deploy_app_script")
-            # Check for Qt link
-            set(qt_deploy _USE_QT)
-            if(NOT qt_deploy)
-                set(QT_REGEX [=[.*qt.*]=])
-            
-                # Check direct links more thoroughly, the above set should effectively handle this, but check anyway to be safe
-                get_target_property(direct_links ${_TARGET_NAME} "LINK_LIBRARIES")
-                foreach(link ${direct_links})
-                    if(link MATCHES QT_REGEX)
-                        set(qt_deploy TRUE)
-                        break()
-                    endif()
-                endforeach()
-                
-                # NOTE:
-                # There is an issue in that LINK_LIBRARIES is not actually populated with the libraries propagated from dependencies
-                # even after calling target_link_libraries(). Instead, generators first use the LINK_LIBRARIES
-                
-                # This is described here https://cmake.org/cmake/help/latest/prop_tgt/INTERFACE_LINK_LIBRARIES.html
-                #
-                # What this means is that if a target is created via the function that it itself does not directly link to Qt,
-                # But some of its dependencies do, qt_generate_deploy_app_script() will not be used. To cover this case, we may
-                # simply need to move back to running that command simply if it is available (the outer check above) and presuming
-                # Qt will be used for the target, directly or indirectly. This then also might have issues where Qt is involved somewhere
-                # in the project, thus making the command available, but a given executable doesn't link to Qt period. This is an issue
-                # because the script generated by this command will throw an error if the target is found to not use Qt libraries.
-                # Short term solution would be to add an argument to this function that allows forcing qt_generate_deploy_app_script() to
-                # be called instead to cover that case and still gating the automatic call behind the check of _USE_QT and the
-                # LINK_LIBRARIES property. Long term solution is to propose an OPTIONAL argument or similar for qt_generate_deploy_app_script()
-                # that makes the script do nothing when the executable isn't a Qt one instead of erroring.                    
-            endif()
-        
-            if(qt_deploy)
+            if(_USE_QT)
                 # Check if Qt linkage type is the likely case
                 get_target_property(_qt_target_type Qt6::Core TYPE)
                 if(BUILD_SHARED_LIBS AND _qt_target_type STREQUAL "STATIC_LIBRARY")
                     message(WARNING "BUILD_SHARED_LIBS is ON but a static build of Qt is being used for runtime deployment.")
                 endif()
 
-                # This function check for appropriate platforms by itself
+                # This function checks for appropriate platforms by itself
                 qt_generate_deploy_app_script(
                     TARGET "${_TARGET_NAME}"
                     OUTPUT_SCRIPT qt_runtime_deploy_script
