@@ -157,10 +157,10 @@ function(ob_add_standard_test target)
 
     # Allow test to find Qt DLLs on Windows if possible
     if(WIN32 AND _USE_QT)
-        if(Qt6_PREFIX_PATH)
-            set_property(TEST ${_TARGET_NAME} PROPERTY ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${Qt6_PREFIX_PATH}/bin")
+        if(Qt_PREFIX_PATH)
+            set_property(TEST ${_TARGET_NAME} PROPERTY ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${Qt_PREFIX_PATH}/bin")
         else()
-            message(WARNING "A test that uses Qt was created but the variable Qt6_PREFIX_PATH is empty or not available. The test might not be able to run properly if it depends on Qt DLLs.")
+            message(WARNING "A test that uses Qt was created but the variable Qt_PREFIX_PATH is empty or not available. The test might not be able to run properly if it depends on Qt DLLs.")
         endif()
     endif()
 endfunction()

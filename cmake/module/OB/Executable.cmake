@@ -228,7 +228,7 @@ function(ob_add_standard_executable target)
     endif()
 
     # Add wayland support to Qt executables on Linux, if available
-    if(_USE_QT AND CMAKE_SYSTEM_NAME STREQUAL Linux AND TARGET Qt6::WaylandClient AND TARGET Qt6::QWaylandIntegrationPlugin)
+    if(_USE_QT AND CMAKE_SYSTEM_NAME STREQUAL Linux AND TARGET ${Qt}::WaylandClient AND TARGET ${Qt}::QWaylandIntegrationPlugin)
         # We don't want to override the default platform plugin (usually xcb), but just
         # include the wayland platform plugin with executeables if the plugin
         # is available. This avoids the warning
@@ -248,9 +248,9 @@ function(ob_add_standard_executable target)
         # linking to the waylandclient target ensures that wayland related dependencies
         # are deployed in shared builds
         qt_import_plugins(${_TARGET_NAME}
-            INCLUDE Qt6::QWaylandIntegrationPlugin
+            INCLUDE ${Qt}::QWaylandIntegrationPlugin
         )
-        target_link_libraries(${_TARGET_NAME} PRIVATE Qt6::WaylandClient)
+        target_link_libraries(${_TARGET_NAME} PRIVATE ${Qt}::WaylandClient)
     endif()
 
     # Add definitions

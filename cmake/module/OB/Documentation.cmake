@@ -41,7 +41,7 @@ function(ob_find_qt_doc_resources qt_prefix)
         HINTS
             "${qt_prefix}/doc"
         PATHS
-            "C:/Program Files/Qt/Docs/Qt-${Qt6_VERSION}"
+            "C:/Program Files/Qt/Docs/Qt-${Qt_VERSION}"
         DOC "Path to Qt documentation"
         NO_DEFAULT_PATH
     )
