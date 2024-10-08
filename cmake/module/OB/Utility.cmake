@@ -258,7 +258,7 @@ macro(ob_parse_arguments prefix opt ovk mvk rk)
             message(FATAL_ERROR "'${arg}' must be defined and have a value!")
         endif()
     endforeach()
-    
+
     # Define missing values as empty strings (option values are always defined)
     list(APPEND __ob_all_value_args ${ovk} ${mvk})
     foreach(arg ${__ob_all_value_args})
