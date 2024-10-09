@@ -274,5 +274,5 @@ endmacro()
 macro(ob_assert)
     __ob_command(ob_assert "3.7.0")
     # Wrapper to prevent the need of 'include(OB/Utility)' everywhere in implementation
-    __ob_assert(${ARGN})
+    __ob_assert("${ARGN}")
 endmacro()

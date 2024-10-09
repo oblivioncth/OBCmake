@@ -151,7 +151,7 @@ function(__ob_parse_std_target_config_option target ns alias)
     set(cfg_gen_include "${ns}${alias}Targets.cmake")
     set(cfg_gen_name "${ns}${alias}Config.cmake")
     set(cfg_gen_path "${CMAKE_CURRENT_BINARY_DIR}/cmake/${cfg_gen_name}")
-    
+
     # Additional Function Arguments
     set(options
         STANDARD
@@ -208,19 +208,19 @@ function(__ob_validate_source_for_system source return)
         set(${return} FALSE PARENT_SCOPE)
         return()
     endif()
-    
+
     string(REGEX MATCH [[_linux\.]] IS_LINUX_SPECIFIC "${source}")
     if(IS_LINUX_SPECIFIC AND NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
         set(${return} FALSE PARENT_SCOPE)
         return()
     endif()
-    
+
     string(REGEX MATCH [[_darwin\.]] IS_MAC_SPECIFIC "${source}")
     if(IS_MAC_SPECIFIC AND NOT CMAKE_SYSTEM_NAME STREQUAL "Darwin")
         set(${return} FALSE PARENT_SCOPE)
         return()
     endif()
-    
+
     set(${return} TRUE PARENT_SCOPE)
 endfunction()
 
@@ -228,10 +228,11 @@ endfunction()
 # FATAL_ERROR containing the condition if not.
 function(__ob_assert)
     __ob_internal_command(ob_assert "3.7.0")
-    # We can use the following call to allow ";" in the condition, should that be required
-    cmake_parse_arguments(PARSE_ARGV 0 COND "" "" "")
-    if(NOT (${COND_UNPARSED_ARGUMENTS}))
-        string(REPLACE ";" " " COND_STR "${COND_UNPARSED_ARGUMENTS}")
-        message(FATAL_ERROR "Assertion check failed: ${COND_STR}")
+
+    if(${ARGN})
+        return()
     endif()
+
+    string(REPLACE ";" " " COND_STR "${ARGN}")
+    message(FATAL_ERROR "Assertion check failed: ${COND_STR}")
 endfunction()
