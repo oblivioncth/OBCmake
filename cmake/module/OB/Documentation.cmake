@@ -4,14 +4,10 @@ include("${__OB_CMAKE_PRIVATE}/common.cmake")
 # if their paths can be located:
 # - QT_HELP_GEN_PATH: path to qhelpgenerator executable
 # - QT_DOCS_DIR: path to the root of Qt documentation
-function(ob_find_qt_doc_resources qt_prefix)
+function(ob_find_qt_doc_resources)
     __ob_command(ob_find_qt_doc_resources "3.0.0")
 
     # Handle using cache so that users can easily override via UI or command-line
-
-    # Could use crazy amounts of file system searching to check for every Qt root under the standard Qt install
-    # location for each platform (i.e. C:/Program Files/Qt/6.3.0/msvc2019/) and then add those as PATHS to the
-    # below commands, but for now, lets not
 
     # Locate qhelpgenerator
     find_file(QT_HELP_GEN_PATH
@@ -19,10 +15,8 @@ function(ob_find_qt_doc_resources qt_prefix)
             "qhelpgenerator"
             "qhelpgenerator.exe"
         HINTS
-            "${qt_prefix}"
-        PATH_SUFFIXES
-            "bin"
-            "libexec"
+            "${Qt_INSTALL_BINS}"
+            "${Qt_INSTALL_LIBEXECS}"
         DOC "Path to the qhelpgenerator executable"
         NO_DEFAULT_PATH
     )
@@ -39,7 +33,7 @@ function(ob_find_qt_doc_resources qt_prefix)
             "qtcore.qch"
             "qtcore"
         HINTS
-            "${qt_prefix}/doc"
+            "${Qt_INSTALL_DOCS}"
         PATHS
             "C:/Program Files/Qt/Docs/Qt-${Qt_VERSION}"
         DOC "Path to Qt documentation"
@@ -318,19 +312,19 @@ endfunction()
 # - INSTALL_DESTINATION: Where to install the generated documentation,
 #                        defaults to 'doc' folder relative to CMAKE_INSTALL_PREFIX
 # - INPUT_LIST: Paths for Doxygen to search
-# - QT_PREFIX: Path to Qt installation prefix. Providing this argument enables:
-#   > Generation of a .qch file for the documentation
-#   > References/links to the Qt documentation, see the following argument
-#   > If qhelpgenerator and the Qt docs directory cannot be located automatically,
-#     the user can provide them directly via the QT_HELP_GEN_PATH and QT_DOCS_DIR
-#     variables respectively
 # - ADDITIONAL_ROOTS: List of additional doc roots to check for the following
 #                     folders that get treated as shown above
 #                     ./general
 #                     ./res/images
 #                     ./res/snippets
 # - QT_MODULES: List of Qt modules to link to via .tag files (i.e. qtcore, qtquick, etc).
-#   Ignored if no QT_PREFIX was provided.
+#   Requires Qt to have been found via ob_find_package_qt().
+#
+#   Providing any value to this argument also enables:
+#   > Generation of a .qch file for the documentation. If qhelpgenerator and the
+#     Qt docs directory cannot be located automatically,
+#     the user can provide them directly via the QT_HELP_GEN_PATH and QT_DOCS_DIR
+#     variables respectively
 # - THEME_COLORS:
 #     Inner Form:
 #           THEME_COLORS
@@ -357,7 +351,6 @@ function(ob_standard_documentation target)
         THEME_VER
         PROJ_NAME
         INSTALL_DESTINATION
-        QT_PREFIX
     )
 
     set(multiValueArgs
@@ -481,9 +474,9 @@ function(ob_standard_documentation target)
     set(DOXYGEN_GENERATE_TAGFILE "${DOC_BUILD_PATH}/${PROJECT_NAME}.tag")
 
     #---------------------- Configure Qt Link ---------------------
-    if(STD_DOCS_QT_PREFIX)
+    if(STD_DOCS_QT_MODULES)
         # Try to get Qt doc information
-        ob_find_qt_doc_resources("${STD_DOCS_QT_PREFIX}")
+        ob_find_qt_doc_resources()
 
         # Link to docs
         if(QT_DOCS_DIR)
