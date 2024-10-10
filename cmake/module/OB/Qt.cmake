@@ -9,11 +9,6 @@ endmacro()
 macro(ob_find_package_qt)
     __ob_command(ob_find_package_qt "3.20.0")
 
-    # Bail if already done
-    if(Qt_FOUND)
-        return()
-    endif()
-
     # Disallow deprecated facilities
     add_compile_definitions(QT_DISABLE_DEPRECATED_BEFORE=0x060000)
 
