@@ -454,7 +454,7 @@ function(ob_add_standard_library target)
         OUTPUT_NAME "${_OUTPUT_NAME}"
     )
 
-    # Install target and export
+    # Install target
     install(TARGETS ${_TARGET_NAME}
         COMPONENT ${_TARGET_NAME}
         EXPORT ${_NAMESPACE}${_ALIAS}Targets
@@ -472,16 +472,17 @@ function(ob_add_standard_library target)
             DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_ALIAS_LC}"
     )
 
-    install(EXPORT ${_NAMESPACE}${_ALIAS}Targets
-        COMPONENT ${_TARGET_NAME}
-        FILE "${_NAMESPACE}${_ALIAS}Targets.cmake"
-        NAMESPACE ${_NAMESPACE}::
-        DESTINATION "cmake/${_ALIAS}"
-        ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
-    )
-
     # Package Config
     if(_CONFIG)
+        # Install export
+        install(EXPORT ${_NAMESPACE}${_ALIAS}Targets
+            COMPONENT ${_TARGET_NAME}
+            FILE "${_NAMESPACE}${_ALIAS}Targets.cmake"
+            NAMESPACE ${_NAMESPACE}::
+            DESTINATION "cmake/${_ALIAS}"
+            ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
+        )
+
         __ob_parse_std_target_config_option(${_TARGET_NAME}
             ${_NAMESPACE}
             ${_ALIAS}

@@ -290,15 +290,6 @@ function(ob_add_standard_executable target)
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
 
-    # Install target export
-    install(EXPORT ${_NAMESPACE}${_ALIAS}Targets
-        COMPONENT ${_TARGET_NAME}
-        FILE "${_NAMESPACE}${_ALIAS}Targets.cmake"
-        NAMESPACE ${_NAMESPACE}::
-        DESTINATION "cmake/${_ALIAS}"
-        ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
-    )
-
     # Install runtime dependencies
     if(_LINKS)
         # Normal runtime dependencies
@@ -390,6 +381,15 @@ function(ob_add_standard_executable target)
 
     # Package Config
     if(_CONFIG)
+        # Install target export
+        install(EXPORT ${_NAMESPACE}${_ALIAS}Targets
+            COMPONENT ${_TARGET_NAME}
+            FILE "${_NAMESPACE}${_ALIAS}Targets.cmake"
+            NAMESPACE ${_NAMESPACE}::
+            DESTINATION "cmake/${_ALIAS}"
+            ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
+        )
+
         __ob_parse_std_target_config_option(${_TARGET_NAME}
             ${_NAMESPACE}
             ${_ALIAS}
