@@ -100,7 +100,7 @@ endfunction()
 # via the provided arguments. Also produces an install
 # component that matches the target name.
 #
-# This command will also defined BUILD_SHARED_LIBS as an option/cache variable defaulted
+# This command will also define BUILD_SHARED_LIBS as an option/cache variable defaulted
 # to NO if it isn't already defined.
 #
 # Argument Notes:
@@ -488,5 +488,135 @@ function(ob_add_standard_library target)
             ${_ALIAS}
             ${_CONFIG}
         )
+    endif()
+endfunction()
+
+# Creates an OBJECT library target in the "OB Standard Fashion"
+# via the provided arguments.
+#
+# Argument Notes:
+# ---------------
+# NAMESPACE:
+#   Namespace to use for file generation, export configuration, and installation pathing.
+# ALIAS:
+#   Do not use "::" as part of the libraries alias, they will be
+#   added automatically after first prepending the provided namespace.
+#
+#   Used for file generation, export configuration, and installation pathing.
+# SHARED_HEADERS:
+#   Files are assumed to be under "${CMAKE_CURRENT_SOURCE_DIR}/src". Similar to HEADERS_API
+#   for regular libraries; headers that consumers need.
+# IMPLEMENTATION:
+#   Files are assumed to be under "${CMAKE_CURRENT_SOURCE_DIR}/src"
+# LINKS:
+#   Same contents/arguments as with target_link_libraries().
+# DEFINITIONS
+#   Same contents/arguments as with target_compile_definitions().
+# OPTIONS:
+#   Same contents/arguments as with target_compile_options().
+function(ob_add_standard_object_library target)
+    __ob_command(ob_add_standard_object_library "3.12.0")
+
+    #------------ Argument Handling ---------------
+
+    # Function inputs
+    set(oneValueArgs
+        NAMESPACE
+        ALIAS
+    )
+
+    set(multiValueArgs
+        SHARED_HEADERS
+        IMPLEMENTATION
+        LINKS
+        DEFINITIONS
+        OPTIONS
+    )
+
+    # Required Arguments (All Types)
+    set(requiredArgs
+        NAMESPACE
+        ALIAS
+        IMPLEMENTATION
+    )
+
+    # Parse arguments
+    include(OB/Utility)
+    ob_parse_arguments(STD_OBJ_LIB "" "${oneValueArgs}" "${multiValueArgs}" "${requiredArgs}" ${ARGN})
+
+    # Standardized set and defaulted values
+    set(_TARGET_NAME "${target}")
+    set(_NAMESPACE "${STD_OBJ_LIB_NAMESPACE}")
+    string(TOLOWER ${_NAMESPACE} _NAMESPACE_LC)
+    set(_ALIAS "${STD_OBJ_LIB_ALIAS}")
+    string(TOLOWER ${_ALIAS} _ALIAS_LC)
+    set(_SHARED_HEADERS "${STD_OBJ_LIB_SHARED_HEADERS}")
+    set(_IMPLEMENTATION "${STD_OBJ_LIB_IMPLEMENTATION}")
+    set(_LINKS "${STD_OBJ_LIB_LINKS}")
+    set(_DEFINITIONS "${STD_OBJ_LIB_DEFINITIONS}")
+    set(_OPTIONS "${STD_OBJ_LIB_OPTIONS}")
+    set(_CONFIG "${STD_OBJ_LIB_CONFIG}")
+
+    # Create lib
+    add_library(${_TARGET_NAME} OBJECT)
+    add_library("${_NAMESPACE}::${_ALIAS}" ALIAS ${_TARGET_NAME})
+
+    # Add shared headers
+    if(_SHARED_HEADERS)
+        foreach(header ${_SHARED_HEADERS})
+            list(APPEND full_header_paths "${CMAKE_CURRENT_SOURCE_DIR}/src/${header}")
+        endforeach()
+
+        target_sources(${_TARGET_NAME} PUBLIC ${full_header_paths})
+
+        # Group files with their parent directories stripped
+        source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src"
+            PREFIX "Shared Headers"
+            FILES ${full_header_paths}
+        )
+    endif()
+
+    # Add implementation
+    if(_IMPLEMENTATION)
+        foreach(impl ${_IMPLEMENTATION})
+            __ob_validate_source_for_system("${impl}" applicable_impl)
+            if(applicable_impl)
+                list(APPEND full_impl_paths "${CMAKE_CURRENT_SOURCE_DIR}/src/${impl}")
+            endif()
+        endforeach()
+
+        if(full_impl_paths)
+            target_sources(${_TARGET_NAME} PRIVATE ${full_impl_paths})
+
+            # Group files with their parent directories stripped
+            source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src"
+                PREFIX "Implementation"
+                FILES ${full_impl_paths}
+            )
+
+        endif()
+    endif()
+
+    # Include current source directory for easy includes of
+    # headers from the top level of the target hierarchy,
+    # and so that consumers can include shared headers
+    target_include_directories(${_TARGET_NAME}
+        PUBLIC
+            "${CMAKE_CURRENT_SOURCE_DIR}/src"
+    )
+
+    # Link to libraries
+    if(_LINKS)
+        target_link_libraries(${_TARGET_NAME} ${_LINKS})
+    endif()
+
+    # Add definitions
+    if(_DEFINITIONS)
+        target_compile_definitions(${_TARGET_NAME} ${_DEFINITIONS})
+    endif()
+
+        # Add options
+    if(_OPTIONS)
+        target_compile_options(${_TARGET_NAME} ${_OPTIONS})
     endif()
 endfunction()
