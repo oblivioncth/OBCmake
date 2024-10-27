@@ -557,6 +557,7 @@ function(ob_add_standard_object_library target)
         SHARED_HEADERS
         IMPLEMENTATION
         LINKS
+        RESOURCE
         DEFINITIONS
         OPTIONS
     )
@@ -580,6 +581,7 @@ function(ob_add_standard_object_library target)
     string(TOLOWER ${_ALIAS} _ALIAS_LC)
     set(_SHARED_HEADERS "${STD_OBJ_LIB_SHARED_HEADERS}")
     set(_IMPLEMENTATION "${STD_OBJ_LIB_IMPLEMENTATION}")
+    set(_RESOURCE "${STD_OBJ_LIB_RESOURCE}")
     set(_LINKS "${STD_OBJ_LIB_LINKS}")
     set(_DEFINITIONS "${STD_OBJ_LIB_DEFINITIONS}")
     set(_OPTIONS "${STD_OBJ_LIB_OPTIONS}")
@@ -632,6 +634,28 @@ function(ob_add_standard_object_library target)
         PUBLIC
             "${CMAKE_CURRENT_SOURCE_DIR}/src"
     )
+
+    # Add resources
+    if(_RESOURCE)
+        foreach(res ${_RESOURCE})
+            # Ignore non-relevant system specific implementation
+            __ob_validate_source_for_system("${res}" applicable_res)
+            if(applicable_res)
+                cmake_path(ABSOLUTE_PATH res BASE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/res")
+                list(APPEND full_res_paths "${res}")
+            endif()
+        endforeach()
+
+        if(full_res_paths)
+            target_sources(${_TARGET_NAME} PRIVATE ${full_res_paths})
+
+            # Group files with their parent directories stripped
+            source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/res"
+                PREFIX "Resource"
+                FILES ${full_res_paths}
+            )
+        endif()
+    endif()
 
     # Link to libraries
     if(_LINKS)
