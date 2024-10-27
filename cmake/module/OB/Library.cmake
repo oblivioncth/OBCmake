@@ -358,11 +358,9 @@ function(ob_add_standard_library target)
     endif()
 
     # Shared Lib Support/Generate export header
-    if(NOT "${_TYPE}" STREQUAL "INTERFACE")
-        if(NOT _EXPORT_HEADER)
-            message(FATAL_ERROR "EXPORT_HEADER is required for non-INTERFACE libraries!")
-        endif()
-
+    if("${_TYPE}" STREQUAL "SHARED" AND NOT _EXPORT_HEADER)
+        message(FATAL_ERROR "EXPORT_HEADER is required for shared libraries!")
+    elseif(NOT "${_TYPE}" STREQUAL "INTERFACE" AND _EXPORT_HEADER)
         if("${_TYPE}" STREQUAL "SHARED")
             # Setup export decorator macros as require by Windows, but use the benefit on all supported platforms.
             # An alternative to this is to set CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS to TRUE, which handles all exports
