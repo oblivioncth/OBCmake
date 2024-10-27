@@ -67,7 +67,7 @@ function(__ob_register_header_set set_name group_name base_dir)
 endfunction()
 
 function(__ob_parse_export_header basename path)
-    __ob_internal_command(__ob_process_header_paths "3.0.0")
+    __ob_internal_command(__ob_parse_export_header "3.0.0")
 
     # Function inputs
     set(oneValueArgs
@@ -158,6 +158,10 @@ endfunction()
 #   Files are assumed to be under "${CMAKE_CURRENT_SOURCE_DIR}/src"
 # DOC_ONLY:
 #   Files are assumed to be under "${CMAKE_CURRENT_SOURCE_DIR}/src"
+# RESOURCE:
+#   Files can be absolute, but relative paths are assumed to be under
+#   "${CMAKE_CURRENT_SOURCE_DIR}/res". Added via
+#   target_sources(<tgt> PRIVATE <resources>), mainly for .qrc or .rc files
 # LINKS:
 #   Same contents/arguments as with target_link_libraries().
 # DEFINITIONS
@@ -206,6 +210,7 @@ function(ob_add_standard_library target)
         HEADERS_API_GEN
         IMPLEMENTATION
         DOC_ONLY
+        RESOURCE
         LINKS
         DEFINITIONS
         OPTIONS
@@ -253,6 +258,7 @@ function(ob_add_standard_library target)
     set(_HEADERS_API_GEN "${STD_LIBRARY_HEADERS_API_GEN}")
     set(_IMPLEMENTATION "${STD_LIBRARY_IMPLEMENTATION}")
     set(_DOC_ONLY "${STD_LIBRARY_DOC_ONLY}")
+    set(_RESOURCE "${STD_LIBRARY_RESOURCE}")
     set(_LINKS "${STD_LIBRARY_LINKS}")
     set(_DEFINITIONS "${STD_LIBRARY_DEFINITIONS}")
     set(_OPTIONS "${STD_LIBRARY_OPTIONS}")
@@ -417,6 +423,28 @@ function(ob_add_standard_library target)
             FILES
                 "${eh_gen_rel_path}"
         )
+    endif()
+
+    # Add resources
+    if(_RESOURCE)
+        foreach(res ${_RESOURCE})
+            # Ignore non-relevant system specific implementation
+            __ob_validate_source_for_system("${res}" applicable_res)
+            if(applicable_res)
+                cmake_path(ABSOLUTE_PATH res BASE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/res")
+                list(APPEND full_res_paths "${res}")
+            endif()
+        endforeach()
+
+        if(full_res_paths)
+            target_sources(${_TARGET_NAME} PRIVATE ${full_res_paths})
+
+            # Group files with their parent directories stripped
+            source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/res"
+                PREFIX "Resource"
+                FILES ${full_res_paths}
+            )
+        endif()
     endif()
 
     # Link to libraries

@@ -26,7 +26,8 @@ include("${__OB_CMAKE_PRIVATE}/common.cmake")
 # SOURCE_GEN:
 #   Files are assumed to be under "${CMAKE_CURRENT_BINARY_DIR}/src"
 # RESOURCE:
-#   Files are assumed to be under "${CMAKE_CURRENT_SOURCE_DIR}/res". Added via
+#   Files can be absolute, but relative paths are assumed to be under
+#   "${CMAKE_CURRENT_SOURCE_DIR}/res". Added via
 #   target_sources(<tgt> PRIVATE <resources>), mainly for .qrc or .rc files
 # LINKS:
 #   Same contents/arguments as with target_link_libraries().
@@ -199,7 +200,8 @@ function(ob_add_standard_executable target)
             # Ignore non-relevant system specific implementation
             __ob_validate_source_for_system("${res}" applicable_res)
             if(applicable_res)
-                list(APPEND full_res_paths "${CMAKE_CURRENT_SOURCE_DIR}/res/${res}")
+                cmake_path(ABSOLUTE_PATH res BASE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/res")
+                list(APPEND full_res_paths "${res}")
             endif()
         endforeach()
 
