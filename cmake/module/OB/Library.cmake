@@ -531,7 +531,7 @@ endfunction()
 #   added automatically after first prepending the provided namespace.
 #
 #   Used for file generation, export configuration, and installation pathing.
-# SHARED_HEADERS:
+# HEADERS_SHARED:
 #   Files are assumed to be under "${CMAKE_CURRENT_SOURCE_DIR}/src". Similar to HEADERS_API
 #   for regular libraries; headers that consumers need.
 # IMPLEMENTATION:
@@ -554,7 +554,7 @@ function(ob_add_standard_object_library target)
     )
 
     set(multiValueArgs
-        SHARED_HEADERS
+        HEADERS_SHARED
         IMPLEMENTATION
         LINKS
         RESOURCE
@@ -579,7 +579,7 @@ function(ob_add_standard_object_library target)
     string(TOLOWER ${_NAMESPACE} _NAMESPACE_LC)
     set(_ALIAS "${STD_OBJ_LIB_ALIAS}")
     string(TOLOWER ${_ALIAS} _ALIAS_LC)
-    set(_SHARED_HEADERS "${STD_OBJ_LIB_SHARED_HEADERS}")
+    set(_HEADERS_SHARED "${STD_OBJ_LIB_HEADERS_SHARED}")
     set(_IMPLEMENTATION "${STD_OBJ_LIB_IMPLEMENTATION}")
     set(_RESOURCE "${STD_OBJ_LIB_RESOURCE}")
     set(_LINKS "${STD_OBJ_LIB_LINKS}")
@@ -592,8 +592,8 @@ function(ob_add_standard_object_library target)
     add_library("${_NAMESPACE}::${_ALIAS}" ALIAS ${_TARGET_NAME})
 
     # Add shared headers
-    if(_SHARED_HEADERS)
-        foreach(header ${_SHARED_HEADERS})
+    if(_HEADERS_SHARED)
+        foreach(header ${_HEADERS_SHARED})
             list(APPEND full_header_paths "${CMAKE_CURRENT_SOURCE_DIR}/src/${header}")
         endforeach()
 
@@ -601,7 +601,7 @@ function(ob_add_standard_object_library target)
 
         # Group files with their parent directories stripped
         source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src"
-            PREFIX "Shared Headers"
+            PREFIX "Headers Shared"
             FILES ${full_header_paths}
         )
     endif()
