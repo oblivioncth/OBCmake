@@ -13,6 +13,7 @@ include("${__OB_CMAKE_PRIVATE}/common.cmake")
 # ---------------
 # NAMESPACE:
 #   Namespace to use for file generation, export configuration, and installation pathing.
+#   Defaults to PROJECT_NAMESPACE if not provided.
 # ALIAS:
 #   Do not use "::" as part of the libraries alias, they will be
 #   added automatically after first prepending the provided namespace.
@@ -20,7 +21,9 @@ include("${__OB_CMAKE_PRIVATE}/common.cmake")
 #   Used for file generation, export configuration, and installation pathing.
 # OUTPUT_NAME:
 #   Maps to the OUTPUT_NAME property of the target. If not provided, by default its set
-#   based on the ALIAS value using casing that's typical for the target platform
+#   based on the ALIAS value using casing that's typical for the target platform.
+#
+#   If provided, case is modified to a typical type based on the target platform.
 # SOURCE:
 #   Files are assumed to be under "${CMAKE_CURRENT_SOURCE_DIR}/src"
 # SOURCE_GEN:
@@ -88,7 +91,6 @@ function(ob_add_standard_executable target)
 
     # Required Arguments (All Types)
     set(requiredArgs
-        NAMESPACE
         ALIAS
         SOURCE
     )
@@ -99,13 +101,22 @@ function(ob_add_standard_executable target)
 
     # Standardized set and defaulted values
     set(_TARGET_NAME "${target}")
-    set(_NAMESPACE "${STD_EXECUTABLE_NAMESPACE}")
+
+    if(STD_EXECUTABLE_NAMESPACE)
+        set(_NAMESPACE "${STD_EXECUTABLE_NAMESPACE}")
+    else()
+        set(_NAMESPACE "${PROJECT_NAMESPACE}")
+    endif()
+
     string(TOLOWER ${_NAMESPACE} _NAMESPACE_LC)
     set(_ALIAS "${STD_EXECUTABLE_ALIAS}")
     string(TOLOWER ${_ALIAS} _ALIAS_LC)
 
     if(STD_EXECUTABLE_OUTPUT_NAME)
         set(_OUTPUT_NAME "${STD_EXECUTABLE_OUTPUT_NAME}")
+        if(NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
+            string(TOLOWER ${_OUTPUT_NAME} _OUTPUT_NAME)
+        else()
     else()
         if(CMAKE_SYSTEM_NAME STREQUAL Windows)
             set(_OUTPUT_NAME "${_ALIAS}")

@@ -107,6 +107,7 @@ endfunction()
 # ---------------
 # NAMESPACE:
 #   Namespace to use for file generation, export configuration, and installation pathing.
+#   Defaults to PROJECT_NAMESPACE if not provided.
 # ALIAS:
 #   Do not use "::" as part of the libraries alias, they will be
 #   added automatically after first prepending the provided namespace.
@@ -219,7 +220,6 @@ function(ob_add_standard_library target)
 
     # Required Arguments (All Types)
     set(requiredArgs
-        NAMESPACE
         ALIAS
         HEADERS_API
     )
@@ -230,7 +230,13 @@ function(ob_add_standard_library target)
 
     # Standardized set and defaulted values
     set(_TARGET_NAME "${target}")
-    set(_NAMESPACE "${STD_LIBRARY_NAMESPACE}")
+
+    if(STD_LIBRARY_NAMESPACE)
+        set(_NAMESPACE "${STD_LIBRARY_NAMESPACE}")
+    else()
+        set(_NAMESPACE "${PROJECT_NAMESPACE}")
+    endif()
+
     string(TOLOWER ${_NAMESPACE} _NAMESPACE_LC)
     set(_ALIAS "${STD_LIBRARY_ALIAS}")
     string(TOLOWER ${_ALIAS} _ALIAS_LC)
@@ -524,6 +530,7 @@ endfunction()
 # ---------------
 # NAMESPACE:
 #   Namespace to use for file generation, export configuration, and installation pathing.
+#   Defaults to PROJECT_NAMESPACE if not provided.
 # ALIAS:
 #   Do not use "::" as part of the libraries alias, they will be
 #   added automatically after first prepending the provided namespace.
@@ -562,7 +569,6 @@ function(ob_add_standard_object_library target)
 
     # Required Arguments (All Types)
     set(requiredArgs
-        NAMESPACE
         ALIAS
         IMPLEMENTATION
     )
@@ -573,7 +579,13 @@ function(ob_add_standard_object_library target)
 
     # Standardized set and defaulted values
     set(_TARGET_NAME "${target}")
-    set(_NAMESPACE "${STD_OBJ_LIB_NAMESPACE}")
+
+    if(STD_OBJ_LIB_NAMESPACE)
+        set(_NAMESPACE "${STD_OBJ_LIB_NAMESPACE}")
+    else()
+        set(_NAMESPACE "${PROJECT_NAMESPACE}")
+    endif()
+
     string(TOLOWER ${_NAMESPACE} _NAMESPACE_LC)
     set(_ALIAS "${STD_OBJ_LIB_ALIAS}")
     string(TOLOWER ${_ALIAS} _ALIAS_LC)
