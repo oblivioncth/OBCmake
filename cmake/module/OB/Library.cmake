@@ -116,7 +116,9 @@ endfunction()
 # OUTPUT_NAME:
 #   Maps to the OUTPUT_NAME property of the target. If not provided, by default its set
 #   based on the NAMESPACE and ALIAS values using casing that's typical for the
-#   target platform
+#   target platform.
+#
+#   If provided, case is modified to a typical type based on the target platform.
 # TYPE: Type of library, follows BUILD_SHARED_LIBS if not defined
 # EXPORT_HEADER:
 #   Inner Form:
@@ -243,6 +245,9 @@ function(ob_add_standard_library target)
 
     if(STD_LIBRARY_OUTPUT_NAME)
         set(_OUTPUT_NAME "${STD_LIBRARY_OUTPUT_NAME}")
+        if(NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
+            string(TOLOWER ${_OUTPUT_NAME} _OUTPUT_NAME)
+        endif()
     else()
         if(CMAKE_SYSTEM_NAME STREQUAL Windows)
             set(_OUTPUT_NAME "${_NAMESPACE}${_ALIAS}")
