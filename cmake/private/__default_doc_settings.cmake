@@ -4,6 +4,13 @@
 # and append to list based options when possible in order to not
 # trample user set overrides, unless a certain value is imperative
 
+# File filtering
+list(APPEND DOXYGEN_EXCLUDE_PATTERNS
+    "*/_private/*"
+    "*/__private/*"
+    "*_p.*"
+)
+
 # General
 if(NOT DEFINED DOXYGEN_REPEAT_BRIEF)
     set(DOXYGEN_REPEAT_BRIEF NO)
