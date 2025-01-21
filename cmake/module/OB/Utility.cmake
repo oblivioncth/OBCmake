@@ -276,3 +276,11 @@ macro(ob_assert)
     # Wrapper to prevent the need of 'include(OB/Utility)' everywhere in implementation
     __ob_assert("${ARGN}")
 endmacro()
+
+# Sets a variable to a value, only if the variable is currently undefined
+macro(ob_set_if_unset var)
+    __ob_command(ob_set_if_unset "3.0.0")
+    if(NOT DEFINED ${var})
+        set(${var} ${ARGN})
+    endif()
+endmacro()
