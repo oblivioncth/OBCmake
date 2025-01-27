@@ -1,67 +1,39 @@
+include(OB/Utility)
+
 #-----------Main Doxygen Options-----------------------------
 
 # Here we only replace single value options if they aren't defined,
 # and append to list based options when possible in order to not
 # trample user set overrides, unless a certain value is imperative
 
+# File filtering
+list(APPEND DOXYGEN_EXCLUDE_PATTERNS
+    "*/_private/*"
+    "*/__private/*"
+    "*_p.*"
+)
+
 # General
-if(NOT DEFINED DOXYGEN_REPEAT_BRIEF)
-    set(DOXYGEN_REPEAT_BRIEF NO)
-endif()
-if(NOT DEFINED DOXYGEN_WARN_AS_ERROR)
-    set(DOXYGEN_WARN_AS_ERROR YES)
-endif()
-if(NOT DEFINED DOXYGEN_GENERATE_TREEVIEW)
-    set(DOXYGEN_GENERATE_TREEVIEW YES)
-endif()
-if(NOT DEFINED DOXYGEN_ENABLE_PREPROCESSING)
-    set(DOXYGEN_ENABLE_PREPROCESSING YES)
-endif()
-if(NOT DEFINED DOXYGEN_MACRO_EXPANSION)
-    set(DOXYGEN_MACRO_EXPANSION YES)
-endif()
-if(NOT DEFINED DOXYGEN_EXPAND_ONLY_PREDEF)
-    set(DOXYGEN_EXPAND_ONLY_PREDEF YES)
-endif()
-if(NOT DEFINED DOXYGEN_BUILTIN_STL_SUPPORT)
-    set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
-endif()
-if(NOT DEFINED DOXYGEN_GROUP_NESTED_COMPOUND)
-    set(DOXYGEN_GROUP_NESTED_COMPOUND YES)
-endif()
-if(NOT DEFINED DOXYGEN_ENUM_VALUES_PER_LINE)
-    set(DOXYGEN_ENUM_VALUES_PER_LINE 1)
-endif()
-if(NOT DEFINED DOXYGEN_EXT_LINKS_IN_WINDOW)
-    set(DOXYGEN_EXT_LINKS_IN_WINDOW YES)
-endif()
-if(NOT DEFINED DOXYGEN_CLASS_GRAPH)
-    set(DOXYGEN_CLASS_GRAPH NO)
-endif()
-if(NOT DEFINED DOXYGEN_TREEVIEW_WIDTH)
-    set(DOXYGEN_TREEVIEW_WIDTH 340)
-endif()
-if(NOT DEFINED DOXYGEN_SORT_BRIEF_DOCS)
-    set(DOXYGEN_SORT_BRIEF_DOCS YES)
-endif()
-if(NOT DEFINED DOXYGEN_SORT_MEMBERS_CTORS_1ST)
-    SET(DOXYGEN_SORT_MEMBERS_CTORS_1ST YES)
-endif()
-if(NOT DEFINED DOXYGEN_FULL_PATH_NAMES)
-    SET(DOXYGEN_FULL_PATH_NAMES NO)
-endif()
-if(NOT DEFINED DOXYGEN_FULL_PATH_NAMES)
-    SET(DOXYGEN_FULL_PATH_NAMES NO)
-endif()
-if(NOT DEFINED DOXYGEN_ALLEXTERNALS)
-    SET(DOXYGEN_ALLEXTERNALS NO)
-endif()
-if(NOT DEFINED DOXYGEN_EXTERNAL_GROUPS)
-    SET(DOXYGEN_EXTERNAL_GROUPS NO)
-endif()
-if(NOT DEFINED DOXYGEN_EXTERNAL_PAGES)
-    SET(DOXYGEN_EXTERNAL_PAGES NO)
-endif()
+ob_set_if_unset(DOXYGEN_REPEAT_BRIEF NO)
+ob_set_if_unset(DOXYGEN_WARN_AS_ERROR YES)
+ob_set_if_unset(DOXYGEN_GENERATE_TREEVIEW YES)
+ob_set_if_unset(DOXYGEN_ENABLE_PREPROCESSING YES)
+ob_set_if_unset(DOXYGEN_MACRO_EXPANSION YES)
+ob_set_if_unset(DOXYGEN_EXPAND_ONLY_PREDEF YES)
+ob_set_if_unset(DOXYGEN_BUILTIN_STL_SUPPORT YES)
+ob_set_if_unset(DOXYGEN_GROUP_NESTED_COMPOUND YES)
+ob_set_if_unset(DOXYGEN_ENUM_VALUES_PER_LINE 1)
+ob_set_if_unset(DOXYGEN_EXT_LINKS_IN_WINDOW YES)
+ob_set_if_unset(DOXYGEN_CLASS_GRAPH YES)
+ob_set_if_unset(DOXYGEN_COLLABORATION_GRAPH NO)
+ob_set_if_unset(DOXYGEN_HIDE_UNDOC_CLASSES YES)
+ob_set_if_unset(DOXYGEN_TREEVIEW_WIDTH 340)
+ob_set_if_unset(DOXYGEN_SORT_BRIEF_DOCS YES)
+ob_set_if_unset(DOXYGEN_SORT_MEMBERS_CTORS_1ST YES)
+ob_set_if_unset(DOXYGEN_FULL_PATH_NAMES NO)
+ob_set_if_unset(DOXYGEN_ALLEXTERNALS NO)
+ob_set_if_unset(DOXYGEN_EXTERNAL_GROUPS NO)
+ob_set_if_unset(DOXYGEN_EXTERNAL_PAGES NO)
 
 # Configure custom command/macro processing
 list(APPEND DOXYGEN_ALIASES
@@ -71,14 +43,16 @@ list(APPEND DOXYGEN_ALIASES
 
 # Workarounds for
 # 1) Doxygen doesn't understand Q_DECLARE_FLAGS fully
-# 2) Doxygen doesn't understand QX_ERROR_TYPE fully
-# 3) Doxygen doesn't understand Q_DECLARE_METATYPE fully
-# 4) Ignore declspec attributes, causes issues with source located documentation
-# 5) Always document Win dependent things
-# 6) Always document Linux dependent things
+# 2) Doxygen doesn't understand Q_DECLARE_OPERATORS_FOR_FLAGS fully
+# 3) Doxygen doesn't understand QX_ERROR_TYPE fully
+# 4) Doxygen doesn't understand Q_DECLARE_METATYPE fully
+# 5) Ignore declspec attributes, causes issues with source located documentation
+# 6) Always document Win dependent things
+# 7) Always document Linux dependent things
 list(APPEND DOXYGEN_PREDEFINED
     "QX_ERROR_TYPE(Type,name,code)=Type final : public Qx::AbstractError<name, code>"
 	"Q_DECLARE_FLAGS(flagsType,enumType)=typedef QFlags<enumType> flagsType\;"
+    "Q_DECLARE_OPERATORS_FOR_FLAGS(flagsType)="
     "Q_DECLARE_METATYPE(x)="
     "__declspec(x)="
     "_WIN32"

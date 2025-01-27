@@ -40,10 +40,10 @@ function(ob_fetch_quazip)
             else()
                 set(ZLIB_USE_STATIC_LIBS ON)
             endif()
-            
+
             find_package(ZLIB QUIET)
         endif()
-        
+
         # Fetch Zlib if still not available
         if(NOT ZLIB_FOUND)
             FetchContent_Declare(
@@ -66,16 +66,20 @@ function(ob_fetch_quazip)
             # Populate zlib build
             FetchContent_GetProperties(ZLIB)
             if(NOT zlib_POPULATED)
-                # As of CMake 3.30.0, calling FetchContent_Populate() like this (name only) is deprecated. We use
-                # FetchContent_Populate() at all so that we can use add_subdirectory() with the "EXCLUDE_FROM_ALL"
-                # option, and 3.30.0 added a EXCLUDE_FROM_ALL option to FetchContent_MakeAvailable(), presumably
-                # obviating the need for this whole setup. In order to keep comparability as high as possible, for
-                # now we force the old policy, but once that is removed, switch to useing FetchContent_MakeAvailable()
-                # with EXCLUDE_FROM_ALL.
-                cmake_policy(PUSH)
-                cmake_policy(SET CMP0169 OLD)
-                FetchContent_Populate(ZLIB)
-                cmake_policy(POP)
+                if(POLICY CMP0169)
+                    # As of CMake 3.30.0, calling FetchContent_Populate() like this (name only) is deprecated. We use
+                    # FetchContent_Populate() at all so that we can use add_subdirectory() with the "EXCLUDE_FROM_ALL"
+                    # option, and 3.30.0 added a EXCLUDE_FROM_ALL option to FetchContent_MakeAvailable(), presumably
+                    # obviating the need for this whole setup. In order to keep comparability as high as possible, for
+                    # now we force the old policy, but once that is removed, switch to using FetchContent_MakeAvailable()
+                    # with EXCLUDE_FROM_ALL.
+                    cmake_policy(PUSH)
+                    cmake_policy(SET CMP0169 OLD)
+                    FetchContent_Populate(ZLIB)
+                    cmake_policy(POP)
+                else()
+                     FetchContent_Populate(ZLIB)
+                endif()
 
                 # EXCLUDE_FROM_ALL so that only main zlib library gets built since it's a dependency, ignore examples, etc.
                 add_subdirectory(${zlib_SOURCE_DIR} ${zlib_BINARY_DIR} EXCLUDE_FROM_ALL)

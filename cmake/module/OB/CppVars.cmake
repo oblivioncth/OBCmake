@@ -77,7 +77,7 @@ function(ob_add_cpp_vars target)
     set(multiValueArgs
         VARS
     )
-    
+
     set(requiredArgs
         NAME
         VARS
@@ -128,4 +128,7 @@ function(ob_add_cpp_vars target)
 
     # Add file to target
     target_sources(${target} PRIVATE "${GENERATED_PATH}")
+
+    # Ensure that generated source path is included if not already
+    target_include_directories(${target} PRIVATE "${GENERATED_DIR}")
 endfunction()

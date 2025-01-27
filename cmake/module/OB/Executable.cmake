@@ -13,6 +13,7 @@ include("${__OB_CMAKE_PRIVATE}/common.cmake")
 # ---------------
 # NAMESPACE:
 #   Namespace to use for file generation, export configuration, and installation pathing.
+#   Defaults to PROJECT_NAMESPACE if not provided.
 # ALIAS:
 #   Do not use "::" as part of the libraries alias, they will be
 #   added automatically after first prepending the provided namespace.
@@ -20,13 +21,16 @@ include("${__OB_CMAKE_PRIVATE}/common.cmake")
 #   Used for file generation, export configuration, and installation pathing.
 # OUTPUT_NAME:
 #   Maps to the OUTPUT_NAME property of the target. If not provided, by default its set
-#   based on the ALIAS value using casing that's typical for the target platform
+#   based on the ALIAS value using casing that's typical for the target platform.
+#
+#   If provided, case is modified to a typical type based on the target platform.
 # SOURCE:
 #   Files are assumed to be under "${CMAKE_CURRENT_SOURCE_DIR}/src"
 # SOURCE_GEN:
 #   Files are assumed to be under "${CMAKE_CURRENT_BINARY_DIR}/src"
 # RESOURCE:
-#   Files are assumed to be under "${CMAKE_CURRENT_SOURCE_DIR}/res". Added via
+#   Files can be absolute, but relative paths are assumed to be under
+#   "${CMAKE_CURRENT_SOURCE_DIR}/res". Added via
 #   target_sources(<tgt> PRIVATE <resources>), mainly for .qrc or .rc files
 # LINKS:
 #   Same contents/arguments as with target_link_libraries().
@@ -87,7 +91,6 @@ function(ob_add_standard_executable target)
 
     # Required Arguments (All Types)
     set(requiredArgs
-        NAMESPACE
         ALIAS
         SOURCE
     )
@@ -98,13 +101,22 @@ function(ob_add_standard_executable target)
 
     # Standardized set and defaulted values
     set(_TARGET_NAME "${target}")
-    set(_NAMESPACE "${STD_EXECUTABLE_NAMESPACE}")
+
+    if(STD_EXECUTABLE_NAMESPACE)
+        set(_NAMESPACE "${STD_EXECUTABLE_NAMESPACE}")
+    else()
+        set(_NAMESPACE "${PROJECT_NAMESPACE}")
+    endif()
+
     string(TOLOWER ${_NAMESPACE} _NAMESPACE_LC)
     set(_ALIAS "${STD_EXECUTABLE_ALIAS}")
     string(TOLOWER ${_ALIAS} _ALIAS_LC)
 
     if(STD_EXECUTABLE_OUTPUT_NAME)
         set(_OUTPUT_NAME "${STD_EXECUTABLE_OUTPUT_NAME}")
+        if(NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
+            string(TOLOWER ${_OUTPUT_NAME} _OUTPUT_NAME)
+        endif()
     else()
         if(CMAKE_SYSTEM_NAME STREQUAL Windows)
             set(_OUTPUT_NAME "${_ALIAS}")
@@ -199,7 +211,8 @@ function(ob_add_standard_executable target)
             # Ignore non-relevant system specific implementation
             __ob_validate_source_for_system("${res}" applicable_res)
             if(applicable_res)
-                list(APPEND full_res_paths "${CMAKE_CURRENT_SOURCE_DIR}/res/${res}")
+                cmake_path(ABSOLUTE_PATH res BASE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/res")
+                list(APPEND full_res_paths "${res}")
             endif()
         endforeach()
 
@@ -288,15 +301,6 @@ function(ob_add_standard_executable target)
         EXPORT ${_NAMESPACE}${_ALIAS}Targets
         ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    )
-
-    # Install target export
-    install(EXPORT ${_NAMESPACE}${_ALIAS}Targets
-        COMPONENT ${_TARGET_NAME}
-        FILE "${_NAMESPACE}${_ALIAS}Targets.cmake"
-        NAMESPACE ${_NAMESPACE}::
-        DESTINATION "cmake/${_ALIAS}"
-        ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
     )
 
     # Install runtime dependencies
@@ -390,6 +394,15 @@ function(ob_add_standard_executable target)
 
     # Package Config
     if(_CONFIG)
+        # Install target export
+        install(EXPORT ${_NAMESPACE}${_ALIAS}Targets
+            COMPONENT ${_TARGET_NAME}
+            FILE "${_NAMESPACE}${_ALIAS}Targets.cmake"
+            NAMESPACE ${_NAMESPACE}::
+            DESTINATION "cmake/${_ALIAS}"
+            ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
+        )
+
         __ob_parse_std_target_config_option(${_TARGET_NAME}
             ${_NAMESPACE}
             ${_ALIAS}
