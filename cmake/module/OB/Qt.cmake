@@ -9,8 +9,11 @@ endmacro()
 macro(ob_find_package_qt)
     __ob_command(ob_find_package_qt "3.20.0")
 
-    # Disallow deprecated facilities
+    # Disallow deprecated facilities from before 6.0.0
     add_compile_definitions(QT_DISABLE_DEPRECATED_BEFORE=0x060000)
+
+    # Warn on use of deprecated facilities from before 6.8.0
+    add_compile_definitions(QT_WARN_DEPRECATED_UP_TO=0x060800)
 
     # Find Qt, checking supported versions in order (just Qt6 for now)
     find_package(Qt NAMES Qt6 ${ARGN})
