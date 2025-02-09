@@ -289,8 +289,11 @@ function(ob_add_standard_executable target)
     endif()
 
     if(MSVC)
-        # Always show warnings for deprecated code use like with GCC
-        target_compile_options(${_TARGET_NAME} PRIVATE "/w14996")
+        target_compile_options(${_TARGET_NAME}
+            PRIVATE
+                "/w14996"
+                "/W4"
+        )
     endif()
 
     # Configure target properties
