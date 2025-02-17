@@ -288,6 +288,14 @@ function(ob_add_standard_executable target)
         target_compile_options(${_TARGET_NAME} ${_OPTIONS})
     endif()
 
+    if(MSVC)
+        target_compile_options(${_TARGET_NAME}
+            PRIVATE
+                "/w14996"
+                "/W4"
+        )
+    endif()
+
     # Configure target properties
     set_target_properties(${_TARGET_NAME} PROPERTIES
         EXPORT_NAME "${_ALIAS}"

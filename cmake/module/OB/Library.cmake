@@ -483,6 +483,16 @@ function(ob_add_standard_library target)
         target_compile_options(${_TARGET_NAME} ${_OPTIONS})
     endif()
 
+    if(MSVC)
+        # Always show warnings for deprecated code use like with GCC
+        # Default to warning level similar to Wall
+        target_compile_options(${_TARGET_NAME}
+            ${interface_private}
+                "/w14996"
+                "/W4"
+        )
+    endif()
+
     # Configure target properties
     set_target_properties(${_TARGET_NAME} PROPERTIES
         VERSION ${PROJECT_VERSION}
@@ -685,5 +695,13 @@ function(ob_add_standard_object_library target)
         # Add options
     if(_OPTIONS)
         target_compile_options(${_TARGET_NAME} ${_OPTIONS})
+    endif()
+
+    if(MSVC)
+        target_compile_options(${_TARGET_NAME}
+            PRIVATE
+                "/w14996"
+                "/W4"
+        )
     endif()
 endfunction()
