@@ -101,7 +101,7 @@ macro(ob_standard_project_setup)
         )
         set(__ob_rpaths
             "$ORIGIN" 
-            "$ORIGIN/${__ob_bin2lib_path}"
+            "$ORIGIN/${__ob_rel_bin2lib_path}"
         )
         foreach(rpath ${__ob_rpaths})
             if(NOT rpath IN_LIST CMAKE_BUILD_RPATH)
@@ -112,7 +112,7 @@ macro(ob_standard_project_setup)
             endif()
         endforeach()
         
-        unset(__ob_bin2lib_path)
+        unset(__ob_rel_bin2lib_path)
         unset(__ob_rpaths)
     endif()
 
