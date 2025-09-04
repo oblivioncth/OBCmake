@@ -43,7 +43,7 @@ function(ob_fetch_libsquish svn_rev)
 endfunction()
 
 function(ob_fetch_modern_libsquish git_ref)
-    __ob_command(ob_fetch_qi_qmp "3.11.0")
+    __ob_command(ob_fetch_modern_libsquish "3.11.0")
 
     include(FetchContent)
     FetchContent_Declare(LIBSQUISH
