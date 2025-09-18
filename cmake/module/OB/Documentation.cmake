@@ -378,7 +378,7 @@ function(ob_standard_documentation target)
     if(STD_DOCS_THEME_VER)
         set(theme_version "${STD_DOCS_THEME_VER}")
     else()
-        set(theme_version "v2.3.3")
+        set(theme_version "v2.3.4")
     endif()
 
     if(STD_DOCS_PROJ_NAME)
