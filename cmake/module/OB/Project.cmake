@@ -166,7 +166,7 @@ function(__ob_process_config_target_config output)
     # Const variables
     set(_tmpl_set_inclusion [[set(__inclusion "${CMAKE_CURRENT_LIST_DIR}/@+INCL_PATH+@")]])
     set(_tmpl_if_not_exists [[if(NOT EXISTS "${__inclusion}")]])
-    set(_tmpl_if_exist_and_sel [[if(EXISTS "${__inclusion}") AND @+CMP+@ IN_LIST @+PKG_NAME+@_FIND_COMPONENTS)]])
+    set(_tmpl_if_exist_and_sel [[if(EXISTS "${__inclusion}" AND @+CMP+@ IN_LIST @+PKG_NAME+@_FIND_COMPONENTS)]])
     set(_tmpl_if_sel_or_default [[if(@+CMP+@ IN_LIST @+PKG_NAME+@_FIND_COMPONENTS OR NOT @+PKG_NAME+@_FIND_COMPONENTS)]])
     set(_tmpl_include [[include("${__inclusion}")]])
     set(_tmpl_err_no_always [[message(FATAL_ERROR "A mandatory inclusion of @+PKG_NAME+@ was missing!")]])
