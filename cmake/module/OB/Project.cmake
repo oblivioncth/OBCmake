@@ -316,7 +316,7 @@ function(__ob_process_config_opt_std pkg_name gen_file)
     configure_package_config_file(
         "${CFG_TEMPLATE_FILE}"
         "${gen_file}"
-        INSTALL_DESTINATION "cmake"
+        INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/libsquish"
         NO_SET_AND_CHECK_MACRO
     )    
 endfunction()
@@ -327,7 +327,7 @@ function(__ob_process_config_opt_custom in_path gen_file)
         configure_package_config_file(
             "${in_path}"
             "${gen_file}"
-            INSTALL_DESTINATION "cmake"
+            INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/libsquish"
         )
 endfunction()
 
@@ -488,7 +488,7 @@ function(ob_standard_project_package_config)
         "${ver_gen_path}"
         "${cfg_gen_path}"
         COMPONENT ${PROJECT_NAMESPACE_LC}
-        DESTINATION "cmake"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/libsquish"
         ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
     )
 endfunction()
