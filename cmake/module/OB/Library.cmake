@@ -510,13 +510,13 @@ function(ob_add_standard_library target)
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         FILE_SET headers_api
-            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_ALIAS_LC}"
+            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_NAMESPACE_LC}/${_ALIAS_LC}"
         FILE_SET headers_api_gen
             OPTIONAL
-            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_ALIAS_LC}"
+            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_NAMESPACE_LC}/${_ALIAS_LC}"
         FILE_SET headers_export
             OPTIONAL
-            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_ALIAS_LC}"
+            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_NAMESPACE_LC}/${_ALIAS_LC}"
     )
 
     # Package Config
