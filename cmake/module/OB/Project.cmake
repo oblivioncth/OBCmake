@@ -383,10 +383,6 @@ endfunction()
 #   the provided target related package config files and find the optional dependencies
 #   if provided.
 #
-#   TARGET_CONFIGS is to be a list of targets in the form Namespace::Alias, where each
-#   entry will result in the final config file including each target config as:
-#   "${CMAKE_CURRENT_LIST_DIR}/Namespace/NamespaceAliasConfig.cmake".
-#   The config is installed into ${CMAKE_INSTALL_PREFIX}/cmake, making the inclusion paths
 #   TARGET_CONFIGS is to be a list of entries that correlate to target configs.
 #   Each must have at least a TARGET in the form Namespace::Alias,
 #   which will result in the final config file including the target config as:
@@ -406,9 +402,9 @@ endfunction()
 #   The generated config will be configured such that if a TARGET without a COMPONENT or
 #   a DEFAULT TARGET is missing at "find_package time" it will be considered an error.
 #
-#   The generated config is installed into ${CMAKE_INSTALL_PREFIX}/cmake, making the inclusion paths
+#   The generated config is installed into ${CMAKE_INSTALL_PREFIX}/lib/cmake, making the inclusion paths
 #   effectively:
-#   "${CMAKE_INSTALL_PREFIX}/cmake/Alias/NamespaceAliasConfig.cmake".
+#   "${CMAKE_INSTALL_PREFIX}/lib/cmake/Alias/NamespaceAliasConfig.cmake".
 #
 #   The dependencies are passed as:
 #       DEPENDS
@@ -427,7 +423,7 @@ endfunction()
 #   The template file is presumed to be prepared correctly to work properly with
 #   said command.
 #
-#   Both files are installed to ${CMAKE_INSTALL_PREFIX}/cmake under the component
+#   Both files are installed to ${CMAKE_INSTALL_PREFIX}/lib/cmake under the component
 #   PROJECT_NAMESPACE_LC.
 #
 # TODO: At some point maybe have 'ob_add_standard_library()' and any similar functions

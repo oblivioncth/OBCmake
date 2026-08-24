@@ -195,7 +195,7 @@ function(__ob_parse_std_target_config_option target ns alias)
     install(FILES
         "${cfg_gen_path}"
         COMPONENT ${target}
-        DESTINATION "cmake/${alias}"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${ns}/${alias}"
         ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
     )
 endfunction()
