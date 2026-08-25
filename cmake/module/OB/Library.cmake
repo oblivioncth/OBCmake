@@ -120,6 +120,10 @@ endfunction()
 #
 #   If provided, case is modified to a typical type based on the target platform.
 # TYPE: Type of library, follows BUILD_SHARED_LIBS if not defined
+# VERSION: Version of the library, defaults to PROJECT_VERSION if not defined
+# SOVERSION:
+#   SOVERSION of the library when built dynamically, defaults to the MAJOR.MINOR.PATCH
+#   components of the VERSION argument (to be conservative) when not defined
 # EXPORT_HEADER:
 #   Inner Form:
 #       EXPORT_HEADER
@@ -205,6 +209,8 @@ function(ob_add_standard_library target)
         ALIAS
         OUTPUT_NAME
         TYPE
+        VERSION
+        SOVERSION
     )
 
     set(multiValueArgs
@@ -262,6 +268,23 @@ function(ob_add_standard_library target)
         set(_TYPE "SHARED")
     else()
         set(_TYPE "STATIC")
+    endif()
+
+    if(STD_LIBRARY_VERSION)
+        set(_VERSION "${STD_LIBRARY_VERSION}")
+    else()
+        set(_VERSION "${PROJECT_VERSION}")
+    endif()
+
+    if(STD_LIBRARY_SOVERSION)
+        set(_SOVERSION "${STD_LIBRARY_SOVERSION}")
+    else()
+        ob_split_semver("${_VERSION}" _VERSION)
+        ob_compose_semver(_SOVERSION
+            MAJOR "${_VERSION_MAJOR}"
+            MINOR "${_VERSION_MINOR}"
+            PATCH "${_VERSION_PATCH}"
+        )
     endif()
 
     set(_EXPORT_HEADER "${STD_LIBRARY_EXPORT_HEADER}")
