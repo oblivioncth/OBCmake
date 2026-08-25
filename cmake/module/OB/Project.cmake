@@ -371,7 +371,6 @@ endfunction()
 #   This argument is mandatory and can take two forms.
 #
 #   First:
-#       CONFIG
 #       CONFIG STANDARD
 #           TARGET_CONFIGS
 #               TARGET
@@ -402,9 +401,9 @@ endfunction()
 #   The generated config will be configured such that if a TARGET without a COMPONENT or
 #   a DEFAULT TARGET is missing at "find_package time" it will be considered an error.
 #
-#   The generated config is installed into ${CMAKE_INSTALL_PREFIX}/lib/cmake, making the inclusion paths
+#   The generated config is installed into ${CMAKE_INSTALL_PREFIX}/lib/cmake/<PACKAGE_NAME>, making the inclusion paths
 #   effectively:
-#   "${CMAKE_INSTALL_PREFIX}/lib/cmake/Alias/NamespaceAliasConfig.cmake".
+#   "${CMAKE_INSTALL_PREFIX}/lib/cmake/<PACKAGE_NAME>/Alias/NamespaceAliasConfig.cmake".
 #
 #   The dependencies are passed as:
 #       DEPENDS
@@ -423,7 +422,8 @@ endfunction()
 #   The template file is presumed to be prepared correctly to work properly with
 #   said command.
 #
-#   Both files are installed to ${CMAKE_INSTALL_PREFIX}/lib/cmake under the component
+#   Both files are installed to ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/cmake/<PACKAGE_NAME>
+#   under the component
 #   PROJECT_NAMESPACE_LC.
 #
 # TODO: At some point maybe have 'ob_add_standard_library()' and any similar functions
@@ -484,7 +484,7 @@ function(ob_standard_project_package_config)
         "${ver_gen_path}"
         "${cfg_gen_path}"
         COMPONENT ${PROJECT_NAMESPACE_LC}
-        DESTINATION "cmake"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PACKAGE_NAME}"
         ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
     )
 endfunction()

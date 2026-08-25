@@ -322,7 +322,7 @@ function(ob_split_semver semver return_base)
 
         string(REGEX MATCH "${_pattern}" _matched "${_remaining}")
 
-        if(NOT _matched)
+        if(_matched STREQUAL "")
             break()
         endif()
 
