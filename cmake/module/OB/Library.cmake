@@ -197,7 +197,7 @@ endfunction()
 #   handles its installation.
 #
 #   The config file is installed as:
-#   ${CMAKE_INSTALL_PREFIX)/cmake/${NAMESPACE}/${NAMESPACE}${ALIAS}Config.cmake
+#   ${CMAKE_INSTALL_PREFIX)/${CMAKE_INSTALL_LIBDIR}/cmake/${NAMESPACE}/${ALIAS}/${NAMESPACE}${ALIAS}Config.cmake
 function(ob_add_standard_library target)
     __ob_command(ob_add_standard_library "3.23.0")
 
