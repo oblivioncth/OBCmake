@@ -284,3 +284,170 @@ macro(ob_set_if_unset var)
         set(${var} ${ARGN})
     endif()
 endmacro()
+
+# Parses <semver> as a semver-like version string of the form:
+#   <major>[.<minor>[.<patch>[.<tweak>]]][-<designator>]
+#
+# For each component (MAJOR, MINOR, PATCH, TWEAK), in order, that is present
+# and well-formed (a run of one or more digits), sets:
+#   ${<return_base>}_MAJOR
+#   ${<return_base>}_MINOR
+#   ${<return_base>}_PATCH
+#   ${<return_base>}_TWEAK
+# in the caller's scope.
+#
+# Parsing stops at the first missing or malformed component - components
+# after that point are NOT set at all (not even to an empty string). If
+# MAJOR itself is missing/malformed, no variables are set.
+#
+# Any trailing "-<designator>" (e.g. "-alpha", "-rc.1+build.5") is stripped
+# before numeric parsing begins and has no effect on the numeric components.
+function(ob_split_semver semver return_base)
+    __ob_command(ob_split_semver "3.0.0")
+    # Strip any pre-release/build designator. Everything from the first
+    # '-' or '+' onward is discarded, it never contributes numeric components.
+    string(REGEX REPLACE "[-+].*$" "" _numeric_part "${semver}")
+
+    set(_component_names MAJOR MINOR PATCH TWEAK)
+    set(_remaining "${_numeric_part}")
+    set(_first TRUE)
+
+    foreach(_name ${_component_names})
+        if(_first)
+            set(_pattern "^([0-9]+)")
+            set(_first FALSE)
+        else()
+            set(_pattern "^\\.([0-9]+)")
+        endif()
+
+        string(REGEX MATCH "${_pattern}" _matched "${_remaining}")
+
+        if(NOT _matched)
+            break()
+        endif()
+
+        set(${return_base}_${_name} "${CMAKE_MATCH_1}" PARENT_SCOPE)
+
+        # Consume the matched prefix and continue with what's left
+        string(LENGTH "${_matched}" _matched_len)
+        string(SUBSTRING "${_remaining}" ${_matched_len} -1 _remaining)
+    endforeach()
+endfunction()
+
+# ob_compose_semver(<return_var>
+#     [MAJOR <n>] [MINOR <n>] [PATCH <n>] [TWEAK <n>]
+#     [PRERELEASE <id>] [BUILD <id>]
+# )
+#
+# Safely composes a semver-ish string "MAJOR.MINOR.PATCH.TWEAK-PRERELEASE+BUILD"
+# from pieces that may be missing or empty. Result is placed in <return_var>
+# via PARENT_SCOPE.
+#
+# Behavior:
+#   * MAJOR/MINOR/PATCH/TWEAK are numeric, joined with '.'.
+#   * PRERELEASE is appended with a leading '-', BUILD with a leading '+'.
+#   * A piece that is simply never passed is skipped. If a later numeric
+#     piece is validly provided, any skipped numeric pieces in between are
+#     filled with "0" (e.g. MAJOR 3, PATCH 5 -> "3.0.5"). PRERELEASE/BUILD
+#     have no defaults.
+#   * A piece that is passed but is empty or fails validation for its slot
+#     (non-numeric for MAJOR/MINOR/PATCH/TWEAK, invalid identifier chars for
+#     PRERELEASE/BUILD) is a hard stop: generation stops immediately and
+#     whatever has been built so far is returned as-is. Nothing after that
+#     point -- including otherwise-valid later pieces -- is appended.
+function(ob_compose_semver return)
+    __ob_command(ob_compose_semver "3.15.0")
+
+    #------------ Argument Handling ---------------
+
+    # Function inputs
+    set(oneValueArgs
+        MAJOR
+        MINOR
+        PATCH
+        TWEAK
+        PRERELEASE
+        BUILD
+    )
+
+    ob_parse_arguments(SV_ARG "" "${oneValueArgs}" "" "" ${ARGN})
+
+    # Working vars
+    set(result "")
+    set(stopped FALSE)
+    set(pending_zeros 0)
+
+    # --- Numeric pieces: MAJOR . MINOR . PATCH . TWEAK ---
+    foreach(part MAJOR MINOR PATCH TWEAK)
+        if(stopped)
+            break()
+        endif()
+
+        list(FIND SV_ARG_KEYWORDS_MISSING_VALUES "${part}" missing_idx)
+
+        if(DEFINED SV_ARG_${part})
+            set(value "${SV_ARG_${part}}")
+            if(value MATCHES "^[0-9]+$")
+                # valid number: flush any pending zero-fillers, then append
+                while(pending_zeros GREATER 0)
+                    if(result STREQUAL "")
+                        set(result "0")
+                    else()
+                        set(result "${result}.0")
+                    endif()
+                    math(EXPR pending_zeros "${pending_zeros} - 1")
+                endwhile()
+
+                if(result STREQUAL "")
+                    set(result "${value}")
+                else()
+                    set(result "${result}.${value}")
+                endif()
+            else()
+                # explicitly provided, but empty/invalid -> hard stop
+                set(stopped TRUE)
+                break()
+            endif()
+        elseif(NOT missing_idx EQUAL -1)
+            # keyword given with no value at all (e.g. trailing "PATCH") -> hard stop
+            set(stopped TRUE)
+            break()
+        else()
+            # never mentioned -> maybe fill with 0 later, if something valid follows
+            math(EXPR pending_zeros "${pending_zeros} + 1")
+        endif()
+    endforeach()
+
+    # --- Prerelease piece: -PRERELEASE ---
+    if(NOT stopped)
+        list(FIND SV_ARG_KEYWORDS_MISSING_VALUES "PRERELEASE" missing_idx)
+        if(DEFINED SV_ARG_PRERELEASE)
+            set(value "${SV_ARG_PRERELEASE}")
+            if(value MATCHES "^[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*$")
+                set(result "${result}-${value}")
+            else()
+                set(stopped TRUE)
+            endif()
+        elseif(NOT missing_idx EQUAL -1)
+            set(stopped TRUE)
+        endif()
+        # else: not mentioned at all -> silently skipped, no filler
+    endif()
+
+    # --- Build metadata piece: +BUILD ---
+    if(NOT stopped)
+        list(FIND SV_ARG_KEYWORDS_MISSING_VALUES "BUILD" missing_idx)
+        if(DEFINED SV_ARG_BUILD)
+            set(value "${SV_ARG_BUILD}")
+            if(value MATCHES "^[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*$")
+                set(result "${result}+${value}")
+            else()
+                set(stopped TRUE)
+            endif()
+        elseif(NOT missing_idx EQUAL -1)
+            set(stopped TRUE)
+        endif()
+    endif()
+
+    set(${return} "${result}" PARENT_SCOPE)
+endfunction()

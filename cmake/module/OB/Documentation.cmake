@@ -389,6 +389,8 @@ function(ob_standard_documentation target)
 
     if(STD_DOCS_INSTALL_DESTINATION)
         set(doc_install_dest "${STD_DOCS_INSTALL_DESTINATION}")
+    elseif(CMAKE_INSTALL_DOCDIR) # Allegedly can be empty with some systems/toolchains
+        set(doc_install_dest "${CMAKE_INSTALL_DOCDIR}")
     else()
         set(doc_install_dest "doc")
     endif()
