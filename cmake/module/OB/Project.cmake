@@ -250,7 +250,7 @@ function(__ob_process_config_target_config output)
     set(${output} "${prepared_str}" PARENT_SCOPE)
 endfunction()
 
-function(__ob_process_config_opt_std pkg_name gen_file)
+function(__ob_process_config_opt_std pkg_name gen_file install_dest)
     __ob_internal_command(__ob_process_config_opt_std "3.18.0")
     
     # Const variables
@@ -316,22 +316,22 @@ function(__ob_process_config_opt_std pkg_name gen_file)
     configure_package_config_file(
         "${CFG_TEMPLATE_FILE}"
         "${gen_file}"
-        INSTALL_DESTINATION "cmake"
+        INSTALL_DESTINATION "${install_dest}"
         NO_SET_AND_CHECK_MACRO
     )    
 endfunction()
 
-function(__ob_process_config_opt_custom in_path gen_file)
+function(__ob_process_config_opt_custom in_path gen_file install_dest)
     __ob_internal_command(__ob_process_config_opt_custom "3.0.0")
 
         configure_package_config_file(
             "${in_path}"
             "${gen_file}"
-            INSTALL_DESTINATION "cmake"
+            INSTALL_DESTINATION "${install_dest}"
         )
 endfunction()
 
-function(__ob_process_config_opt pkg_name gen_file)
+function(__ob_process_config_opt pkg_name gen_file install_dest)
     __ob_internal_command(__ob_process_config_opt "3.18.0")
 
     set(ova
@@ -354,9 +354,9 @@ function(__ob_process_config_opt pkg_name gen_file)
     
     # Standard Form
     if(CONFIG_STANDARD)
-        __ob_process_config_opt_std("${pkg_name}" "${gen_file}" ${CONFIG_STANDARD})
+        __ob_process_config_opt_std("${pkg_name}" "${gen_file}" "${install_dest}" ${CONFIG_STANDARD})
     else() # Custom Form
-        __ob_process_config_opt_custom("${CONFIG_CUSTOM}" "${gen_file}")
+        __ob_process_config_opt_custom("${CONFIG_CUSTOM}" "${gen_file}" "${install_dest}")
     endif()
 endfunction()
 
@@ -470,7 +470,8 @@ function(ob_standard_project_package_config)
     include(CMakePackageConfigHelpers)
     set(cfg_gen_path "${OUTPUT_PREFIX}/${PACKAGE_NAME}Config.cmake")
     set(ver_gen_path "${OUTPUT_PREFIX}/${PACKAGE_NAME}ConfigVersion.cmake")
-    __ob_process_config_opt("${PACKAGE_NAME}" "${cfg_gen_path}" ${STD_PKG_CFG_CONFIG})
+    set(install_dest "${CMAKE_INSTALL_LIBDIR}/cmake/${PACKAGE_NAME}")
+    __ob_process_config_opt("${PACKAGE_NAME}" "${cfg_gen_path}" "${install_dest}" ${STD_PKG_CFG_CONFIG})
    
     # Create version file
     write_basic_package_version_file(
@@ -484,7 +485,7 @@ function(ob_standard_project_package_config)
         "${ver_gen_path}"
         "${cfg_gen_path}"
         COMPONENT ${PROJECT_NAMESPACE_LC}
-        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PACKAGE_NAME}"
+        DESTINATION "${install_dest}"
         ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
     )
 endfunction()

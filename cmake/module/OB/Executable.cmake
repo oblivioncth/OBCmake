@@ -407,7 +407,7 @@ function(ob_add_standard_executable target)
             COMPONENT ${_TARGET_NAME}
             FILE "${_NAMESPACE}${_ALIAS}Targets.cmake"
             NAMESPACE ${_NAMESPACE}::
-            DESTINATION "cmake/${_ALIAS}"
+            DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${_NAMESPACE}/${_ALIAS}"
             ${SUB_PROJ_EXCLUDE_FROM_ALL} # "EXCLUDE_FROM_ALL" if project is not top-level
         )
 
