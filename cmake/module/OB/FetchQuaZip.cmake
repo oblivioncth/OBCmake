@@ -81,6 +81,18 @@ function(ob_fetch_quazip)
                      FetchContent_Populate(ZLIB)
                 endif()
 
+                # As of at least 1.3.2 (it was sometime earlier, but who cares on exact version), zlib cmake scripts were
+                # update so that we have better control over targets, though it's still not great
+                if(BUILD_SHARED_LIBS)
+                    set(ZLIB_BUILD_SHARED ON)
+                    set(ZLIB_BUILD_STATIC OFF)
+                else()
+                    set(ZLIB_BUILD_SHARED OFF)
+                    set(ZLIB_BUILD_STATIC ON)
+                endif()
+                set(ZLIB_BUILD_TESTING OFF)
+                set(ZLIB_INSTALL OFF)
+
                 # EXCLUDE_FROM_ALL so that only main zlib library gets built since it's a dependency, ignore examples, etc.
                 add_subdirectory(${zlib_SOURCE_DIR} ${zlib_BINARY_DIR} EXCLUDE_FROM_ALL)
             endif()
@@ -106,22 +118,18 @@ function(ob_fetch_quazip)
                 ]=])
             endif()
 
-            # zlib by default creates targets for its shared and static versions, but it does respect BUILD_SHARED_LIBS
-            # to configure the shared version to work properly on windows. Here, we use the variable again to determine
-            # which of those targets to use when preparing zlib for consumption by Quazip.
+            # QuaZip looks for zlib via the alias ZLIB::ZLIB regardless of zlib linkage flavor. ZLIB by default uses ZLIB::ZLIB and
+            # ZLIB::ZLIB_STATIC as dynamic and static aliases respectively, so we need to create our own alias using that name when
+            # utilizing shared builds.
             if(BUILD_SHARED_LIBS)
                 set(_zlib_flavor_target "zlib")
             else()
                 set(_zlib_flavor_target "zlibstatic")
             endif()
 
-            # Provide zlib headers to targets that consume this target (have to do this since normally its done by
-            # zlibs cmake's install package, which again isn't used here)
-            target_include_directories(${_zlib_flavor_target} INTERFACE "${zlib_SOURCE_DIR}" "${zlib_BINARY_DIR}")
-
-            # Create an alias for ZLIB so that it can be referred to by the same name as when it imported via
-            # find_package()
-            add_library(ZLIB::ZLIB ALIAS ${_zlib_flavor_target})
+            if(NOT TARGET ZLIB::ZLIB)
+                add_library(ZLIB::ZLIB ALIAS ${_zlib_flavor_target})
+            endif()
         endif()
     endif()
 
