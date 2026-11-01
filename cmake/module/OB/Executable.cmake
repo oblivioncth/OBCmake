@@ -289,6 +289,8 @@ function(ob_add_standard_executable target)
     endif()
 
     if(MSVC)
+        # Always show warnings for deprecated code use like with GCC
+        # Default to warning level similar to Wall
         target_compile_options(${_TARGET_NAME}
             PRIVATE
                 "/w14996"
