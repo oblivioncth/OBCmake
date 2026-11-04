@@ -41,6 +41,15 @@ list(APPEND DOXYGEN_ALIASES
     "component{2}=\"@par Import:^^@code find_package(${PROJECT_NAME} REQUIRED COMPONENTS \\1)@endcode ^^@par Link:^^@code target_link_libraries(target_name ${PROJECT_NAME}::\\1)@endcode ^^@par Include:^^@code #include <${PROJECT_NAME_LC}/\\2>@endcode\""
 )
 
+# This allows turning code "on" or "off" for Doxygen's view specifically
+# Turning off the code via this preprocessor variable is the same as
+# using @cond and @endcond, but this is more useful for turning code back
+# on that is otherwise turned off; i.e. for cases where we always want something
+# documented but it might be disabled on certain systems, compilers, etc.
+list(APPEND DOXYGEN_PREDEFINED
+    DOXYGEN
+)
+
 # Workarounds for
 # 1) Doxygen doesn't understand Q_DECLARE_FLAGS fully
 # 2) Doxygen doesn't understand Q_DECLARE_OPERATORS_FOR_FLAGS fully
